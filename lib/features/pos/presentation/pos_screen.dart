@@ -423,7 +423,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                 TextField(
                   controller: _tenderedController,
                   decoration: const InputDecoration(
-                    labelText: 'Amount Tendered',
+                    labelText: 'Amount Received',
                     prefixText: 'Rs. ',
                     isDense: true,
                   ),
