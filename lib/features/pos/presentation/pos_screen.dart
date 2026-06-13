@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../data/database/app_database.dart';
 import '../../../providers/customers_provider.dart';
+import '../../../data/database/daos/inventory_dao.dart';
+import '../../../providers/database_provider.dart';
 import '../../../providers/inventory_provider.dart';
 import '../../../providers/pos_provider.dart';
 
@@ -67,25 +70,35 @@ class _PosScreenState extends ConsumerState<PosScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                  child: TextField(
-                    controller: _searchController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: 'Scan barcode or search...',
-                      prefixIcon: const Icon(Icons.qr_code_scanner),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            )
-                          : null,
-                      isDense: true,
-                    ),
-                    onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
-                    onSubmitted: _onSubmitSearch,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: 'Scan barcode or search...',
+                            prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _searchQuery.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                    },
+                                  )
+                                : null,
+                            isDense: true,
+                          ),
+                          onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
+                          onSubmitted: _onSubmitSearch,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _ScanButton(onProductFound: (product) {
+                        ref.read(posProvider.notifier).addItem(product);
+                      }),
+                    ],
                   ),
                 ),
                 Expanded(child: _ProductGrid(searchQuery: _searchQuery)),
@@ -583,4 +596,226 @@ class _CustomerSearchDialogState extends ConsumerState<_CustomerSearchDialog> {
       ),
     );
   }
+}
+
+// ─── Camera scan button ───────────────────────────────────────────────────────
+
+class _ScanButton extends ConsumerWidget {
+  const _ScanButton({required this.onProductFound});
+
+  final void Function(Product product) onProductFound;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: 44,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        icon: const Icon(Icons.qr_code_scanner, size: 20),
+        label: const Text('Scan'),
+        onPressed: () => showDialog<void>(
+          context: context,
+          builder: (_) => _BarcodeScanDialog(
+            inventoryDao: ref.read(inventoryDaoProvider),
+            onProductFound: onProductFound,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Barcode scan dialog ──────────────────────────────────────────────────────
+
+class _BarcodeScanDialog extends StatefulWidget {
+  const _BarcodeScanDialog({
+    required this.inventoryDao,
+    required this.onProductFound,
+  });
+
+  final InventoryDao inventoryDao;
+  final void Function(Product product) onProductFound;
+
+  @override
+  State<_BarcodeScanDialog> createState() => _BarcodeScanDialogState();
+}
+
+class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
+  final _controller = MobileScannerController();
+  bool _processing = false;
+  String? _lastError;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onDetect(BarcodeCapture capture) async {
+    if (_processing) return;
+    final raw = capture.barcodes.firstOrNull?.rawValue;
+    if (raw == null || raw.isEmpty) return;
+
+    setState(() => _processing = true);
+
+    final product = await widget.inventoryDao.findByBarcode(raw);
+
+    if (!mounted) return;
+
+    if (product != null) {
+      Navigator.of(context).pop();
+      widget.onProductFound(product);
+    } else {
+      setState(() {
+        _lastError = 'No product found for barcode: $raw';
+        _processing = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: SizedBox(
+        width: 380,
+        height: 440,
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+              child: Row(
+                children: [
+                  const Icon(Icons.qr_code_scanner, color: AppColors.primary, size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text('Scan Barcode', style: AppTextStyles.titleMedium),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Scanner viewport
+            Expanded(
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
+                child: Stack(
+                  children: [
+                    MobileScanner(
+                      controller: _controller,
+                      onDetect: _onDetect,
+                    ),
+                    // Scan window overlay
+                    Center(
+                      child: Container(
+                        width: 220,
+                        height: 220,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.primary, width: 2.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    // Corner accents
+                    ..._buildCorners(),
+                    // Processing indicator
+                    if (_processing)
+                      Container(
+                        color: Colors.black45,
+                        child: const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                      ),
+                    // Error banner
+                    if (_lastError != null)
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          color: AppColors.error,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          child: Text(
+                            _lastError!,
+                            style: const TextStyle(color: Colors.white, fontSize: 13),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildCorners() {
+    const size = 24.0;
+    const thickness = 3.5;
+    const color = AppColors.primary;
+    const offset = (220 - size * 2) / 2;
+
+    Widget corner(double top, double left, bool flipH, bool flipV) => Positioned(
+          top: top,
+          left: left,
+          child: Transform.scale(
+            scaleX: flipH ? -1 : 1,
+            scaleY: flipV ? -1 : 1,
+            child: SizedBox(
+              width: size,
+              height: size,
+              child: CustomPaint(
+                painter: _CornerPainter(color: color, thickness: thickness),
+              ),
+            ),
+          ),
+        );
+
+    // Center the 220x220 box in a 380x400 viewport (approx)
+    const cx = (380 - 220) / 2;
+    const cy = (400 - 220) / 2;
+
+    return [
+      corner(cy - thickness, cx - thickness, false, false),
+      corner(cy - thickness, cx + 220 - size + thickness, true, false),
+      corner(cy + 220 - size + thickness, cx - thickness, false, true),
+      corner(cy + 220 - size + thickness, cx + 220 - size + thickness, true, true),
+    ];
+  }
+}
+
+class _CornerPainter extends CustomPainter {
+  const _CornerPainter({required this.color, required this.thickness});
+
+  final Color color;
+  final double thickness;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = thickness
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawLine(Offset.zero, Offset(size.width, 0), paint);
+    canvas.drawLine(Offset.zero, Offset(0, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(_CornerPainter old) => false;
 }
