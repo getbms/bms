@@ -23,14 +23,6 @@ class UsersScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Management'),
-        actions: [
-          if (isDeveloper)
-            IconButton(
-              icon: const Icon(Icons.person_add_outlined),
-              tooltip: 'Add User',
-              onPressed: () => _openAddUser(context, ref, isDeveloper: true),
-            ),
-        ],
       ),
       body: usersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

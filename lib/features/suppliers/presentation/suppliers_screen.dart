@@ -26,13 +26,6 @@ class SuppliersScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Suppliers'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add Supplier',
-            onPressed: () => _openAddSupplier(context),
-          ),
-        ],
       ),
       body: suppliersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

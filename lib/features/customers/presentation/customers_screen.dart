@@ -26,13 +26,6 @@ class CustomersScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Customers'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_outlined),
-            tooltip: 'Add Customer',
-            onPressed: () => _openAddCustomer(context),
-          ),
-        ],
       ),
       body: customersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

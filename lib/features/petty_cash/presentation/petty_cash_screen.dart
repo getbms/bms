@@ -28,13 +28,6 @@ class PettyCashScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Petty Cash'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add Entry',
-            onPressed: () => _openAddEntry(context),
-          ),
-        ],
       ),
       body: Column(
         children: [
