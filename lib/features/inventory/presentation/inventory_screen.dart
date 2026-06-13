@@ -43,13 +43,6 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Inventory'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add Product',
-            onPressed: () => _openForm(),
-          ),
-        ],
       ),
       body: Column(
         children: [
