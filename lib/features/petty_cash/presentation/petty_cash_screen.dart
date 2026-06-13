@@ -252,17 +252,16 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
   final _formKey = GlobalKey<FormState>();
   final _description = TextEditingController();
   final _amount = TextEditingController();
-  final _categoryController = TextEditingController();
   String _type = 'out';
+  String _category = 'Other';
   bool _saving = false;
 
-  static const _categories = ['Food', 'Travel', 'Office', 'Maintenance', 'Other'];
+  static const _categories = ['Food', 'Travel', 'Office', 'Maintenance', 'Utilities', 'Salary', 'Other'];
 
   @override
   void dispose() {
     _description.dispose();
     _amount.dispose();
-    _categoryController.dispose();
     super.dispose();
   }
 
@@ -274,7 +273,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
             description: _description.text.trim(),
             amount: double.parse(_amount.text),
             type: _type,
-            category: _categoryController.text.trim().isEmpty ? 'Other' : _categoryController.text.trim(),
+            category: _category,
           );
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -336,21 +335,13 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
               ],
             ),
             const SizedBox(height: 12),
-            Autocomplete<String>(
-              optionsBuilder: (v) => _categories.where(
-                (c) => c.toLowerCase().contains(v.text.toLowerCase()),
-              ),
-              onSelected: (v) => _categoryController.text = v,
-              fieldViewBuilder: (_, controller, focusNode, onFieldSubmitted) {
-                _categoryController.text = controller.text;
-                return TextFormField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  decoration: const InputDecoration(labelText: 'Category *', isDense: true),
-                  onFieldSubmitted: (_) => onFieldSubmitted(),
-                  validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-                );
-              },
+            DropdownButtonFormField<String>(
+              value: _category,
+              decoration: const InputDecoration(labelText: 'Category *', isDense: true),
+              items: _categories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (v) => setState(() => _category = v ?? 'Other'),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
