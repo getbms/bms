@@ -58,6 +58,12 @@ class SidebarNav extends ConsumerWidget {
     _NavItemData(label: 'Inventory', icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
     _NavItemData(label: 'Customers', icon: Icons.people_rounded, route: AppRoutes.customers),
     _NavItemData(
+      label: 'Debtors',
+      icon: Icons.account_balance_wallet_outlined,
+      route: AppRoutes.debtors,
+      minRole: _Role.admin,
+    ),
+    _NavItemData(
       label: 'Suppliers',
       icon: Icons.local_shipping_rounded,
       route: AppRoutes.suppliers,

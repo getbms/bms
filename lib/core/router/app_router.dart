@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/cheques/presentation/cheque_screen.dart';
 import '../../features/customers/presentation/customers_screen.dart';
+import '../../features/debtors/presentation/debtors_screen.dart';
 import '../../features/dashboard/presentation/dashboard_screen.dart';
 import '../../features/inventory/presentation/inventory_screen.dart';
 import '../../features/petty_cash/presentation/petty_cash_screen.dart';
@@ -59,6 +60,11 @@ GoRouter appRouter(Ref ref) {
             path: AppRoutes.customers,
             name: 'customers',
             pageBuilder: (context, state) => _fadePage(state, const CustomersScreen()),
+          ),
+          GoRoute(
+            path: AppRoutes.debtors,
+            name: 'debtors',
+            pageBuilder: (context, state) => _fadePage(state, const DebtorsScreen()),
           ),
           GoRoute(
             path: AppRoutes.suppliers,
@@ -123,6 +129,7 @@ abstract final class AppRoutes {
   static const String pos = '/pos';
   static const String inventory = '/inventory';
   static const String customers = '/customers';
+  static const String debtors = '/debtors';
   static const String suppliers = '/suppliers';
   static const String cheques = '/cheques';
   static const String pettyCash = '/petty-cash';

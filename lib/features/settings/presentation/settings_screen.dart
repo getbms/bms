@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -140,10 +142,10 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  void _downloadTemplate(BuildContext context) {
+  Future<void> _downloadTemplate(BuildContext context) {
     const csv = 'name,unit_type,cost_price,sell_price,barcode,brand,reorder_level\n'
         'Sample Product,pcs,100.00,150.00,,Brand Name,10\n';
-    _downloadBytes(
+    return _downloadBytes(
       context,
       Uint8List.fromList(csv.codeUnits),
       'products_template.csv',
@@ -184,23 +186,28 @@ class SettingsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  void _downloadBytes(BuildContext context, Uint8List bytes, String filename) {
+  Future<void> _downloadBytes(BuildContext context, Uint8List bytes, String filename) async {
     if (kIsWeb) {
-      // Web: use anchor element trick via dart:html
-      _webDownload(bytes, filename);
-    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('File saved: $filename')),
+        const SnackBar(content: Text('Download not supported in web preview')),
+      );
+      return;
+    }
+    try {
+      final dir = await getDownloadsDirectory() ?? await getApplicationDocumentsDirectory();
+      final file = File('${dir.path}/$filename');
+      await file.writeAsBytes(bytes, flush: true);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Saved: ${file.path}')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Save failed: $e'), backgroundColor: AppColors.error),
       );
     }
   }
-}
-
-void _webDownload(Uint8List bytes, String filename) {
-  if (!kIsWeb) return;
-  // Use dart:html on web to trigger a file download.
-  // ignore: undefined_prefixed_name
-  // This is a web-only path — wrapped in kIsWeb guard above.
 }
 
 // Language tile
@@ -415,9 +422,9 @@ class _AuditRow extends StatelessWidget {
       ),
       subtitle: Text(fmt.format(entry.createdAt.toLocal()), style: AppTextStyles.bodySmall),
       onTap: entry.newValue != null || entry.oldValue != null
-          ? () => showDialog(
+          ? () => showDialog<void>(
                 context: context,
-                builder: (_) => AlertDialog(
+                builder: (dialogCtx) => AlertDialog(
                   title: Text('${entry.action} / ${entry.entityType}'),
                   content: SingleChildScrollView(
                     child: Column(
@@ -439,7 +446,7 @@ class _AuditRow extends StatelessWidget {
                       ],
                     ),
                   ),
-                  actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
+                  actions: [TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('Close'))],
                 ),
               )
           : null,
