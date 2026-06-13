@@ -31,11 +31,11 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   void _onSubmitSearch(String value) {
-    // Barcode scan: try exact barcode match first, then name
     final products = ref.read(productsStreamProvider).asData?.value ?? [];
     final trimmed = value.trim();
     if (trimmed.isEmpty) return;
 
+    // Exact barcode match → add to cart immediately and clear
     final byBarcode = products.where((p) => p.barcode == trimmed).toList();
     if (byBarcode.isNotEmpty) {
       ref.read(posProvider.notifier).addItem(byBarcode.first);
@@ -44,8 +44,22 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       return;
     }
 
-    // Fall through: filter the grid by name
-    setState(() => _searchQuery = trimmed.toLowerCase());
+    // Single name/barcode partial match → add directly
+    final active = products.where((p) => p.isActive).toList();
+    final q = trimmed.toLowerCase();
+    final matched = active.where((p) =>
+        p.name.toLowerCase().contains(q) ||
+        (p.brand?.toLowerCase().contains(q) ?? false) ||
+        (p.barcode?.toLowerCase().contains(q) ?? false)).toList();
+    if (matched.length == 1) {
+      ref.read(posProvider.notifier).addItem(matched.first);
+      _searchController.clear();
+      setState(() => _searchQuery = '');
+      return;
+    }
+
+    // Multiple matches: show filtered grid
+    setState(() => _searchQuery = q);
   }
 
   @override
@@ -136,7 +150,8 @@ class _ProductGrid extends ConsumerWidget {
             ? active
             : active.where((p) =>
                 p.name.toLowerCase().contains(searchQuery) ||
-                (p.brand?.toLowerCase().contains(searchQuery) ?? false)).toList();
+                (p.brand?.toLowerCase().contains(searchQuery) ?? false) ||
+                (p.barcode?.toLowerCase().contains(searchQuery) ?? false)).toList();
 
         if (filtered.isEmpty) {
           return const Center(child: Text('No products found.', style: AppTextStyles.bodySmall));
