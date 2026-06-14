@@ -12,6 +12,7 @@ import '../../../data/database/daos/inventory_dao.dart';
 import '../../../providers/database_provider.dart';
 import '../../../providers/inventory_provider.dart';
 import '../../../providers/pos_provider.dart';
+import '../../../providers/settings_provider.dart';
 import 'receipt_pdf.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
@@ -284,6 +285,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
         _tenderedController.clear();
 
         // Auto-print receipt on connected printer; fall back to print dialog
+        final store = ref.read(storeInfoProvider);
         ReceiptPdf.printOrPreview(
           items: snapshot.items,
           invoiceNo: invoiceNo,
@@ -293,6 +295,9 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           amountTendered: snapshot.amountTendered,
           change: snapshot.change,
           customer: snapshot.customer,
+          storeName: store.name,
+          storeAddress: store.address,
+          storePhone: store.phone,
         ).ignore();
       }
     } catch (e) {
