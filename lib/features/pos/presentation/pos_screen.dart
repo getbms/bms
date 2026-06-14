@@ -12,6 +12,7 @@ import '../../../data/database/daos/inventory_dao.dart';
 import '../../../providers/database_provider.dart';
 import '../../../providers/inventory_provider.dart';
 import '../../../providers/pos_provider.dart';
+import 'receipt_pdf.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
   const PosScreen({super.key});
@@ -268,6 +269,8 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
 
   Future<void> _checkout() async {
     final notifier = ref.read(posProvider.notifier);
+    // Capture state before checkout clears the cart
+    final snapshot = ref.read(posProvider);
     try {
       final invoiceNo = await notifier.checkout();
       if (!mounted) return;
@@ -279,6 +282,18 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           ),
         );
         _tenderedController.clear();
+
+        // Auto-print receipt on connected printer; fall back to print dialog
+        ReceiptPdf.printOrPreview(
+          items: snapshot.items,
+          invoiceNo: invoiceNo,
+          paymentMethod: snapshot.paymentMethod,
+          subtotal: snapshot.subtotal,
+          total: snapshot.total,
+          amountTendered: snapshot.amountTendered,
+          change: snapshot.change,
+          customer: snapshot.customer,
+        ).ignore();
       }
     } catch (e) {
       if (!mounted) return;
