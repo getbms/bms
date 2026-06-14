@@ -48,11 +48,11 @@ void main() async {
           // Illustration header
           pw.Center(
             child: pw.SizedBox(
-              height: 72,
+              height: 56,
               child: pw.Image(headerImage, fit: pw.BoxFit.contain),
             ),
           ),
-          pw.SizedBox(height: 4),
+          pw.SizedBox(height: 2),
 
           // Store header
           pw.Center(child: pw.Text(storeName, style: pw.TextStyle(font: fontBold, fontSize: 13))),

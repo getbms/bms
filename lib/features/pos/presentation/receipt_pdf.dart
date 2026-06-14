@@ -87,11 +87,11 @@ abstract final class ReceiptPdf {
             // Illustration header
             pw.Center(
               child: pw.SizedBox(
-                height: 72,
+                height: 56,
                 child: pw.Image(headerImage, fit: pw.BoxFit.contain),
               ),
             ),
-            pw.SizedBox(height: 4),
+            pw.SizedBox(height: 2),
 
             // Store name
             pw.Center(
