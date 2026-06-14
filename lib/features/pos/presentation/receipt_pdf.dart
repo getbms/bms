@@ -77,10 +77,20 @@ abstract final class ReceiptPdf {
     const grey = PdfColor.fromInt(0xFF666666);
     final now = DateTime.now();
 
+    // 57.5mm paper, 48mm effective print width → (57.5-48)/2 = 4.75mm side margins
+    const printerFormat = PdfPageFormat(
+      57.5 * PdfPageFormat.mm,
+      double.infinity,
+      marginLeft: 4.75 * PdfPageFormat.mm,
+      marginRight: 4.75 * PdfPageFormat.mm,
+      marginTop: 3 * PdfPageFormat.mm,
+      marginBottom: 3 * PdfPageFormat.mm,
+    );
+
     doc.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.roll80,
-        margin: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+        pageFormat: printerFormat,
+        margin: pw.EdgeInsets.zero,
         build: (ctx) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
           children: [
@@ -144,19 +154,19 @@ abstract final class ReceiptPdf {
                       style: pw.TextStyle(font: fontBold, fontSize: 7.5)),
                 ),
                 pw.SizedBox(
-                  width: 28,
+                  width: 22,
                   child: pw.Text('Qty',
                       style: pw.TextStyle(font: fontBold, fontSize: 7.5),
                       textAlign: pw.TextAlign.right),
                 ),
                 pw.SizedBox(
-                  width: 38,
+                  width: 32,
                   child: pw.Text('Price',
                       style: pw.TextStyle(font: fontBold, fontSize: 7.5),
                       textAlign: pw.TextAlign.right),
                 ),
                 pw.SizedBox(
-                  width: 42,
+                  width: 36,
                   child: pw.Text('Amount',
                       style: pw.TextStyle(font: fontBold, fontSize: 7.5),
                       textAlign: pw.TextAlign.right),
@@ -274,19 +284,19 @@ class _ItemRow extends pw.StatelessWidget {
             children: [
               pw.Expanded(child: pw.SizedBox()),
               pw.SizedBox(
-                width: 28,
+                width: 22,
                 child: pw.Text(qtyStr,
                     style: pw.TextStyle(font: font, fontSize: 7.5),
                     textAlign: pw.TextAlign.right),
               ),
               pw.SizedBox(
-                width: 38,
+                width: 32,
                 child: pw.Text(ReceiptPdf._f(item.unitPrice),
                     style: pw.TextStyle(font: font, fontSize: 7.5),
                     textAlign: pw.TextAlign.right),
               ),
               pw.SizedBox(
-                width: 42,
+                width: 36,
                 child: pw.Text(ReceiptPdf._f(item.lineTotal),
                     style: pw.TextStyle(font: fontBold, fontSize: 7.5),
                     textAlign: pw.TextAlign.right),

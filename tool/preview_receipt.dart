@@ -10,11 +10,11 @@ String _f(double v) => _priceFmt.format(v);
 
 void main() async {
   // ── Sample data ─────────────────────────────────────────────────────────────
-  const storeName = 'BMS Store';
-  const storeAddress = '123 Main Street, Colombo';
-  const storePhone = '077 123 4567';
+  const storeName = 'Thushara Stores';
+  const storeAddress = '107,Hirana Road,Gangula,Panadura';
+  const storePhone = '0710196932';
   const invoiceNo = 'INV-000042';
-  const customerName = 'Kasun Perera';
+  const customerName = 'Thushara Jayendra';
   const paymentMethod = 'CASH';
   const total = 3450.00;
   const amountTendered = 4000.00;
@@ -38,10 +38,19 @@ void main() async {
   final now = DateTime.now();
   final dateFmt = DateFormat('dd/MM/yyyy HH:mm');
 
+  const printerFormat = PdfPageFormat(
+    57.5 * PdfPageFormat.mm,
+    double.infinity,
+    marginLeft: 4.75 * PdfPageFormat.mm,
+    marginRight: 4.75 * PdfPageFormat.mm,
+    marginTop: 3 * PdfPageFormat.mm,
+    marginBottom: 3 * PdfPageFormat.mm,
+  );
+
   doc.addPage(
     pw.Page(
-      pageFormat: PdfPageFormat.roll80,
-      margin: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+      pageFormat: printerFormat,
+      margin: pw.EdgeInsets.zero,
       build: (ctx) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
@@ -77,9 +86,9 @@ void main() async {
           // Column headers
           pw.Row(children: [
             pw.Expanded(flex: 4, child: pw.Text('Item', style: pw.TextStyle(font: fontBold, fontSize: 7.5))),
-            pw.SizedBox(width: 28, child: pw.Text('Qty', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-            pw.SizedBox(width: 38, child: pw.Text('Price', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-            pw.SizedBox(width: 42, child: pw.Text('Amount', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+            pw.SizedBox(width: 22, child: pw.Text('Qty', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+            pw.SizedBox(width: 32, child: pw.Text('Price', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+            pw.SizedBox(width: 36, child: pw.Text('Amount', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
           ]),
           pw.SizedBox(height: 3),
           _dashed(),
@@ -93,9 +102,9 @@ void main() async {
                 pw.Text(item.name, style: pw.TextStyle(font: fontBold, fontSize: 7.5), maxLines: 2),
                 pw.Row(children: [
                   pw.Expanded(child: pw.SizedBox()),
-                  pw.SizedBox(width: 28, child: pw.Text('${item.qty}', style: pw.TextStyle(font: font, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-                  pw.SizedBox(width: 38, child: pw.Text(_f(item.price), style: pw.TextStyle(font: font, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-                  pw.SizedBox(width: 42, child: pw.Text(_f(item.qty * item.price), style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+                  pw.SizedBox(width: 22, child: pw.Text('${item.qty}', style: pw.TextStyle(font: font, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+                  pw.SizedBox(width: 32, child: pw.Text(_f(item.price), style: pw.TextStyle(font: font, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+                  pw.SizedBox(width: 36, child: pw.Text(_f(item.qty * item.price), style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
                 ]),
               ]),
             ),
