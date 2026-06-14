@@ -166,6 +166,6 @@ pw.Widget _dashed() => pw.CustomPaint(
 
 pw.Widget _row2(pw.Font font, String label, String value) =>
     pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-      pw.Text(label, style: pw.TextStyle(font: font, fontSize: 8)),
-      pw.Text(value, style: pw.TextStyle(font: font, fontSize: 8)),
+      pw.Text(label, style: pw.TextStyle(font: font, fontSize: 6.5)),
+      pw.Text(value, style: pw.TextStyle(font: font, fontSize: 6.5)),
     ]);

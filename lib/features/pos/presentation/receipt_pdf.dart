@@ -248,7 +248,7 @@ abstract final class ReceiptPdf {
       );
 
   static pw.Widget _row2(pw.Font font, String label, String value,
-          {double fontSize = 8}) =>
+          {double fontSize = 6.5}) =>
       pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
