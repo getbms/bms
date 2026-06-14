@@ -38,38 +38,33 @@ void main() async {
   final now = DateTime.now();
   final dateFmt = DateFormat('dd/MM/yyyy HH:mm');
 
-  const printerFormat = PdfPageFormat(
-    57.5 * PdfPageFormat.mm,
-    double.infinity,
-    marginLeft: 4.75 * PdfPageFormat.mm,
-    marginRight: 4.75 * PdfPageFormat.mm,
-    marginTop: 3 * PdfPageFormat.mm,
-    marginBottom: 3 * PdfPageFormat.mm,
-  );
+  const printerFormat = PdfPageFormat(57.5 * PdfPageFormat.mm, double.infinity);
+  const hMargin = 4.75 * PdfPageFormat.mm;
+  const vMargin = 3.0 * PdfPageFormat.mm;
 
   doc.addPage(
     pw.Page(
       pageFormat: printerFormat,
-      margin: pw.EdgeInsets.zero,
+      margin: const pw.EdgeInsets.fromLTRB(hMargin, vMargin, hMargin, vMargin),
       build: (ctx) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.stretch,
         children: [
           // Illustration header
           pw.Center(
             child: pw.SizedBox(
-              height: 56,
+              height: 52,
               child: pw.Image(headerImage, fit: pw.BoxFit.contain),
             ),
           ),
-          pw.SizedBox(height: 2),
+          pw.SizedBox(height: 3),
 
           // Store header
-          pw.Center(child: pw.Text(storeName, style: pw.TextStyle(font: fontBold, fontSize: 13))),
+          pw.Center(child: pw.Text(storeName, style: pw.TextStyle(font: fontBold, fontSize: 11))),
           pw.SizedBox(height: 2),
-          pw.Center(child: pw.Text(storeAddress, style: pw.TextStyle(font: font, fontSize: 7, color: grey), textAlign: pw.TextAlign.center)),
+          pw.Center(child: pw.Text(storeAddress, style: pw.TextStyle(font: font, fontSize: 6.5, color: grey), textAlign: pw.TextAlign.center)),
           pw.SizedBox(height: 1),
-          pw.Center(child: pw.Text('Tel: $storePhone', style: pw.TextStyle(font: font, fontSize: 7, color: grey))),
-          pw.SizedBox(height: 6),
+          pw.Center(child: pw.Text('Tel: $storePhone', style: pw.TextStyle(font: font, fontSize: 6.5, color: grey))),
+          pw.SizedBox(height: 5),
           _dashed(),
           pw.SizedBox(height: 4),
 
@@ -85,10 +80,10 @@ void main() async {
 
           // Column headers
           pw.Row(children: [
-            pw.Expanded(flex: 4, child: pw.Text('Item', style: pw.TextStyle(font: fontBold, fontSize: 7.5))),
-            pw.SizedBox(width: 22, child: pw.Text('Qty', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-            pw.SizedBox(width: 32, child: pw.Text('Price', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-            pw.SizedBox(width: 36, child: pw.Text('Amount', style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+            pw.Expanded(child: pw.Text('Item', style: pw.TextStyle(font: fontBold, fontSize: 7))),
+            pw.SizedBox(width: 20, child: pw.Text('Qty', style: pw.TextStyle(font: fontBold, fontSize: 7), textAlign: pw.TextAlign.right)),
+            pw.SizedBox(width: 30, child: pw.Text('Price', style: pw.TextStyle(font: fontBold, fontSize: 7), textAlign: pw.TextAlign.right)),
+            pw.SizedBox(width: 34, child: pw.Text('Amt', style: pw.TextStyle(font: fontBold, fontSize: 7), textAlign: pw.TextAlign.right)),
           ]),
           pw.SizedBox(height: 3),
           _dashed(),
@@ -99,12 +94,12 @@ void main() async {
             pw.Padding(
               padding: const pw.EdgeInsets.only(bottom: 4),
               child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-                pw.Text(item.name, style: pw.TextStyle(font: fontBold, fontSize: 7.5), maxLines: 2),
+                pw.Text(item.name, style: pw.TextStyle(font: fontBold, fontSize: 7), maxLines: 2),
                 pw.Row(children: [
                   pw.Expanded(child: pw.SizedBox()),
-                  pw.SizedBox(width: 22, child: pw.Text('${item.qty}', style: pw.TextStyle(font: font, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-                  pw.SizedBox(width: 32, child: pw.Text(_f(item.price), style: pw.TextStyle(font: font, fontSize: 7.5), textAlign: pw.TextAlign.right)),
-                  pw.SizedBox(width: 36, child: pw.Text(_f(item.qty * item.price), style: pw.TextStyle(font: fontBold, fontSize: 7.5), textAlign: pw.TextAlign.right)),
+                  pw.SizedBox(width: 20, child: pw.Text('${item.qty}', style: pw.TextStyle(font: font, fontSize: 7), textAlign: pw.TextAlign.right)),
+                  pw.SizedBox(width: 30, child: pw.Text(_f(item.price), style: pw.TextStyle(font: font, fontSize: 7), textAlign: pw.TextAlign.right)),
+                  pw.SizedBox(width: 34, child: pw.Text(_f(item.qty * item.price), style: pw.TextStyle(font: fontBold, fontSize: 7), textAlign: pw.TextAlign.right)),
                 ]),
               ]),
             ),
@@ -115,8 +110,8 @@ void main() async {
 
           // Total
           pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
-            pw.Text('TOTAL', style: pw.TextStyle(font: fontBold, fontSize: 10)),
-            pw.Text('Rs. ${_f(total)}', style: pw.TextStyle(font: fontBold, fontSize: 10)),
+            pw.Text('TOTAL', style: pw.TextStyle(font: fontBold, fontSize: 9)),
+            pw.Text('Rs. ${_f(total)}', style: pw.TextStyle(font: fontBold, fontSize: 9)),
           ]),
           pw.SizedBox(height: 4),
           _dashed(),
@@ -129,13 +124,13 @@ void main() async {
           pw.SizedBox(height: 2),
           _row2(font, 'Change:', 'Rs. ${_f(change)}'),
 
-          pw.SizedBox(height: 8),
+          pw.SizedBox(height: 6),
           _dashed(),
-          pw.SizedBox(height: 8),
+          pw.SizedBox(height: 6),
 
-          pw.Center(child: pw.Text('Thank you for your purchase!', style: pw.TextStyle(font: font, fontSize: 7.5, color: grey))),
+          pw.Center(child: pw.Text('Thank you for your purchase!', style: pw.TextStyle(font: font, fontSize: 7, color: grey))),
           pw.SizedBox(height: 2),
-          pw.Center(child: pw.Text('Please come again', style: pw.TextStyle(font: font, fontSize: 7, color: grey))),
+          pw.Center(child: pw.Text('Please come again', style: pw.TextStyle(font: font, fontSize: 6.5, color: grey))),
         ],
       ),
     ),
