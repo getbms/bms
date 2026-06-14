@@ -29,6 +29,11 @@ class ChequeActions {
     return s is Authenticated ? s.user.id : 'system';
   }
 
+  String get _userName {
+    final s = _ref.read(currentAuthStateProvider);
+    return s is Authenticated ? s.user.name : 'system';
+  }
+
   Future<void> addCheque({
     required String type,
     required String partyId,
@@ -39,9 +44,10 @@ class ChequeActions {
     String? chequeNo,
     String? bank,
     String? notes,
-  }) {
-    return _ref.read(chequesDaoProvider).insert(ChequesCompanion.insert(
-          id: _uuid.v7(),
+  }) async {
+    final id = _uuid.v7();
+    await _ref.read(chequesDaoProvider).insert(ChequesCompanion.insert(
+          id: id,
           type: type,
           partyId: partyId,
           partyType: partyType,
@@ -53,10 +59,39 @@ class ChequeActions {
           notes: Value(notes),
           createdBy: _userId,
         ));
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'create',
+          userId: _userId,
+          userName: _userName,
+          newValue: {
+            'type': type,
+            'partyName': partyName,
+            'amount': amount,
+            'dueDate': dueDate.toIso8601String(),
+            'chequeNo': chequeNo,
+            'bank': bank,
+          },
+        );
   }
 
-  Future<void> updateStatus(String id, String status) =>
-      _ref.read(chequesDaoProvider).updateStatus(id, status);
+  Future<void> updateStatus(String id, String status) async {
+    final dao = _ref.read(chequesDaoProvider);
+    final before = await dao.findById(id);
+    await dao.updateStatus(id, status);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          oldValue: before != null ? {'status': before.status} : null,
+          newValue: {'status': status},
+        );
+  }
 }
 
 final chequeActionsProvider =

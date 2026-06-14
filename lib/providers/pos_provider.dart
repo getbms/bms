@@ -136,10 +136,12 @@ class PosNotifier extends _$PosNotifier {
     try {
       final authState = ref.read(currentAuthStateProvider);
       final userId = authState is Authenticated ? authState.user.id : 'system';
+      final userName = authState is Authenticated ? authState.user.name : 'system';
 
       final invoicesDao = ref.read(invoicesDaoProvider);
       final inventoryDao = ref.read(inventoryDaoProvider);
       final customersDao = ref.read(customersDaoProvider);
+      final auditDao = ref.read(auditLogDaoProvider);
 
       final invoiceNo = await invoicesDao.nextInvoiceNumber();
       final invoiceId = _uuid.v7();
@@ -192,6 +194,22 @@ class PosNotifier extends _$PosNotifier {
       if (state.customer != null && state.paymentMethod == 'credit') {
         await customersDao.updateBalance(state.customer!.id, state.total);
       }
+
+      await auditDao.log(
+        id: _uuid.v7(),
+        entityType: 'invoice',
+        entityId: invoiceId,
+        action: 'create',
+        userId: userId,
+        userName: userName,
+        newValue: {
+          'invoiceNo': invoiceNo,
+          'total': state.total,
+          'paymentMethod': state.paymentMethod,
+          'itemCount': state.items.length,
+          'customerId': state.customer?.id,
+        },
+      );
 
       state = PosState(lastInvoiceNo: invoice.invoiceNo);
       return invoice.invoiceNo;

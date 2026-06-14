@@ -30,17 +30,56 @@ class CustomerActions {
     return s is Authenticated ? s.user.id : 'system';
   }
 
+  String get _userName {
+    final s = _ref.read(currentAuthStateProvider);
+    return s is Authenticated ? s.user.name : 'system';
+  }
+
   Future<String> addCustomer({
     required String name,
     String? phone,
     String? address,
-  }) {
-    return _ref.read(customersDaoProvider).insert(CustomersCompanion.insert(
-          id: _uuid.v7(),
+  }) async {
+    final id = _uuid.v7();
+    await _ref.read(customersDaoProvider).insert(CustomersCompanion.insert(
+          id: id,
           name: name,
           phone: Value(phone),
           address: Value(address),
         ));
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'customer',
+          entityId: id,
+          action: 'create',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'name': name, 'phone': phone, 'address': address},
+        );
+    return id;
+  }
+
+  Future<void> updateCustomer({
+    required String customerId,
+    required String name,
+    String? phone,
+    String? address,
+  }) async {
+    await _ref.read(customersDaoProvider).updateDetails(CustomersCompanion(
+          id: Value(customerId),
+          name: Value(name),
+          phone: Value(phone),
+          address: Value(address),
+        ));
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'customer',
+          entityId: customerId,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'name': name, 'phone': phone, 'address': address},
+        );
   }
 
   Future<void> recordPayment({
@@ -49,9 +88,10 @@ class CustomerActions {
     required String method,
     String? notes,
   }) async {
+    final paymentId = _uuid.v7();
     final dao = _ref.read(customersDaoProvider);
     await dao.recordPayment(CustomerPaymentsCompanion.insert(
-      id: _uuid.v7(),
+      id: paymentId,
       customerId: customerId,
       amount: amount,
       method: Value(method),
@@ -59,6 +99,15 @@ class CustomerActions {
       userId: _userId,
     ));
     await dao.updateBalance(customerId, -amount);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'customer_payment',
+          entityId: customerId,
+          action: 'create',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'paymentId': paymentId, 'amount': amount, 'method': method},
+        );
   }
 }
 

@@ -30,6 +30,9 @@ class SuppliersDao extends DatabaseAccessor<AppDatabase> with _$SuppliersDaoMixi
     );
   }
 
+  Future<void> updateDetails(SuppliersCompanion entry) =>
+      (update(suppliers)..where((s) => s.id.equals(entry.id.value))).write(entry);
+
   Future<String> insertPurchase(PurchasesCompanion entry) =>
       into(purchases).insertReturning(entry).then((p) => p.id);
 

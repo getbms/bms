@@ -22,19 +22,60 @@ class SupplierActions {
     return s is Authenticated ? s.user.id : 'system';
   }
 
+  String get _userName {
+    final s = _ref.read(currentAuthStateProvider);
+    return s is Authenticated ? s.user.name : 'system';
+  }
+
   Future<String> addSupplier({
     required String name,
     String? phone,
     String? address,
     String? paymentTerms,
-  }) {
-    return _ref.read(suppliersDaoProvider).insert(SuppliersCompanion.insert(
-          id: _uuid.v7(),
+  }) async {
+    final id = _uuid.v7();
+    await _ref.read(suppliersDaoProvider).insert(SuppliersCompanion.insert(
+          id: id,
           name: name,
           phone: Value(phone),
           address: Value(address),
           paymentTerms: Value(paymentTerms),
         ));
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'supplier',
+          entityId: id,
+          action: 'create',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'name': name, 'phone': phone, 'address': address},
+        );
+    return id;
+  }
+
+  Future<void> updateSupplier({
+    required String supplierId,
+    required String name,
+    String? phone,
+    String? address,
+    String? paymentTerms,
+  }) async {
+    await _ref.read(suppliersDaoProvider).updateDetails(SuppliersCompanion(
+          id: Value(supplierId),
+          name: Value(name),
+          phone: Value(phone),
+          address: Value(address),
+          paymentTerms: Value(paymentTerms),
+        ));
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'supplier',
+          entityId: supplierId,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'name': name, 'phone': phone, 'address': address},
+        );
   }
 
   Future<void> recordPayment({
@@ -43,9 +84,10 @@ class SupplierActions {
     required String method,
     String? notes,
   }) async {
+    final paymentId = _uuid.v7();
     final dao = _ref.read(suppliersDaoProvider);
     await dao.recordPayment(SupplierPaymentsCompanion.insert(
-      id: _uuid.v7(),
+      id: paymentId,
       supplierId: supplierId,
       amount: amount,
       method: Value(method),
@@ -53,6 +95,15 @@ class SupplierActions {
       userId: _userId,
     ));
     await dao.updateBalance(supplierId, -amount);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'supplier_payment',
+          entityId: supplierId,
+          action: 'create',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'paymentId': paymentId, 'amount': amount, 'method': method},
+        );
   }
 }
 

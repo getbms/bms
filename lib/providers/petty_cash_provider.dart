@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -44,26 +43,67 @@ class PettyCashActions {
     return s is Authenticated ? s.user.id : 'system';
   }
 
+  String get _userName {
+    final s = _ref.read(currentAuthStateProvider);
+    return s is Authenticated ? s.user.name : 'system';
+  }
+
   Future<void> addEntry({
     required String description,
     required double amount,
     required String type,
     required String category,
-  }) {
-    return _ref.read(pettyCashDaoProvider).insert(PettyCashCompanion.insert(
-          id: _uuid.v7(),
+  }) async {
+    final id = _uuid.v7();
+    await _ref.read(pettyCashDaoProvider).insert(PettyCashCompanion.insert(
+          id: id,
           description: description,
           amount: amount,
           type: type,
           category: category,
           userId: _userId,
         ));
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'petty_cash',
+          entityId: id,
+          action: 'create',
+          userId: _userId,
+          userName: _userName,
+          newValue: {
+            'description': description,
+            'amount': amount,
+            'type': type,
+            'category': category,
+          },
+        );
   }
 
-  Future<void> approve(String id) =>
-      _ref.read(pettyCashDaoProvider).approve(id, _userId);
+  Future<void> approve(String id) async {
+    await _ref.read(pettyCashDaoProvider).approve(id, _userId);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'petty_cash',
+          entityId: id,
+          action: 'approve',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'approved'},
+        );
+  }
 
-  Future<void> reject(String id) => _ref.read(pettyCashDaoProvider).reject(id);
+  Future<void> reject(String id) async {
+    await _ref.read(pettyCashDaoProvider).reject(id);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'petty_cash',
+          entityId: id,
+          action: 'reject',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'rejected'},
+        );
+  }
 }
 
 final pettyCashActionsProvider =

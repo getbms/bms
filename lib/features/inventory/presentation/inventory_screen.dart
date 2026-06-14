@@ -5,8 +5,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../data/database/app_database.dart';
-import '../../../features/auth/domain/auth_state.dart';
-import '../../../providers/auth_provider.dart';
 import '../../../providers/inventory_provider.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
@@ -209,8 +207,6 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
 
     try {
       final actions = ref.read(inventoryActionsProvider);
-      final authState = ref.read(currentAuthStateProvider);
-      final userId = authState is Authenticated ? authState.user.id : 'system';
 
       await actions.saveProduct(
         existingId: widget.product?.id,
@@ -230,7 +226,6 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
           await actions.adjustStock(
             productId: widget.product!.id,
             newQty: newQty,
-            userId: userId,
             reason: 'manual adjustment',
           );
         }

@@ -5,6 +5,8 @@ import 'package:uuid/uuid.dart';
 import '../data/database/app_database.dart';
 import '../data/database/daos/inventory_dao.dart';
 import '../data/repositories/inventory_repository.dart';
+import '../features/auth/domain/auth_state.dart';
+import 'auth_provider.dart';
 import 'database_provider.dart';
 
 // Manual providers — avoids riverpod_generator's Drift type serialization issue.
@@ -37,6 +39,16 @@ class InventoryActions {
 
   InventoryDao get _dao => _ref.read(inventoryDaoProvider);
 
+  String get _userId {
+    final s = _ref.read(currentAuthStateProvider);
+    return s is Authenticated ? s.user.id : 'system';
+  }
+
+  String get _userName {
+    final s = _ref.read(currentAuthStateProvider);
+    return s is Authenticated ? s.user.name : 'system';
+  }
+
   Future<void> saveProduct({
     String? existingId,
     required String name,
@@ -48,6 +60,7 @@ class InventoryActions {
     String? brand,
     int reorderLevel = 10,
   }) async {
+    final audit = _ref.read(auditLogDaoProvider);
     if (existingId != null) {
       await _dao.updateProduct(ProductsCompanion(
         id: Value(existingId),
@@ -61,6 +74,20 @@ class InventoryActions {
         reorderLevel: Value(reorderLevel),
         updatedAt: Value(DateTime.now()),
       ));
+      await audit.log(
+        id: _uuid.v7(),
+        entityType: 'product',
+        entityId: existingId,
+        action: 'update',
+        userId: _userId,
+        userName: _userName,
+        newValue: {
+          'name': name,
+          'costPrice': costPrice,
+          'sellPrice': sellPrice,
+          'unitType': unitType,
+        },
+      );
     } else {
       final id = _uuid.v7();
       await _dao.insertProduct(ProductsCompanion.insert(
@@ -76,17 +103,26 @@ class InventoryActions {
       ));
       await _dao.upsertStock(
           StockCompanion.insert(productId: id, qty: const Value(0)));
+      await audit.log(
+        id: _uuid.v7(),
+        entityType: 'product',
+        entityId: id,
+        action: 'create',
+        userId: _userId,
+        userName: _userName,
+        newValue: {'name': name, 'costPrice': costPrice, 'sellPrice': sellPrice},
+      );
     }
   }
 
   Future<void> adjustStock({
     required String productId,
     required double newQty,
-    required String userId,
     String reason = 'manual adjustment',
   }) async {
     final current = await _dao.getStock(productId);
-    final delta = newQty - (current?.qty ?? 0);
+    final oldQty = current?.qty ?? 0;
+    final delta = newQty - oldQty;
     await _dao.upsertStock(StockCompanion(
       productId: Value(productId),
       qty: Value(newQty),
@@ -98,8 +134,18 @@ class InventoryActions {
       productId: productId,
       qty: delta.abs(),
       reason: Value(reason),
-      userId: userId,
+      userId: _userId,
     ));
+    await _ref.read(auditLogDaoProvider).log(
+      id: _uuid.v7(),
+      entityType: 'stock',
+      entityId: productId,
+      action: 'adjust',
+      userId: _userId,
+      userName: _userName,
+      oldValue: {'qty': oldQty},
+      newValue: {'qty': newQty, 'reason': reason},
+    );
   }
 }
 
