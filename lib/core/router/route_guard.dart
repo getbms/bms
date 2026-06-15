@@ -3,12 +3,26 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/domain/auth_state.dart';
 import 'app_router.dart';
 
+/// Role matrix:
+///   developer — all routes
+///   admin     — all except /users (user management)
+///   cashier   — dashboard, pos, inventory (view), customers
 abstract final class RouteGuard {
   static const Set<String> _publicRoutes = {AppRoutes.login};
 
-  /// Cashiers cannot access supplier and report screens beyond daily summary.
-  static const Set<String> _adminOnlyRoutes = {
+  static const Set<String> _developerOnlyRoutes = {
+    AppRoutes.users,
+  };
+
+  static const Set<String> _adminAndAboveOnlyRoutes = {
+    AppRoutes.settings,
+  };
+
+  static const Set<String> _adminAndAboveRoutes = {
     AppRoutes.suppliers,
+    AppRoutes.cheques,
+    AppRoutes.pettyCash,
+    AppRoutes.reports,
   };
 
   static String? redirect({
@@ -34,7 +48,15 @@ abstract final class RouteGuard {
   }) {
     if (isPublic) return AppRoutes.dashboard;
 
-    if (_adminOnlyRoutes.contains(location) && role == 'cashier') {
+    if (_developerOnlyRoutes.contains(location) && role != 'developer') {
+      return AppRoutes.dashboard;
+    }
+
+    if (_adminAndAboveRoutes.contains(location) && role == 'cashier') {
+      return AppRoutes.dashboard;
+    }
+
+    if (_adminAndAboveOnlyRoutes.contains(location) && role == 'cashier') {
       return AppRoutes.dashboard;
     }
 

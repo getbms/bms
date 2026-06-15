@@ -44,4 +44,11 @@ class UsersDao extends DatabaseAccessor<AppDatabase> with _$UsersDaoMixin {
   Future<void> lockAccount(String id, DateTime until) =>
       (update(users)..where((u) => u.id.equals(id)))
           .write(UsersCompanion(lockedUntil: Value(until)));
+
+  Stream<List<User>> watchAll() =>
+      (select(users)..orderBy([(u) => OrderingTerm.asc(u.name)])).watch();
+
+  Future<void> setActive(String id, {required bool active}) =>
+      (update(users)..where((u) => u.id.equals(id)))
+          .write(UsersCompanion(isActive: Value(active), updatedAt: Value(DateTime.now())));
 }

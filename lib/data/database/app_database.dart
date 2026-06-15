@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:bcrypt/bcrypt.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 
 import 'daos/audit_log_dao.dart';
 import 'daos/cheques_dao.dart';
@@ -68,33 +70,56 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
-          await _seedDeveloperAccount();
+          await _ensureDevAccount();
         },
         onUpgrade: (m, from, to) async {
           // Migrations added here for each schema bump.
         },
         beforeOpen: (details) async {
-          // Enable WAL mode -- serializes concurrent writes, safe on SQLite.
           await customStatement('PRAGMA journal_mode=WAL');
-          // Enforce foreign key constraints.
           await customStatement('PRAGMA foreign_keys=ON');
+          // Always ensure the dev account exists (handles reinstalls / cleared data).
+          await _ensureDevAccount();
         },
       );
 
-  /// Seeds a developer account on fresh install.
-  /// Credentials must be changed on first login.
-  Future<void> _seedDeveloperAccount() async {
-    // Password: 'changeme' -- rotate immediately after first login.
-    const devPasswordHash =
-        r'$2a$12$7kmQLl6VU7/KXSR4mcySAuUaiH5J4hPyaXfgliVfiaZAZv0oy1QJK';
+  static const _devUserId = '00000000-0000-0000-0000-000000000001';
+  static const _devUsername = 'iamvirul';
+  static const _devPassword = '200528100634@Vn';
 
-    await into(users).insertOnConflictUpdate(
+  /// Inserts the developer account if it doesn't already exist.
+  /// Runs on every open so the account survives data clears without a full
+  /// schema recreate. Hashes the password at runtime — no static hash stored.
+  Future<void> _ensureDevAccount() async {
+    final existing = await (select(users)
+          ..where((u) => u.id.equals(_devUserId)))
+        .getSingleOrNull();
+
+    if (existing != null) return;
+
+    final hash = BCrypt.hashpw(_devPassword, BCrypt.gensalt(logRounds: 12));
+    const uuid = Uuid();
+
+    await into(users).insert(
       UsersCompanion.insert(
-        id: '00000000-0000-0000-0000-000000000001',
-        name: 'Developer',
-        username: 'dev',
-        passwordHash: devPasswordHash,
+        id: _devUserId,
+        name: 'iamvirul',
+        username: _devUsername,
+        passwordHash: hash,
         role: const Value('developer'),
+      ),
+    );
+
+    // Audit the seed so there is a traceable record of account creation.
+    await into(auditLog).insert(
+      AuditLogCompanion.insert(
+        id: uuid.v7(),
+        entityType: 'user',
+        entityId: _devUserId,
+        action: 'create',
+        userId: _devUserId,
+        userName: _devUsername,
+        newValue: const Value('{"role":"developer","source":"seed"}'),
       ),
     );
   }

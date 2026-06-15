@@ -5,96 +5,98 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/utils/currency_utils.dart';
 import '../../../data/database/app_database.dart';
-import '../../../providers/suppliers_provider.dart';
+import '../../../providers/customers_provider.dart';
 
-class SuppliersScreen extends ConsumerWidget {
-  const SuppliersScreen({super.key});
+class CustomersScreen extends ConsumerWidget {
+  const CustomersScreen({super.key});
 
-  void _openAddSupplier(BuildContext context) {
+  void _openAddCustomer(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => const _AddSupplierSheet(),
+      builder: (_) => const _AddCustomerSheet(),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final suppliersAsync = ref.watch(suppliersStreamProvider);
+    final customersAsync = ref.watch(customersStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Suppliers'),
+        title: const Text('Customers'),
       ),
-      body: suppliersAsync.when(
+      body: customersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-        data: (suppliers) {
-          if (suppliers.isEmpty) {
+        data: (customers) {
+          if (customers.isEmpty) {
             return const Center(
-              child: Text('No suppliers yet. Add one with the button above.', style: AppTextStyles.bodySmall),
+              child: Text('No customers yet. Add one with the button above.', style: AppTextStyles.bodySmall),
             );
           }
           return ListView.builder(
-            itemCount: suppliers.length,
-            itemBuilder: (context, i) => _SupplierTile(supplier: suppliers[i]),
+            itemCount: customers.length,
+            itemBuilder: (context, i) {
+              final c = customers[i];
+              return _CustomerTile(customer: c);
+            },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddSupplier(context),
-        tooltip: 'Add Supplier',
-        child: const Icon(Icons.add),
+        onPressed: () => _openAddCustomer(context),
+        tooltip: 'Add Customer',
+        child: const Icon(Icons.person_add_outlined),
       ),
     );
   }
 }
 
-class _SupplierTile extends StatelessWidget {
-  const _SupplierTile({required this.supplier});
-  final Supplier supplier;
+class _CustomerTile extends StatelessWidget {
+  const _CustomerTile({required this.customer});
+  final Customer customer;
 
   @override
   Widget build(BuildContext context) {
-    // balance = amount we owe the supplier (payable)
-    final isOwed = supplier.balance > 0;
+    final hasDebt = customer.balance > 0;
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor: AppColors.primary,
         child: Text(
-          supplier.name.isNotEmpty ? supplier.name[0].toUpperCase() : '?',
+          customer.name.isNotEmpty ? customer.name[0].toUpperCase() : '?',
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
-      title: Text(supplier.name, style: AppTextStyles.labelLarge),
+      title: Text(customer.name, style: AppTextStyles.labelLarge),
       subtitle: Text(
         [
-          if (supplier.phone != null) supplier.phone!,
-          if (supplier.address != null) supplier.address!,
+          if (customer.phone != null) customer.phone!,
+          if (customer.address != null) customer.address!,
         ].join(' · '),
         style: AppTextStyles.bodySmall,
       ),
       trailing: Text(
-        CurrencyUtils.format(supplier.balance),
+        CurrencyUtils.format(customer.balance),
         style: AppTextStyles.titleMedium.copyWith(
-          color: isOwed ? AppColors.error : AppColors.success,
+          color: hasDebt ? AppColors.error : AppColors.success,
         ),
       ),
       onTap: () => showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         useSafeArea: true,
-        builder: (_) => _SupplierDetailSheet(supplier: supplier),
+        builder: (_) => _CustomerDetailSheet(customer: customer),
       ),
     );
   }
 }
 
-class _SupplierDetailSheet extends StatelessWidget {
-  const _SupplierDetailSheet({required this.supplier});
-  final Supplier supplier;
+class _CustomerDetailSheet extends StatelessWidget {
+  const _CustomerDetailSheet({required this.customer});
+  final Customer customer;
 
   @override
   Widget build(BuildContext context) {
@@ -108,9 +110,9 @@ class _SupplierDetailSheet extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: AppColors.primaryDark,
+                backgroundColor: AppColors.primary,
                 child: Text(
-                  supplier.name[0].toUpperCase(),
+                  customer.name[0].toUpperCase(),
                   style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700),
                 ),
               ),
@@ -119,11 +121,11 @@ class _SupplierDetailSheet extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(supplier.name, style: AppTextStyles.titleLarge),
-                    if (supplier.phone != null) Text(supplier.phone!, style: AppTextStyles.bodySmall),
-                    if (supplier.address != null) Text(supplier.address!, style: AppTextStyles.bodySmall),
-                    if (supplier.paymentTerms != null)
-                      Text('Terms: ${supplier.paymentTerms}', style: AppTextStyles.bodySmall),
+                    Text(customer.name, style: AppTextStyles.titleLarge),
+                    if (customer.phone != null)
+                      Text(customer.phone!, style: AppTextStyles.bodySmall),
+                    if (customer.address != null)
+                      Text(customer.address!, style: AppTextStyles.bodySmall),
                   ],
                 ),
               ),
@@ -133,17 +135,17 @@ class _SupplierDetailSheet extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: supplier.balance > 0 ? AppColors.errorLight : AppColors.successLight,
+              color: customer.balance > 0 ? AppColors.errorLight : AppColors.successLight,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Amount Payable', style: AppTextStyles.bodyMedium),
+                Text('Outstanding Balance', style: AppTextStyles.bodyMedium),
                 Text(
-                  CurrencyUtils.format(supplier.balance),
+                  CurrencyUtils.format(customer.balance),
                   style: AppTextStyles.titleMedium.copyWith(
-                    color: supplier.balance > 0 ? AppColors.error : AppColors.success,
+                    color: customer.balance > 0 ? AppColors.error : AppColors.success,
                   ),
                 ),
               ],
@@ -159,7 +161,7 @@ class _SupplierDetailSheet extends StatelessWidget {
                 context: context,
                 isScrollControlled: true,
                 useSafeArea: true,
-                builder: (_) => _SupplierPaymentSheet(supplierId: supplier.id, supplierName: supplier.name),
+                builder: (_) => _PaymentSheet(customerId: customer.id, customerName: customer.name),
               );
             },
           ),
@@ -169,19 +171,18 @@ class _SupplierDetailSheet extends StatelessWidget {
   }
 }
 
-class _AddSupplierSheet extends ConsumerStatefulWidget {
-  const _AddSupplierSheet();
+class _AddCustomerSheet extends ConsumerStatefulWidget {
+  const _AddCustomerSheet();
 
   @override
-  ConsumerState<_AddSupplierSheet> createState() => _AddSupplierSheetState();
+  ConsumerState<_AddCustomerSheet> createState() => _AddCustomerSheetState();
 }
 
-class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
+class _AddCustomerSheetState extends ConsumerState<_AddCustomerSheet> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _phone = TextEditingController();
   final _address = TextEditingController();
-  final _paymentTerms = TextEditingController();
   bool _saving = false;
 
   @override
@@ -189,7 +190,6 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
     _name.dispose();
     _phone.dispose();
     _address.dispose();
-    _paymentTerms.dispose();
     super.dispose();
   }
 
@@ -197,15 +197,14 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      await ref.read(supplierActionsProvider).addSupplier(
+      await ref.read(customerActionsProvider).addCustomer(
             name: _name.text.trim(),
             phone: _phone.text.trim().isEmpty ? null : _phone.text.trim(),
             address: _address.text.trim().isEmpty ? null : _address.text.trim(),
-            paymentTerms: _paymentTerms.text.trim().isEmpty ? null : _paymentTerms.text.trim(),
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Supplier added.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Customer added.')));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -226,11 +225,11 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Add Supplier', style: AppTextStyles.titleLarge),
+            const Text('Add Customer', style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Supplier Name *', isDense: true),
+              decoration: const InputDecoration(labelText: 'Name *', isDense: true),
               validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 12),
@@ -245,17 +244,12 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
               decoration: const InputDecoration(labelText: 'Address', isDense: true),
               maxLines: 2,
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _paymentTerms,
-              decoration: const InputDecoration(labelText: 'Payment Terms (e.g. Net 30)', isDense: true),
-            ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Add Supplier'),
+                  : const Text('Add Customer'),
             ),
           ],
         ),
@@ -264,16 +258,16 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
   }
 }
 
-class _SupplierPaymentSheet extends ConsumerStatefulWidget {
-  const _SupplierPaymentSheet({required this.supplierId, required this.supplierName});
-  final String supplierId;
-  final String supplierName;
+class _PaymentSheet extends ConsumerStatefulWidget {
+  const _PaymentSheet({required this.customerId, required this.customerName});
+  final String customerId;
+  final String customerName;
 
   @override
-  ConsumerState<_SupplierPaymentSheet> createState() => _SupplierPaymentSheetState();
+  ConsumerState<_PaymentSheet> createState() => _PaymentSheetState();
 }
 
-class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
+class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amount = TextEditingController();
   final _notes = TextEditingController();
@@ -291,8 +285,8 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      await ref.read(supplierActionsProvider).recordPayment(
-            supplierId: widget.supplierId,
+      await ref.read(customerActionsProvider).recordPayment(
+            customerId: widget.customerId,
             amount: double.parse(_amount.text),
             method: _method,
             notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
@@ -320,7 +314,7 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Record Payment — ${widget.supplierName}', style: AppTextStyles.titleLarge),
+            Text('Record Payment — ${widget.customerName}', style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _amount,

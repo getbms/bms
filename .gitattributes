@@ -1,0 +1,22 @@
+# Tell GitHub Linguist to ignore platform boilerplate and generated files
+# so the repo is correctly identified as a Dart project.
+
+# Flutter platform runners (generated scaffolding, not app code)
+android/**         linguist-vendored=true
+ios/**             linguist-vendored=true
+macos/**           linguist-vendored=true
+windows/**         linguist-vendored=true
+linux/**           linguist-vendored=true
+web/**             linguist-vendored=true
+
+# Generated Dart files
+*.g.dart           linguist-generated=true
+*.freezed.dart     linguist-generated=true
+*.mocks.dart       linguist-generated=true
+
+# Assets / binary
+assets/**          linguist-documentation=true
+*.wasm             linguist-binary=true
+*.png              linguist-binary=true
+*.jpg              linguist-binary=true
+*.jpeg             linguist-binary=true

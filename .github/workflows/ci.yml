@@ -54,6 +54,9 @@ jobs:
 
       - run: flutter build macos --release
 
+      - name: Ad-hoc sign
+        run: codesign --force --deep --sign - build/macos/Build/Products/Release/bms.app
+
       - name: Package
         run: |
           cd build/macos/Build/Products/Release

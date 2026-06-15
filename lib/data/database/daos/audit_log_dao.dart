@@ -42,4 +42,13 @@ class AuditLogDao extends DatabaseAccessor<AppDatabase> with _$AuditLogDaoMixin 
             )
             ..orderBy([(a) => OrderingTerm.desc(a.createdAt)]))
           .get();
+
+  Future<List<AuditLogData>> getAll({String? entityType, int limit = 200}) =>
+      (select(auditLog)
+            ..where((a) => entityType != null
+                ? a.entityType.equals(entityType)
+                : const Constant(true))
+            ..orderBy([(a) => OrderingTerm.desc(a.createdAt)])
+            ..limit(limit))
+          .get();
 }

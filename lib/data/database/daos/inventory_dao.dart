@@ -29,6 +29,15 @@ class InventoryDao extends DatabaseAccessor<AppDatabase> with _$InventoryDaoMixi
   Future<void> updateProduct(ProductsCompanion entry) =>
       (update(products)..where((p) => p.id.equals(entry.id.value))).write(entry);
 
+  Stream<List<Product>> watchAllProducts() =>
+      (select(products)..orderBy([(p) => OrderingTerm.asc(p.name)])).watch();
+
+  Future<List<Category>> getCategories() =>
+      (select(categories)..orderBy([(c) => OrderingTerm.asc(c.name)])).get();
+
+  Future<String> insertCategory(CategoriesCompanion entry) =>
+      into(categories).insertReturning(entry).then((c) => c.id);
+
   // Stock -- data class is StockLevel (@DataClassName), companion remains StockCompanion
 
   Future<StockLevel?> getStock(String productId) =>
