@@ -6,12 +6,12 @@
   <img src="https://img.shields.io/badge/Flutter-3.44-02569B?logo=flutter" alt="Flutter"/>
   <img src="https://img.shields.io/badge/Dart-3.12-0175C2?logo=dart" alt="Dart"/>
   <img src="https://img.shields.io/badge/SQLite-local--first-003B57?logo=sqlite" alt="SQLite"/>
-  <img src="https://img.shields.io/badge/license-MIT-green" alt="License"/>
+  <img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License"/>
 </p>
 
 <br/>
 
-**BMS** is a local-first business management system for retail and wholesale operations, built with Flutter. All data is stored on-device using SQLite. No cloud backend, no subscription, no sync.
+**BMS** is a local-first business management system for retail and wholesale operations, built with Flutter. All data is stored on-device using SQLite.
 
 ---
 
@@ -179,4 +179,4 @@ Edit `RouteGuard._adminOnlyRoutes` in `lib/core/router/route_guard.dart`.
 
 ## License
 
-MIT
+Apache License 2.0 - see [LICENSE](LICENSE) for details.
