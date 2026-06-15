@@ -8,6 +8,7 @@ import '../data/database/daos/customers_dao.dart';
 import '../data/database/daos/inventory_dao.dart';
 import '../data/database/daos/invoices_dao.dart';
 import '../data/database/daos/petty_cash_dao.dart';
+import '../data/database/daos/returns_dao.dart';
 import '../data/database/daos/suppliers_dao.dart';
 import '../data/database/daos/users_dao.dart';
 
@@ -43,3 +44,6 @@ PettyCashDao pettyCashDao(Ref ref) => ref.watch(appDatabaseProvider).pettyCashDa
 
 @Riverpod(keepAlive: true)
 AuditLogDao auditLogDao(Ref ref) => ref.watch(appDatabaseProvider).auditLogDao;
+
+@Riverpod(keepAlive: true)
+ReturnsDao returnsDao(Ref ref) => ref.watch(appDatabaseProvider).returnsDao;

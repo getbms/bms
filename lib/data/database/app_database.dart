@@ -1,11 +1,7 @@
-import 'dart:io';
-
 import 'package:bcrypt/bcrypt.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 import 'daos/audit_log_dao.dart';
@@ -14,6 +10,7 @@ import 'daos/customers_dao.dart';
 import 'daos/inventory_dao.dart';
 import 'daos/invoices_dao.dart';
 import 'daos/petty_cash_dao.dart';
+import 'daos/returns_dao.dart';
 import 'daos/suppliers_dao.dart';
 import 'daos/users_dao.dart';
 import 'tables/audit_log_table.dart';
@@ -23,6 +20,7 @@ import 'tables/invoices_table.dart';
 import 'tables/payments_table.dart';
 import 'tables/petty_cash_table.dart';
 import 'tables/products_table.dart';
+import 'tables/returns_table.dart';
 import 'tables/suppliers_table.dart';
 import 'tables/users_table.dart';
 
@@ -48,6 +46,8 @@ part 'app_database.g.dart';
     Cheques,
     PettyCash,
     AuditLog,
+    SalesReturns,
+    ReturnItems,
   ],
   daos: [
     UsersDao,
@@ -58,13 +58,14 @@ part 'app_database.g.dart';
     ChequesDao,
     PettyCashDao,
     AuditLogDao,
+    ReturnsDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -73,12 +74,14 @@ class AppDatabase extends _$AppDatabase {
           await _ensureDevAccount();
         },
         onUpgrade: (m, from, to) async {
-          // Migrations added here for each schema bump.
+          if (from < 2) {
+            await m.createTable(salesReturns);
+            await m.createTable(returnItems);
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA journal_mode=WAL');
           await customStatement('PRAGMA foreign_keys=ON');
-          // Always ensure the dev account exists (handles reinstalls / cleared data).
           await _ensureDevAccount();
         },
       );
@@ -87,9 +90,6 @@ class AppDatabase extends _$AppDatabase {
   static const _devUsername = 'iamvirul';
   static const _devPassword = '200528100634@Vn';
 
-  /// Inserts the developer account if it doesn't already exist.
-  /// Runs on every open so the account survives data clears without a full
-  /// schema recreate. Hashes the password at runtime — no static hash stored.
   Future<void> _ensureDevAccount() async {
     final existing = await (select(users)
           ..where((u) => u.id.equals(_devUserId)))
@@ -110,7 +110,6 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
 
-    // Audit the seed so there is a traceable record of account creation.
     await into(auditLog).insert(
       AuditLogCompanion.insert(
         id: uuid.v7(),
