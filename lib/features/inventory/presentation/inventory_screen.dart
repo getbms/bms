@@ -60,7 +60,6 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                         },
                       )
                     : null,
-                isDense: true,
               ),
               onChanged: (v) => setState(() => _query = v.toLowerCase()),
             ),
