@@ -268,6 +268,119 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
     );
   }
 
+  void _showLineDiscountSheet(CartItem item) {
+    final controller = TextEditingController(
+      text: item.discountPct > 0 ? item.discountPct.toStringAsFixed(0) : '',
+    );
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 24, right: 24, top: 24,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Line Discount — ${item.product.name}', style: AppTextStyles.titleMedium),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+              decoration: const InputDecoration(
+                labelText: 'Discount %',
+                suffixText: '%',
+                hintText: '0',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () {
+                    ref.read(posProvider.notifier).setLineDiscount(item.product.id, 0);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Remove'),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: () {
+                    final pct = double.tryParse(controller.text) ?? 0;
+                    ref.read(posProvider.notifier).setLineDiscount(item.product.id, pct);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showBillDiscountSheet() {
+    final current = ref.read(posProvider).billDiscountPct;
+    final controller = TextEditingController(
+      text: current > 0 ? current.toStringAsFixed(0) : '',
+    );
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 24, right: 24, top: 24,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Bill Discount', style: AppTextStyles.titleMedium),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+              decoration: const InputDecoration(
+                labelText: 'Discount %',
+                suffixText: '%',
+                hintText: '0',
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                TextButton(
+                  onPressed: () {
+                    ref.read(posProvider.notifier).setBillDiscount(0);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Remove'),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                  onPressed: () {
+                    final pct = double.tryParse(controller.text) ?? 0;
+                    ref.read(posProvider.notifier).setBillDiscount(pct);
+                    Navigator.pop(ctx);
+                  },
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _checkout() async {
     final notifier = ref.read(posProvider.notifier);
     // Capture state before checkout clears the cart
@@ -291,6 +404,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           invoiceNo: invoiceNo,
           paymentMethod: snapshot.paymentMethod,
           subtotal: snapshot.subtotal,
+          discountAmount: snapshot.discountAmount,
           total: snapshot.total,
           amountTendered: snapshot.amountTendered,
           change: snapshot.change,
@@ -338,7 +452,10 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                     final item = state.items[i];
                     return Card(
                       margin: const EdgeInsets.only(bottom: 6),
-                      child: Padding(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onLongPress: () => _showLineDiscountSheet(item),
+                        child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                         child: Row(
                           children: [
@@ -347,7 +464,13 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(item.product.name, style: AppTextStyles.labelLarge),
-                                  Text(CurrencyUtils.format(item.unitPrice), style: AppTextStyles.bodySmall),
+                                  if (item.discountPct > 0)
+                                    Text(
+                                      '${item.discountPct.toStringAsFixed(0)}% off  ${CurrencyUtils.format(item.unitPrice)}',
+                                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
+                                    )
+                                  else
+                                    Text(CurrencyUtils.format(item.unitPrice), style: AppTextStyles.bodySmall),
                                 ],
                               ),
                             ),
@@ -393,6 +516,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                           ],
                         ),
                       ),
+                      ),
                     );
                   },
                 ),
@@ -410,6 +534,36 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                 children: [
                   const Text('Subtotal', style: AppTextStyles.bodyMedium),
                   Text(CurrencyUtils.format(state.subtotal), style: AppTextStyles.bodyMedium),
+                ],
+              ),
+              const SizedBox(height: 4),
+              // Bill discount
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _showBillDiscountSheet(),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.local_offer_outlined, size: 14, color: AppColors.warning),
+                        const SizedBox(width: 4),
+                        Text(
+                          state.billDiscountPct > 0
+                              ? 'Discount (${state.billDiscountPct.toStringAsFixed(0)}%)'
+                              : 'Add Discount',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.warning,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  if (state.discountAmount > 0)
+                    Text(
+                      '- ${CurrencyUtils.format(state.discountAmount)}',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
+                    ),
                 ],
               ),
               const SizedBox(height: 4),

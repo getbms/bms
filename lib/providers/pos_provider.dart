@@ -39,6 +39,7 @@ class PosState {
     this.customer,
     this.paymentMethod = 'cash',
     this.amountTendered = 0,
+    this.billDiscountPct = 0,
     this.isSubmitting = false,
     this.lastInvoiceNo,
   });
@@ -47,11 +48,13 @@ class PosState {
   final Customer? customer;
   final String paymentMethod;
   final double amountTendered;
+  final double billDiscountPct;
   final bool isSubmitting;
   final String? lastInvoiceNo;
 
   double get subtotal => items.fold(0, (s, i) => s + i.lineTotal);
-  double get total => subtotal;
+  double get discountAmount => subtotal * billDiscountPct / 100;
+  double get total => subtotal - discountAmount;
   double get change => amountTendered - total;
   bool get isEmpty => items.isEmpty;
 
@@ -60,6 +63,7 @@ class PosState {
     Customer? Function()? customer,
     String? paymentMethod,
     double? amountTendered,
+    double? billDiscountPct,
     bool? isSubmitting,
     String? Function()? lastInvoiceNo,
   }) =>
@@ -68,6 +72,7 @@ class PosState {
         customer: customer != null ? customer() : this.customer,
         paymentMethod: paymentMethod ?? this.paymentMethod,
         amountTendered: amountTendered ?? this.amountTendered,
+        billDiscountPct: billDiscountPct ?? this.billDiscountPct,
         isSubmitting: isSubmitting ?? this.isSubmitting,
         lastInvoiceNo: lastInvoiceNo != null ? lastInvoiceNo() : this.lastInvoiceNo,
       );
@@ -126,6 +131,17 @@ class PosNotifier extends _$PosNotifier {
   void setAmountTendered(double amount) =>
       state = state.copyWith(amountTendered: amount);
 
+  void setLineDiscount(String productId, double pct) {
+    state = state.copyWith(
+      items: state.items
+          .map((i) => i.product.id == productId ? i.copyWith(discountPct: pct.clamp(0, 100)) : i)
+          .toList(),
+    );
+  }
+
+  void setBillDiscount(double pct) =>
+      state = state.copyWith(billDiscountPct: pct.clamp(0, 100));
+
   void clearCart() => state = const PosState();
 
   Future<String?> checkout() async {
@@ -151,6 +167,7 @@ class PosNotifier extends _$PosNotifier {
         invoiceNo: invoiceNo,
         customerId: Value(state.customer?.id),
         subtotal: Value(state.subtotal),
+        discountAmount: Value(state.discountAmount),
         total: Value(state.total),
         paymentType: Value(state.paymentMethod),
         userId: userId,
@@ -204,6 +221,8 @@ class PosNotifier extends _$PosNotifier {
         userName: userName,
         newValue: {
           'invoiceNo': invoiceNo,
+          'subtotal': state.subtotal,
+          'discountAmount': state.discountAmount,
           'total': state.total,
           'paymentMethod': state.paymentMethod,
           'itemCount': state.items.length,

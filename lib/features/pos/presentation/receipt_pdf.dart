@@ -20,6 +20,7 @@ abstract final class ReceiptPdf {
     required String invoiceNo,
     required String paymentMethod,
     required double subtotal,
+    required double discountAmount,
     required double total,
     required double amountTendered,
     required double change,
@@ -34,6 +35,7 @@ abstract final class ReceiptPdf {
       invoiceNo: invoiceNo,
       paymentMethod: paymentMethod,
       subtotal: subtotal,
+      discountAmount: discountAmount,
       total: total,
       amountTendered: amountTendered,
       change: change,
@@ -58,6 +60,7 @@ abstract final class ReceiptPdf {
     required String invoiceNo,
     required String paymentMethod,
     required double subtotal,
+    required double discountAmount,
     required double total,
     required double amountTendered,
     required double change,
@@ -183,9 +186,12 @@ abstract final class ReceiptPdf {
             pw.SizedBox(height: 4),
 
             // Totals
-            if (subtotal != total)
+            if (discountAmount > 0) ...[
               _row2(font, 'Subtotal', 'Rs. ${_f(subtotal)}'),
-            pw.SizedBox(height: 2),
+              pw.SizedBox(height: 2),
+              _row2(font, 'Discount', '- Rs. ${_f(discountAmount)}'),
+              pw.SizedBox(height: 2),
+            ],
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
