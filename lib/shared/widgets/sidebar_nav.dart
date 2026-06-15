@@ -212,18 +212,22 @@ class _NavTileState extends State<_NavTile> {
                   ? const Border(left: BorderSide(color: _kSidebarAccent, width: 3))
                   : const Border(),
             ),
-            child: widget.collapsed
-                ? SizedBox(
-                    height: 40,
-                    child: Center(
-                      child: Icon(
-                        widget.item.icon,
-                        size: 18,
-                        color: active ? _kSidebarAccent : _kSidebarText,
+            child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final narrow = constraints.maxWidth < 120;
+                  if (narrow) {
+                    return SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: Icon(
+                          widget.item.icon,
+                          size: 18,
+                          color: active ? _kSidebarAccent : _kSidebarText,
+                        ),
                       ),
-                    ),
-                  )
-                : Padding(
+                    );
+                  }
+                  return Padding(
                     padding: EdgeInsets.fromLTRB(active ? 13 : 16, 10, 12, 10),
                     child: Row(
                       children: [
@@ -244,7 +248,9 @@ class _NavTileState extends State<_NavTile> {
                         ),
                       ],
                     ),
-                  ),
+                  );
+                },
+              ),
           ),
         ),
       ),
