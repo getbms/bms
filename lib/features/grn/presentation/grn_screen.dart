@@ -319,7 +319,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
 }
 
 class _GrnItemRow extends ConsumerStatefulWidget {
-  const _GrnItemRow({required this.item});
+  const _GrnItemRow({super.key, required this.item});
   final GrnCartItem item;
 
   @override

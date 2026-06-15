@@ -10,25 +10,23 @@ class BmsDateRangeField extends StatelessWidget {
     required this.start,
     required this.end,
     required this.onPick,
-    DateTime? firstDate,
-    DateTime? lastDate,
-  })  : firstDate = firstDate ?? const DateTime(2000),
-        lastDate = lastDate ?? _defaultLastDate;
+    this.firstDate,
+    this.lastDate,
+  });
 
   final DateTime start;
   final DateTime end;
   final void Function(DateTimeRange) onPick;
-  final DateTime firstDate;
-  final DateTime lastDate;
+  final DateTime? firstDate;
+  final DateTime? lastDate;
 
   static final _fmt = DateFormat('dd MMM yyyy');
-  static DateTime get _defaultLastDate => DateTime.now().add(const Duration(days: 3650));
 
   Future<void> _pick(BuildContext context) async {
     final picked = await showDateRangePicker(
       context: context,
-      firstDate: firstDate,
-      lastDate: lastDate,
+      firstDate: firstDate ?? DateTime(2000),
+      lastDate: lastDate ?? DateTime.now().add(const Duration(days: 3650)),
       initialDateRange: DateTimeRange(start: start, end: end),
     );
     if (picked != null) onPick(picked);

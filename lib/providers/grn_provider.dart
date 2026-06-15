@@ -114,12 +114,12 @@ class GrnNotifier extends Notifier<GrnState> {
       final userId = authState is Authenticated ? authState.user.id : 'system';
       final userName = authState is Authenticated ? authState.user.name : 'system';
 
-      final db = ref.read(databaseProvider);
+      final db = ref.read(appDatabaseProvider);
       final suppliersDao = ref.read(suppliersDaoProvider);
       final inventoryDao = ref.read(inventoryDaoProvider);
       final auditDao = ref.read(auditLogDaoProvider);
 
-      final grnNo = await db.transaction(() async {
+      final grnNo = await db.transaction<String?>(() async {
         final grnNumber = await suppliersDao.nextGrnNumber();
         final purchaseId = _uuid.v7();
 
