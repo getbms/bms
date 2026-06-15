@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:file_picker/file_picker.dart';
@@ -125,7 +126,7 @@ class SettingsActions {
     );
     if (result == null || result.files.isEmpty) return (0, 0, <String>[]);
 
-    final bytes = result.files.first.bytes;
+    final bytes = await _readPickedFile(result.files.first);
     if (bytes == null) return (0, 0, <String>['Could not read file']);
 
     final csv = utf8.decode(bytes);
@@ -263,7 +264,7 @@ class SettingsActions {
     );
     if (result == null || result.files.isEmpty) return 'Cancelled';
 
-    final bytes = result.files.first.bytes;
+    final bytes = await _readPickedFile(result.files.first);
     if (bytes == null) return 'Could not read file';
 
     try {
@@ -325,6 +326,21 @@ class SettingsActions {
     } catch (e) {
       return 'Import failed: $e';
     }
+  }
+
+  // File reading — on macOS/desktop file_picker populates path, not bytes.
+  // Always prefer bytes when available, fall back to reading from path.
+  Future<Uint8List?> _readPickedFile(PlatformFile file) async {
+    if (file.bytes != null) return file.bytes;
+    final path = file.path;
+    if (path != null) {
+      try {
+        return await File(path).readAsBytes();
+      } catch (_) {
+        return null;
+      }
+    }
+    return null;
   }
 
   // CSV helpers

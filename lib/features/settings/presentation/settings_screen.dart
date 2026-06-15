@@ -124,9 +124,19 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _importCsv(BuildContext context, WidgetRef ref) async {
-    final (inserted, skipped, errors) =
-        await ref.read(settingsActionsProvider).importProductsFromCsv();
+    (int, int, List<String>) result;
+    try {
+      result = await ref.read(settingsActionsProvider).importProductsFromCsv();
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Import failed: $e'), backgroundColor: AppColors.error),
+      );
+      return;
+    }
     if (!context.mounted) return;
+    final (inserted, skipped, errors) = result;
+    if (inserted == 0 && skipped == 0 && errors.isEmpty) return; // user cancelled
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
