@@ -30,21 +30,33 @@ class SidebarNav extends ConsumerWidget {
   final bool collapsed;
   final VoidCallback onToggle;
 
-  static const List<_NavItemData> _navItems = [
-    _NavItemData(label: 'Dashboard', icon: Icons.grid_view_rounded, route: AppRoutes.dashboard),
-    _NavItemData(label: 'POS / Sales', icon: Icons.point_of_sale_rounded, route: AppRoutes.pos),
-    _NavItemData(label: 'Invoices', icon: Icons.receipt_long_rounded, route: AppRoutes.invoices, minRole: _Role.admin),
-    _NavItemData(label: 'Inventory', icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
-    _NavItemData(label: 'Customers', icon: Icons.people_rounded, route: AppRoutes.customers),
-    _NavItemData(label: 'Debtors', icon: Icons.account_balance_wallet_outlined, route: AppRoutes.debtors, minRole: _Role.admin),
-    _NavItemData(label: 'Suppliers', icon: Icons.local_shipping_rounded, route: AppRoutes.suppliers, minRole: _Role.admin),
-    _NavItemData(label: 'Cheques', icon: Icons.account_balance_rounded, route: AppRoutes.cheques, minRole: _Role.admin),
-    _NavItemData(label: 'Petty Cash', icon: Icons.account_balance_wallet_rounded, route: AppRoutes.pettyCash, minRole: _Role.admin),
-    _NavItemData(label: 'Quick Sales', icon: Icons.flash_on_rounded, route: AppRoutes.quickSales, minRole: _Role.admin),
-    _NavItemData(label: 'GRN', icon: Icons.move_to_inbox_rounded, route: AppRoutes.grn, minRole: _Role.admin),
-    _NavItemData(label: 'Reports', icon: Icons.bar_chart_rounded, route: AppRoutes.reports, minRole: _Role.admin),
-    _NavItemData(label: 'Users', icon: Icons.manage_accounts_rounded, route: AppRoutes.users, minRole: _Role.developer),
-    _NavItemData(label: 'Settings', icon: Icons.settings_rounded, route: AppRoutes.settings, minRole: _Role.admin),
+  static const List<_NavSection> _sections = [
+    _NavSection(label: 'Main', items: [
+      _NavItemData(label: 'Dashboard', icon: Icons.grid_view_rounded, route: AppRoutes.dashboard),
+    ]),
+    _NavSection(label: 'Sales', items: [
+      _NavItemData(label: 'POS / Sales', icon: Icons.point_of_sale_rounded, route: AppRoutes.pos),
+      _NavItemData(label: 'Quick Sales', icon: Icons.flash_on_rounded, route: AppRoutes.quickSales, minRole: _Role.admin),
+      _NavItemData(label: 'Invoices', icon: Icons.receipt_long_rounded, route: AppRoutes.invoices, minRole: _Role.admin),
+    ]),
+    _NavSection(label: 'Stock', items: [
+      _NavItemData(label: 'Inventory', icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
+      _NavItemData(label: 'GRN', icon: Icons.move_to_inbox_rounded, route: AppRoutes.grn, minRole: _Role.admin),
+    ]),
+    _NavSection(label: 'Contacts', items: [
+      _NavItemData(label: 'Customers', icon: Icons.people_rounded, route: AppRoutes.customers),
+      _NavItemData(label: 'Debtors', icon: Icons.account_balance_wallet_outlined, route: AppRoutes.debtors, minRole: _Role.admin),
+      _NavItemData(label: 'Suppliers', icon: Icons.local_shipping_rounded, route: AppRoutes.suppliers, minRole: _Role.admin),
+    ]),
+    _NavSection(label: 'Finance', items: [
+      _NavItemData(label: 'Cheques', icon: Icons.account_balance_rounded, route: AppRoutes.cheques, minRole: _Role.admin),
+      _NavItemData(label: 'Petty Cash', icon: Icons.account_balance_wallet_rounded, route: AppRoutes.pettyCash, minRole: _Role.admin),
+    ]),
+    _NavSection(label: 'Admin', items: [
+      _NavItemData(label: 'Reports', icon: Icons.bar_chart_rounded, route: AppRoutes.reports, minRole: _Role.admin),
+      _NavItemData(label: 'Users', icon: Icons.manage_accounts_rounded, route: AppRoutes.users, minRole: _Role.developer),
+      _NavItemData(label: 'Settings', icon: Icons.settings_rounded, route: AppRoutes.settings, minRole: _Role.admin),
+    ]),
   ];
 
   @override
@@ -66,15 +78,30 @@ class SidebarNav extends ConsumerWidget {
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                children: _navItems
-                    .where((item) => item.isVisibleFor(role))
-                    .map((item) => _NavTile(
-                          item: item,
-                          isActive: currentLocation.startsWith(item.route),
-                          collapsed: collapsed,
-                          onTap: () => context.go(item.route),
-                        ))
-                    .toList(),
+                children: [
+                  for (final section in _sections) ...[
+                    // Only show section if at least one item is visible
+                    if (section.items.any((i) => i.isVisibleFor(role))) ...[
+                      if (!collapsed)
+                        _SectionLabel(label: section.label)
+                      else
+                        const SizedBox(height: 4),
+                      for (final item in section.items)
+                        if (item.isVisibleFor(role))
+                          _NavTile(
+                            item: item,
+                            isActive: currentLocation.startsWith(item.route),
+                            collapsed: collapsed,
+                            onTap: () => context.go(item.route),
+                          ),
+                      if (collapsed)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          child: Divider(color: Color(0xFF1F2937), height: 1),
+                        ),
+                    ],
+                  ],
+                ],
               ),
             ),
             const Divider(color: _kSidebarDivider, height: 1),
@@ -327,6 +354,33 @@ _Role _parseRole(String r) => switch (r) {
       'admin' => _Role.admin,
       _ => _Role.cashier,
     };
+
+class _NavSection {
+  const _NavSection({required this.label, required this.items});
+  final String label;
+  final List<_NavItemData> items;
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Text(
+        label.toUpperCase(),
+        style: const TextStyle(
+          color: Color(0xFF4B5563),
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+        ),
+      ),
+    );
+  }
+}
 
 class _NavItemData {
   const _NavItemData({
