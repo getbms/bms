@@ -10,6 +10,7 @@ import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/providers/petty_cash_provider.dart';
+import 'package:bms/shared/widgets/bms_filter_bar.dart';
 
 class PettyCashScreen extends ConsumerWidget {
   const PettyCashScreen({super.key});
@@ -23,7 +24,11 @@ class PettyCashScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Petty Cash')),
       body: Column(
         children: [
-          _DateRangeBar(range: range),
+          BmsDateBar(
+            start: range.from,
+            end: range.to,
+            onPick: (r) => ref.read(pettyCashDateRangeProvider.notifier).set(r.start, r.end),
+          ),
           entriesAsync.when(
             loading: () => const Expanded(child: Center(child: CircularProgressIndicator())),
             error: (e, _) => Expanded(child: Center(child: Text('Error: $e'))),
@@ -128,68 +133,6 @@ class _Stat extends StatelessWidget {
 }
 
 
-class _DateRangeBar extends ConsumerWidget {
-  const _DateRangeBar({required this.range});
-  final ({DateTime from, DateTime to}) range;
-
-  Future<void> _pick(BuildContext context, WidgetRef ref, bool isFrom) async {
-    final initial = isFrom ? range.from : range.to;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2035),
-    );
-    if (picked == null) return;
-    ref.read(pettyCashDateRangeProvider.notifier).set(
-          isFrom ? picked : range.from,
-          isFrom ? range.to : picked,
-        );
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      color: AppColors.surface,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          const Text('From:', style: AppTextStyles.bodySmall),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: () => _pick(context, ref, true),
-            child: _DateChip(date: range.from),
-          ),
-          const SizedBox(width: 12),
-          const Text('To:', style: AppTextStyles.bodySmall),
-          const SizedBox(width: 6),
-          GestureDetector(
-            onTap: () => _pick(context, ref, false),
-            child: _DateChip(date: range.to),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DateChip extends StatelessWidget {
-  const _DateChip({required this.date});
-  final DateTime date;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(BmsDateUtils.formatDate(date), style: AppTextStyles.labelLarge),
-    );
-  }
-}
 
 
 class _EntryRow extends ConsumerWidget {

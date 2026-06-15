@@ -6,9 +6,9 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
-import 'package:bms/data/database/daos/inventory_dao.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:bms/providers/quick_sale_provider.dart';
+import 'package:bms/shared/widgets/bms_filter_bar.dart';
 
 class QuickSalesScreen extends ConsumerWidget {
   const QuickSalesScreen({super.key});
@@ -24,7 +24,11 @@ class QuickSalesScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          _DateBar(range: range),
+          BmsDateBar(
+            start: range.from,
+            end: range.to,
+            onPick: (r) => ref.read(quickSaleDateRangeProvider.notifier).set(r.start, r.end),
+          ),
           salesAsync.when(
             loading: () => const Expanded(child: Center(child: CircularProgressIndicator())),
             error: (e, _) => Expanded(child: Center(child: Text('Error: $e'))),
@@ -72,68 +76,6 @@ class QuickSalesScreen extends ConsumerWidget {
   }
 }
 
-class _DateBar extends ConsumerWidget {
-  const _DateBar({required this.range});
-  final ({DateTime from, DateTime to}) range;
-
-  Future<void> _pick(BuildContext context, WidgetRef ref, bool isFrom) async {
-    final initial = isFrom ? range.from : range.to;
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: initial,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2035),
-    );
-    if (picked == null) return;
-    ref.read(quickSaleDateRangeProvider.notifier).set(
-          isFrom ? picked : range.from,
-          isFrom ? range.to : picked,
-        );
-  }
-
-  String _fmt(DateTime d) => '${d.day}/${d.month}/${d.year}';
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      color: AppColors.surfaceVariant,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          const Text('From:', style: AppTextStyles.bodySmall),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _pick(context, ref, true),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(_fmt(range.from), style: AppTextStyles.bodySmall),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Text('To:', style: AppTextStyles.bodySmall),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => _pick(context, ref, false),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(_fmt(range.to), style: AppTextStyles.bodySmall),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _SummaryBar extends StatelessWidget {
   const _SummaryBar({required this.count, required this.total});
