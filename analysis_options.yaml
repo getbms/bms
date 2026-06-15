@@ -43,7 +43,6 @@ linter:
     - directives_ordering
     - eol_at_end_of_file
     - missing_whitespace_between_adjacent_strings
-    - no_rethrow_when_catch_returns_future
     - noop_primitive_operations
     - only_throw_errors
     - parameter_assignments

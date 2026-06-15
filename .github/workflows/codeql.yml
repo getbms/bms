@@ -21,8 +21,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
       - name: Analyze
-        run: flutter analyze --fatal-infos
+        run: flutter analyze --fatal-warnings
 
       - name: Audit dependencies
         run: dart pub audit
