@@ -951,8 +951,6 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
     const size = 24.0;
     const thickness = 3.5;
     const color = AppColors.primary;
-    const offset = (220 - size * 2) / 2;
-
     Widget corner(double top, double left, bool flipH, bool flipV) => Positioned(
           top: top,
           left: left,

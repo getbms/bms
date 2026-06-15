@@ -139,18 +139,6 @@ class _EntryRow extends ConsumerWidget {
   const _EntryRow({required this.entry});
   final PettyCashEntry entry;
 
-  Color _statusColor(String status) => switch (status) {
-        'approved' => AppColors.success,
-        'rejected' => AppColors.error,
-        _ => AppColors.warning,
-      };
-
-  Color _statusBg(String status) => switch (status) {
-        'approved' => AppColors.successLight,
-        'rejected' => AppColors.errorLight,
-        _ => AppColors.warningLight,
-      };
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOut = entry.type == 'out';

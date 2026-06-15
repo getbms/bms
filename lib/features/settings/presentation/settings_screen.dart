@@ -10,7 +10,6 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../data/database/app_database.dart';
-import '../../../data/database/daos/audit_log_dao.dart';
 import '../../../features/auth/domain/auth_state.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/settings_provider.dart';

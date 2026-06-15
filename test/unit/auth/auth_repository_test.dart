@@ -1,10 +1,4 @@
-import 'package:bms/core/errors/app_exception.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
-// Mocks defined here -- never mock internal application code
-// ignore: unused_import
-import '../../helpers/mocks.dart';
 
 void main() {
   group('AuthRepository', () {

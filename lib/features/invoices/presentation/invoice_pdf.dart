@@ -227,8 +227,6 @@ abstract final class InvoicePdf {
     pw.Font fontSemiBold,
     List<InvoiceItem> items,
   ) {
-    const colWidths = [30.0, null, 40.0, 60.0, 50.0, 65.0];
-
     pw.Widget cell(
       String text, {
       pw.Font? f,
