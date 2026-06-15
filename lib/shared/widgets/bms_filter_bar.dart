@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:bms/core/theme/app_text_styles.dart';
 
-/// A date range field that looks identical to a TextField using the app theme.
+/// A date range field that sizes identically to TextField (uses readOnly TextField internally).
 class BmsDateRangeField extends StatelessWidget {
   const BmsDateRangeField({
     super.key,
@@ -24,36 +24,21 @@ class BmsDateRangeField extends StatelessWidget {
       firstDate: DateTime(2020),
       lastDate: DateTime(2035),
       initialDateRange: DateTimeRange(start: start, end: end),
-      builder: (context, child) => Theme(
-        data: Theme.of(context),
-        child: child!,
-      ),
     );
     if (picked != null) onPick(picked);
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final decoration = theme.inputDecorationTheme;
-
-    return InkWell(
+    return TextField(
+      readOnly: true,
       onTap: () => _pick(context),
-      borderRadius: BorderRadius.circular(8),
-      child: InputDecorator(
-        decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.date_range_outlined, size: 18),
-          border: decoration.border,
-          enabledBorder: decoration.enabledBorder,
-          filled: decoration.filled,
-          fillColor: decoration.fillColor,
-          contentPadding: decoration.contentPadding,
-          isDense: false,
-        ),
-        child: Text(
-          '${_fmt.format(start)}  -  ${_fmt.format(end)}',
-          style: AppTextStyles.bodyMedium,
-        ),
+      controller: TextEditingController(
+        text: '${_fmt.format(start)}  -  ${_fmt.format(end)}',
+      ),
+      style: AppTextStyles.bodyMedium,
+      decoration: const InputDecoration(
+        prefixIcon: Icon(Icons.date_range_outlined, size: 18),
       ),
     );
   }
