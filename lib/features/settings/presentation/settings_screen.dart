@@ -110,7 +110,7 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('BMS — Business Manager', style: AppTextStyles.labelLarge),
+                Text('BMS - Business Manager', style: AppTextStyles.labelLarge),
                 const SizedBox(height: 4),
                 Text('Version 1.0.0', style: AppTextStyles.bodySmall),
                 const SizedBox(height: 4),

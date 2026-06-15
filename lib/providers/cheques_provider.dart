@@ -7,7 +7,7 @@ import '../features/auth/domain/auth_state.dart';
 import 'auth_provider.dart';
 import 'database_provider.dart';
 
-// Manual providers — riverpod_generator cannot serialize Drift-generated types
+// Manual providers - riverpod_generator cannot serialize Drift-generated types
 // in function signatures during the build phase, so we use the manual API.
 
 final chequesMonthStreamProvider =

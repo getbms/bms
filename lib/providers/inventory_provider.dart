@@ -9,7 +9,7 @@ import '../features/auth/domain/auth_state.dart';
 import 'auth_provider.dart';
 import 'database_provider.dart';
 
-// Manual providers — avoids riverpod_generator's Drift type serialization issue.
+// Manual providers - avoids riverpod_generator's Drift type serialization issue.
 // inventoryRepository is keepAlive equivalent via Provider (never auto-disposed).
 
 final inventoryRepositoryProvider = Provider<InventoryRepository>((ref) =>

@@ -320,7 +320,7 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Record Payment — ${widget.supplierName}', style: AppTextStyles.titleLarge),
+            Text('Record Payment - ${widget.supplierName}', style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _amount,

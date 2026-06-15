@@ -37,7 +37,7 @@ class _GrnScreenState extends ConsumerState<GrnScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GRN — Goods Receipt'),
+        title: const Text('GRN - Goods Receipt'),
         bottom: TabBar(
           controller: _tabs,
           labelColor: Colors.white,
@@ -440,7 +440,7 @@ class _GrnFooter extends ConsumerWidget {
                         if (grnNo != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('GRN $grnNo confirmed — stock updated'),
+                              content: Text('GRN $grnNo confirmed - stock updated'),
                               backgroundColor: AppColors.success,
                             ),
                           );

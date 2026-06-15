@@ -19,7 +19,7 @@ abstract final class InvoicePdf {
   static const _border = PdfColor.fromInt(0xFFE2E8F0);
   static const _errorRed = PdfColor.fromInt(0xFFC62828);
 
-  // PdfColors doesn't support alpha shades directly — define them manually.
+  // PdfColors doesn't support alpha shades directly - define them manually.
   static const _white70 = PdfColor(1, 1, 1, 0.7);
   static const _white60 = PdfColor(1, 1, 1, 0.6);
 

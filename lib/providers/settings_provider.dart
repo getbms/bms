@@ -328,7 +328,7 @@ class SettingsActions {
     }
   }
 
-  // File reading — on macOS/desktop file_picker populates path, not bytes.
+  // File reading - on macOS/desktop file_picker populates path, not bytes.
   // Always prefer bytes when available, fall back to reading from path.
   Future<Uint8List?> _readPickedFile(PlatformFile file) async {
     if (file.bytes != null) return file.bytes;

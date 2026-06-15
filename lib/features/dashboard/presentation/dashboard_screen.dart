@@ -19,7 +19,7 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard — ${BmsDateUtils.formatDate(DateTime.now())}'),
+        title: Text('Dashboard - ${BmsDateUtils.formatDate(DateTime.now())}'),
       ),
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -9,7 +9,7 @@ import 'database_provider.dart';
 
 typedef _DateRange = ({DateTime from, DateTime to});
 
-// Manual NotifierProvider for date range — no codegen needed.
+// Manual NotifierProvider for date range - no codegen needed.
 // Screens: ref.read(pettyCashDateRangeProvider.notifier).set(from, to)
 final pettyCashDateRangeProvider =
     NotifierProvider<_PettyCashDateRangeNotifier, _DateRange>(
@@ -26,7 +26,7 @@ class _PettyCashDateRangeNotifier extends Notifier<_DateRange> {
   void set(DateTime from, DateTime to) => state = (from: from, to: to);
 }
 
-// Manual FutureProvider — avoids riverpod_generator's Drift type issue.
+// Manual FutureProvider - avoids riverpod_generator's Drift type issue.
 final pettyCashEntriesProvider = FutureProvider.autoDispose<List<PettyCashEntry>>(
   (ref) {
     final range = ref.watch(pettyCashDateRangeProvider);

@@ -7,7 +7,7 @@ import '../features/auth/domain/auth_state.dart';
 import 'auth_provider.dart';
 import 'database_provider.dart';
 
-// Manual providers — avoids riverpod_generator's Drift type serialization issue.
+// Manual providers - avoids riverpod_generator's Drift type serialization issue.
 
 final suppliersStreamProvider = StreamProvider.autoDispose<List<Supplier>>(
     (ref) => ref.watch(suppliersDaoProvider).watchAll());

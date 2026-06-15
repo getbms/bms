@@ -4,9 +4,9 @@ import '../../features/auth/domain/auth_state.dart';
 import 'app_router.dart';
 
 /// Role matrix:
-///   developer — all routes
-///   admin     — all except /users (user management)
-///   cashier   — dashboard, pos, inventory (view), customers
+///   developer - all routes
+///   admin     - all except /users (user management)
+///   cashier   - dashboard, pos, inventory (view), customers
 abstract final class RouteGuard {
   static const Set<String> _publicRoutes = {AppRoutes.login};
 

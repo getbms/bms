@@ -248,7 +248,7 @@ class _UserDetailSheet extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'Developer seed account — cannot be deactivated or deleted.',
+                'Developer seed account - cannot be deactivated or deleted.',
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
               ),
             ),
@@ -542,7 +542,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Reset Password — ${widget.userName}', style: AppTextStyles.titleLarge),
+            Text('Reset Password - ${widget.userName}', style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _password,

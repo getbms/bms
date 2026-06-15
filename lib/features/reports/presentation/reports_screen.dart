@@ -43,7 +43,7 @@ class ReportsScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
-            Text("Today's Summary — ${BmsDateUtils.formatDate(DateTime.now())}", style: AppTextStyles.titleLarge),
+            Text("Today's Summary - ${BmsDateUtils.formatDate(DateTime.now())}", style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             // Today's sales card
             todaySalesAsync.when(

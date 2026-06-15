@@ -284,7 +284,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Line Discount — ${item.product.name}', style: AppTextStyles.titleMedium),
+            Text('Line Discount - ${item.product.name}', style: AppTextStyles.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
