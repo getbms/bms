@@ -25,7 +25,6 @@ class InvoicesScreen extends ConsumerWidget {
   }
 }
 
-// ─── Filter bar ───────────────────────────────────────────────────────────────
 
 class _FilterBar extends ConsumerStatefulWidget {
   const _FilterBar();
@@ -175,7 +174,6 @@ class _FilterBarState extends ConsumerState<_FilterBar> {
   }
 }
 
-// ─── Summary bar ──────────────────────────────────────────────────────────────
 
 class _SummaryBar extends ConsumerWidget {
   const _SummaryBar();
@@ -236,7 +234,6 @@ class _SummaryItem extends StatelessWidget {
       );
 }
 
-// ─── Invoice list ─────────────────────────────────────────────────────────────
 
 class _InvoiceList extends ConsumerWidget {
   const _InvoiceList();

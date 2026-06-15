@@ -71,7 +71,6 @@ class PettyCashScreen extends ConsumerWidget {
   }
 }
 
-// ── Float summary ─────────────────────────────────────────────────────────────
 
 class _FloatCard extends StatelessWidget {
   const _FloatCard({required this.totalIn, required this.totalOut});
@@ -128,7 +127,6 @@ class _Stat extends StatelessWidget {
   }
 }
 
-// ── Date range bar ───────────────────────────────────────────────────────────
 
 class _DateRangeBar extends ConsumerWidget {
   const _DateRangeBar({required this.range});
@@ -193,7 +191,6 @@ class _DateChip extends StatelessWidget {
   }
 }
 
-// ── Entry row ────────────────────────────────────────────────────────────────
 
 class _EntryRow extends ConsumerWidget {
   const _EntryRow({required this.entry});
@@ -392,7 +389,6 @@ class _Chip extends StatelessWidget {
   }
 }
 
-// ── Add entry sheet ──────────────────────────────────────────────────────────
 
 class _AddEntrySheet extends ConsumerStatefulWidget {
   const _AddEntrySheet();

@@ -787,7 +787,6 @@ class _CustomerSearchDialogState extends ConsumerState<_CustomerSearchDialog> {
   }
 }
 
-// ─── Camera scan button ───────────────────────────────────────────────────────
 
 class _ScanButton extends ConsumerWidget {
   const _ScanButton({required this.onProductFound});
@@ -819,7 +818,6 @@ class _ScanButton extends ConsumerWidget {
   }
 }
 
-// ─── Barcode scan dialog ──────────────────────────────────────────────────────
 
 class _BarcodeScanDialog extends StatefulWidget {
   const _BarcodeScanDialog({

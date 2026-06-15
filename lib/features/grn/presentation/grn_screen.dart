@@ -60,7 +60,6 @@ class _GrnScreenState extends ConsumerState<GrnScreen>
   }
 }
 
-// ── New GRN ─────────────────────────────────────────────────────────────────
 
 class _NewGrnTab extends ConsumerWidget {
   const _NewGrnTab();
@@ -470,7 +469,6 @@ class _GrnFooter extends ConsumerWidget {
   }
 }
 
-// ── GRN History ──────────────────────────────────────────────────────────────
 
 class _GrnHistoryTab extends ConsumerWidget {
   const _GrnHistoryTab();

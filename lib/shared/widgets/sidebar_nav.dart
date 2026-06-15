@@ -87,7 +87,6 @@ class SidebarNav extends ConsumerWidget {
   }
 }
 
-// ── Header ────────────────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
   const _Header({required this.collapsed});
@@ -141,7 +140,6 @@ class _Header extends StatelessWidget {
   }
 }
 
-// ── Nav tile ──────────────────────────────────────────────────────────────────
 
 class _NavTile extends StatefulWidget {
   const _NavTile({
@@ -234,7 +232,6 @@ class _NavTileState extends State<_NavTile> {
   }
 }
 
-// ── User footer ───────────────────────────────────────────────────────────────
 
 class _UserFooter extends StatelessWidget {
   const _UserFooter({required this.user, required this.ref, required this.collapsed});
@@ -298,7 +295,6 @@ class _UserFooter extends StatelessWidget {
   }
 }
 
-// ── Toggle button ─────────────────────────────────────────────────────────────
 
 class _ToggleButton extends StatelessWidget {
   const _ToggleButton({required this.collapsed, required this.onToggle});
@@ -323,7 +319,6 @@ class _ToggleButton extends StatelessWidget {
   }
 }
 
-// ── Data types ────────────────────────────────────────────────────────────────
 
 enum _Role { cashier, admin, developer }
 

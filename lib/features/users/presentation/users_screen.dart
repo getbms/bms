@@ -258,7 +258,6 @@ class _UserDetailSheet extends ConsumerWidget {
   }
 }
 
-// ── Add User Sheet ───────────────────────────────────────────────────────────
 
 class _AddUserSheet extends ConsumerStatefulWidget {
   const _AddUserSheet({required this.isDeveloper});
@@ -381,7 +380,6 @@ class _AddUserSheetState extends ConsumerState<_AddUserSheet> {
   }
 }
 
-// ── Edit User Sheet ──────────────────────────────────────────────────────────
 
 class _EditUserSheet extends ConsumerStatefulWidget {
   const _EditUserSheet({required this.user});
@@ -488,7 +486,6 @@ class _EditUserSheetState extends ConsumerState<_EditUserSheet> {
   }
 }
 
-// ── Reset Password Sheet ─────────────────────────────────────────────────────
 
 class _ResetPasswordSheet extends ConsumerStatefulWidget {
   const _ResetPasswordSheet({required this.userId, required this.userName});

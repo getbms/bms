@@ -362,7 +362,6 @@ class _DetailBody extends StatelessWidget {
       ][m];
 }
 
-// ─── Shared small widgets ─────────────────────────────────────────────────────
 
 class _Card extends StatelessWidget {
   const _Card({required this.child});

@@ -18,7 +18,6 @@ const _storeNameKey = 'store_name';
 const _storeAddressKey = 'store_address';
 const _storePhoneKey = 'store_phone';
 
-// ── Store info ────────────────────────────────────────────────────────────────
 
 class StoreInfo {
   const StoreInfo({
