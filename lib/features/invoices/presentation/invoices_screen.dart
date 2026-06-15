@@ -14,7 +14,8 @@ class InvoicesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return const Scaffold(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Invoices')),
       body: Column(
         children: [
           _FilterBar(),
