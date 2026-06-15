@@ -231,12 +231,15 @@ class _NavTileState extends State<_NavTile> {
                             size: 18,
                             color: active ? _kSidebarAccent : _kSidebarText),
                         const SizedBox(width: 11),
-                        Text(
-                          widget.item.label,
-                          style: TextStyle(
-                            color: active ? _kSidebarActiveText : _kSidebarText,
-                            fontSize: 13.5,
-                            fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                        Expanded(
+                          child: Text(
+                            widget.item.label,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: active ? _kSidebarActiveText : _kSidebarText,
+                              fontSize: 13.5,
+                              fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                            ),
                           ),
                         ),
                       ],
