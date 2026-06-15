@@ -40,6 +40,9 @@ class _GrnScreenState extends ConsumerState<GrnScreen>
         title: const Text('GRN — Goods Receipt'),
         bottom: TabBar(
           controller: _tabs,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
           tabs: const [
             Tab(text: 'New GRN'),
             Tab(text: 'History'),
