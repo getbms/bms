@@ -221,7 +221,10 @@ class _ItemsSection extends ConsumerWidget {
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   itemCount: items.length,
-                  itemBuilder: (_, i) => _GrnItemRow(item: items[i]),
+                  itemBuilder: (_, i) => _GrnItemRow(
+                    key: ValueKey(items[i].product.id),
+                    item: items[i],
+                  ),
                 ),
         ),
       ],
@@ -458,7 +461,7 @@ class _GrnFooter extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           TextButton(
-            onPressed: () => ref.read(grnProvider.notifier).reset(),
+            onPressed: state.isSubmitting ? null : () => ref.read(grnProvider.notifier).reset(),
             child: const Text('Clear', style: TextStyle(color: AppColors.textSecondary)),
           ),
         ],

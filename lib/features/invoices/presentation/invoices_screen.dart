@@ -66,11 +66,11 @@ class _FilterBarState extends ConsumerState<_FilterBar> {
             end: filter.dateRange.end,
             onDatePick: (range) => ref
                 .read(invoiceFilterProvider.notifier)
-                .update(filter.copyWith(dateRange: range)),
+                .update(ref.read(invoiceFilterProvider).copyWith(dateRange: range)),
             searchController: _searchCtrl,
             onSearch: (v) => ref
                 .read(invoiceFilterProvider.notifier)
-                .update(filter.copyWith(query: v)),
+                .update(ref.read(invoiceFilterProvider).copyWith(query: v)),
             searchHint: 'Search invoice / customer',
           ),
           Padding(

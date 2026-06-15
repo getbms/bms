@@ -9,11 +9,15 @@ part 'returns_dao.g.dart';
 class ReturnsDao extends DatabaseAccessor<AppDatabase> with _$ReturnsDaoMixin {
   ReturnsDao(super.db);
 
-  Future<SalesReturn> insertReturn(SalesReturnsCompanion entry) =>
-      into(salesReturns).insertReturning(entry);
-
-  Future<void> insertItems(List<ReturnItemsCompanion> items) =>
-      batch((b) => b.insertAll(returnItems, items));
+  Future<SalesReturn> insertReturnWithItems(
+    SalesReturnsCompanion entry,
+    List<ReturnItemsCompanion> items,
+  ) =>
+      transaction(() async {
+        final salesReturn = await into(salesReturns).insertReturning(entry);
+        await batch((b) => b.insertAll(returnItems, items));
+        return salesReturn;
+      });
 
   Future<List<SalesReturn>> getForInvoice(String invoiceId) =>
       (select(salesReturns)
@@ -25,9 +29,4 @@ class ReturnsDao extends DatabaseAccessor<AppDatabase> with _$ReturnsDaoMixin {
       (select(returnItems)
             ..where((i) => i.returnId.equals(returnId)))
           .get();
-
-  Future<String> nextReturnNumber() async {
-    final count = await select(salesReturns).get().then((l) => l.length);
-    return 'RTN-${(count + 1).toString().padLeft(5, '0')}';
-  }
 }

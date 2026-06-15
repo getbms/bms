@@ -292,9 +292,12 @@ class _UserFooter extends StatelessWidget {
           return Tooltip(
             message: '${user.name}  (${user.role})',
             preferBelow: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Center(child: avatar),
+            child: InkWell(
+              onTap: () => ref.read(authStateProvider.notifier).logout(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Center(child: avatar),
+              ),
             ),
           );
         }

@@ -54,6 +54,10 @@ class QuickSaleActions {
     required double price,
     String? notes,
   }) async {
+    if (qty <= 0 || price <= 0) {
+      throw ArgumentError('Quantity and price must be greater than zero');
+    }
+
     final id = _uuid.v7();
     final inventoryDao = _ref.read(inventoryDaoProvider);
     final invoicesDao = _ref.read(invoicesDaoProvider);
@@ -70,7 +74,9 @@ class QuickSaleActions {
     ));
 
     final current = await inventoryDao.getStock(product.id);
-    final newQty = ((current?.qty ?? 0) - qty).clamp(0.0, double.infinity);
+    final currentQty = current?.qty ?? 0;
+    final newQty = (currentQty - qty).clamp(0.0, double.infinity);
+    final actualDeducted = currentQty - newQty;
     await inventoryDao.upsertStock(StockCompanion(
       productId: Value(product.id),
       qty: Value(newQty),
@@ -80,7 +86,7 @@ class QuickSaleActions {
       id: _uuid.v7(),
       type: 'out',
       productId: product.id,
-      qty: qty,
+      qty: actualDeducted,
       reason: const Value('quick_sale'),
       userId: _userId,
       refId: Value(id),

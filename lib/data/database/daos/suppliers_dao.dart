@@ -55,7 +55,24 @@ class SuppliersDao extends DatabaseAccessor<AppDatabase> with _$SuppliersDaoMixi
       (select(purchaseItems)..where((i) => i.purchaseId.equals(purchaseId))).get();
 
   Future<String> nextGrnNumber() async {
-    final count = await select(purchases).get().then((l) => l.length);
-    return 'GRN-${(count + 1).toString().padLeft(5, '0')}';
+    return transaction(() async {
+      final maxGrnQuery = selectOnly(purchases)
+        ..addColumns([purchases.grnNumber]);
+      final rows = await maxGrnQuery.get();
+
+      int maxNumber = 0;
+      for (final row in rows) {
+        final grnNumber = row.read(purchases.grnNumber);
+        if (grnNumber != null) {
+          final match = RegExp(r'GRN-(\d+)').firstMatch(grnNumber);
+          if (match != null) {
+            final number = int.tryParse(match.group(1)!) ?? 0;
+            if (number > maxNumber) maxNumber = number;
+          }
+        }
+      }
+
+      return 'GRN-${(maxNumber + 1).toString().padLeft(5, '0')}';
+    });
   }
 }

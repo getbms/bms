@@ -203,13 +203,20 @@ class _EntryRow extends ConsumerWidget {
   }
 
   void _viewPhoto(BuildContext context, String path) {
+    final file = File(path);
     showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.file(File(path)),
+            if (file.existsSync())
+              Image.file(file)
+            else
+              const Padding(
+                padding: EdgeInsets.all(24.0),
+                child: Text('Receipt image not found'),
+              ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Close'),

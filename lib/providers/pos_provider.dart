@@ -174,16 +174,20 @@ class PosNotifier extends _$PosNotifier {
       ));
 
       await invoicesDao.insertItems(state.items
-          .map((item) => InvoiceItemsCompanion.insert(
-                id: _uuid.v7(),
-                invoiceId: invoiceId,
-                productId: item.product.id,
-                productName: item.product.name,
-                qty: item.qty,
-                unitPrice: item.unitPrice,
-                discountPercent: Value(item.discountPct),
-                subtotal: item.lineTotal,
-              ))
+          .map((item) {
+            final lineDiscountAmount = item.qty * item.unitPrice * item.discountPct / 100;
+            return InvoiceItemsCompanion.insert(
+              id: _uuid.v7(),
+              invoiceId: invoiceId,
+              productId: item.product.id,
+              productName: item.product.name,
+              qty: item.qty,
+              unitPrice: item.unitPrice,
+              discountPercent: Value(item.discountPct),
+              discountAmount: Value(lineDiscountAmount),
+              subtotal: item.lineTotal,
+            );
+          })
           .toList());
 
       // Deduct stock for each item

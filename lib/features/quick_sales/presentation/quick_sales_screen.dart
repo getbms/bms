@@ -166,7 +166,15 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
     if (product == null) return;
     final qty = double.tryParse(_qtyCtrl.text) ?? 0;
     final price = double.tryParse(_priceCtrl.text) ?? 0;
-    if (qty <= 0 || price <= 0) return;
+    if (qty <= 0 || price <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Quantity and price must be greater than zero'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
 
     setState(() => _saving = true);
     try {

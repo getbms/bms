@@ -104,81 +104,92 @@ class GrnNotifier extends Notifier<GrnState> {
     if (!state.canSubmit) return null;
     state = state.copyWith(isSubmitting: true);
 
+    // Capture immutable locals
+    final supplier = state.supplier!;
+    final items = List<GrnCartItem>.from(state.items);
+    final total = state.total;
+
     try {
       final authState = ref.read(currentAuthStateProvider);
       final userId = authState is Authenticated ? authState.user.id : 'system';
       final userName = authState is Authenticated ? authState.user.name : 'system';
 
+      final db = ref.read(databaseProvider);
       final suppliersDao = ref.read(suppliersDaoProvider);
       final inventoryDao = ref.read(inventoryDaoProvider);
       final auditDao = ref.read(auditLogDaoProvider);
 
-      final grnNo = await suppliersDao.nextGrnNumber();
-      final purchaseId = _uuid.v7();
+      final grnNo = await db.transaction(() async {
+        final grnNumber = await suppliersDao.nextGrnNumber();
+        final purchaseId = _uuid.v7();
 
-      await suppliersDao.insertPurchase(PurchasesCompanion.insert(
-        id: purchaseId,
-        supplierId: state.supplier!.id,
-        grnNumber: Value(grnNo),
-        total: Value(state.total),
-        userId: userId,
-      ));
-
-      await suppliersDao.insertPurchaseItems(
-        state.items
-            .map((i) => PurchaseItemsCompanion.insert(
-                  id: _uuid.v7(),
-                  purchaseId: purchaseId,
-                  productId: i.product.id,
-                  qty: i.qty,
-                  costPrice: i.costPrice,
-                ))
-            .toList(),
-      );
-
-      // Stock in + update cost price
-      for (final item in state.items) {
-        final current = await inventoryDao.getStock(item.product.id);
-        final newQty = (current?.qty ?? 0) + item.qty;
-        await inventoryDao.upsertStock(StockCompanion(
-          productId: Value(item.product.id),
-          qty: Value(newQty),
-          updatedAt: Value(DateTime.now()),
-        ));
-        await inventoryDao.recordMovement(StockMovementsCompanion.insert(
-          id: _uuid.v7(),
-          type: 'in',
-          productId: item.product.id,
-          qty: item.qty,
-          reason: const Value('grn'),
+        await suppliersDao.insertPurchase(PurchasesCompanion.insert(
+          id: purchaseId,
+          supplierId: supplier.id,
+          grnNumber: Value(grnNumber),
+          total: Value(total),
           userId: userId,
-          refId: Value(purchaseId),
-          refType: const Value('purchase'),
         ));
-        // Update cost price on product
-        await inventoryDao.updateCostPrice(item.product.id, item.costPrice);
-      }
 
-      // Update supplier balance
-      await suppliersDao.updateBalance(state.supplier!.id, state.total);
+        await suppliersDao.insertPurchaseItems(
+          items
+              .map((i) => PurchaseItemsCompanion.insert(
+                    id: _uuid.v7(),
+                    purchaseId: purchaseId,
+                    productId: i.product.id,
+                    qty: i.qty,
+                    costPrice: i.costPrice,
+                  ))
+              .toList(),
+        );
 
-      await auditDao.log(
-        id: _uuid.v7(),
-        entityType: 'grn',
-        entityId: purchaseId,
-        action: 'create',
-        userId: userId,
-        userName: userName,
-        newValue: {
-          'grnNo': grnNo,
-          'supplierId': state.supplier!.id,
-          'supplierName': state.supplier!.name,
-          'total': state.total,
-          'itemCount': state.items.length,
-        },
-      );
+        // Stock in + update cost price
+        for (final item in items) {
+          final current = await inventoryDao.getStock(item.product.id);
+          final newQty = (current?.qty ?? 0) + item.qty;
+          await inventoryDao.upsertStock(StockCompanion(
+            productId: Value(item.product.id),
+            qty: Value(newQty),
+            updatedAt: Value(DateTime.now()),
+          ));
+          await inventoryDao.recordMovement(StockMovementsCompanion.insert(
+            id: _uuid.v7(),
+            type: 'in',
+            productId: item.product.id,
+            qty: item.qty,
+            reason: const Value('grn'),
+            userId: userId,
+            refId: Value(purchaseId),
+            refType: const Value('purchase'),
+          ));
+          // Update cost price on product
+          await inventoryDao.updateCostPrice(item.product.id, item.costPrice);
+        }
+
+        // Update supplier balance
+        await suppliersDao.updateBalance(supplier.id, total);
+
+        await auditDao.log(
+          id: _uuid.v7(),
+          entityType: 'grn',
+          entityId: purchaseId,
+          action: 'create',
+          userId: userId,
+          userName: userName,
+          newValue: {
+            'grnNo': grnNumber,
+            'supplierId': supplier.id,
+            'supplierName': supplier.name,
+            'total': total,
+            'itemCount': items.length,
+          },
+        );
+
+        return grnNumber;
+      });
 
       state = GrnState(lastGrnNo: grnNo);
+      ref.invalidate(grnListProvider);
       return grnNo;
     } catch (_) {
       state = state.copyWith(isSubmitting: false);
