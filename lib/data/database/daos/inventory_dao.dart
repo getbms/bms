@@ -68,4 +68,12 @@ class InventoryDao extends DatabaseAccessor<AppDatabase> with _$InventoryDaoMixi
             ..where((m) => m.productId.equals(productId))
             ..orderBy([(m) => OrderingTerm.desc(m.createdAt)]))
           .get();
+
+  Future<void> updateCostPrice(String productId, double costPrice) =>
+      (update(products)..where((p) => p.id.equals(productId))).write(
+        ProductsCompanion(costPrice: Value(costPrice)),
+      );
+
+  Stream<List<StockLevel>> watchAllStock() =>
+      (select(stock)..orderBy([(s) => OrderingTerm.asc(s.productId)])).watch();
 }

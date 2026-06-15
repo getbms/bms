@@ -41,4 +41,21 @@ class SuppliersDao extends DatabaseAccessor<AppDatabase> with _$SuppliersDaoMixi
 
   Future<void> recordPayment(SupplierPaymentsCompanion entry) =>
       into(supplierPayments).insert(entry);
+
+  Future<List<Purchase>> getAllPurchases() =>
+      (select(purchases)..orderBy([(p) => OrderingTerm.desc(p.createdAt)])).get();
+
+  Future<List<Purchase>> getPurchasesBySupplier(String supplierId) =>
+      (select(purchases)
+            ..where((p) => p.supplierId.equals(supplierId))
+            ..orderBy([(p) => OrderingTerm.desc(p.createdAt)]))
+          .get();
+
+  Future<List<PurchaseItem>> getItemsForPurchase(String purchaseId) =>
+      (select(purchaseItems)..where((i) => i.purchaseId.equals(purchaseId))).get();
+
+  Future<String> nextGrnNumber() async {
+    final count = await select(purchases).get().then((l) => l.length);
+    return 'GRN-${(count + 1).toString().padLeft(5, '0')}';
+  }
 }
