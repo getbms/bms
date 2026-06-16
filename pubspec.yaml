@@ -22,7 +22,7 @@ dependencies:
   drift: ^2.34.0
   drift_flutter: ^0.3.0
   sqlite3_flutter_libs: ^0.6.0+eol
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   path: ^1.9.1
 
   # Secure storage for session tokens
@@ -48,7 +48,7 @@ dependencies:
   fl_chart: ^0.68.0
 
   # Internationalisation and formatting
-  intl: ^0.19.0
+  intl: ^0.20.2
 
   # Immutable value objects
   freezed_annotation: ^3.1.0
