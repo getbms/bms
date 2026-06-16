@@ -26,7 +26,7 @@ dependencies:
   path: ^1.9.1
 
   # Secure storage for session tokens
-  flutter_secure_storage: ^9.2.2
+  flutter_secure_storage: ^10.3.1
 
   # UUID generation (v7 time-ordered PKs)
   uuid: ^4.4.2
