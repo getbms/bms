@@ -182,94 +182,93 @@ class _PLChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxY = daily.map((d) => d.revenue).fold<double>(0, (a, b) => a > b ? a : b);
-    final barWidth = daily.length <= 14 ? 14.0 : 8.0;
 
-    final barGroups = daily.asMap().entries.map((e) {
-      final idx = e.key;
-      final d = e.value;
-      return BarChartGroupData(
-        x: idx,
-        barRods: [
-          BarChartRodData(
-            toY: d.revenue,
-            width: barWidth,
-            color: AppColors.primary,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
-          ),
-        ],
-      );
-    }).toList();
-
-    // Show a bottom label every N days to avoid crowding
+    // Show a label every N days depending on range length
     final labelStep = daily.length <= 10
         ? 1
         : daily.length <= 20
             ? 2
             : 5;
 
+    final barGroups = daily.asMap().entries.map((e) {
+      final d = e.value;
+      return BarChartGroupData(
+        x: e.key,
+        barRods: [
+          BarChartRodData(
+            toY: d.revenue,
+            color: d.revenue > 0 ? AppColors.primary : AppColors.border,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(3)),
+          ),
+        ],
+      );
+    }).toList();
+
     return SizedBox(
-      height: 220,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: (barWidth + 4) * daily.length + 80,
-          child: BarChart(
-            BarChartData(
-              maxY: maxY * 1.15,
-              barGroups: barGroups,
-              gridData: const FlGridData(
-                show: true,
-                drawVerticalLine: false,
+      height: 240,
+      child: BarChart(
+        BarChartData(
+          maxY: maxY * 1.2,
+          barGroups: barGroups,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (_) => FlLine(
+              color: AppColors.border.withValues(alpha: 0.6),
+              strokeWidth: 0.8,
+              dashArray: [4, 4],
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          barTouchData: BarTouchData(
+            touchTooltipData: BarTouchTooltipData(
+              getTooltipItem: (group, _, rod, _) {
+                final d = daily[group.x];
+                return BarTooltipItem(
+                  '${d.date.day}/${d.date.month}\n${CurrencyUtils.format(rod.toY)}',
+                  AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.w600),
+                );
+              },
+            ),
+          ),
+          titlesData: FlTitlesData(
+            topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false)),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 52,
+                getTitlesWidget: (v, meta) {
+                  if (v == 0 || v == meta.max) return const SizedBox.shrink();
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    child: Text(_compact(v), style: AppTextStyles.bodySmall),
+                  );
+                },
               ),
-              borderData: FlBorderData(show: false),
-              barTouchData: BarTouchData(
-                touchTooltipData: BarTouchTooltipData(
-                  getTooltipItem: (_, _, rod, _) => BarTooltipItem(
-                    CurrencyUtils.format(rod.toY),
-                    AppTextStyles.bodySmall.copyWith(color: Colors.white),
-                  ),
-                ),
-              ),
-              titlesData: FlTitlesData(
-                topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
-                rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 52,
-                    getTitlesWidget: (v, meta) => SideTitleWidget(
-                      axisSide: meta.axisSide,
-                      child: Text(
-                        _compact(v),
-                        style: AppTextStyles.bodySmall,
-                      ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 28,
+                getTitlesWidget: (v, meta) {
+                  final idx = v.toInt();
+                  if (idx < 0 || idx >= daily.length || idx % labelStep != 0) {
+                    return const SizedBox.shrink();
+                  }
+                  final d = daily[idx].date;
+                  return SideTitleWidget(
+                    axisSide: meta.axisSide,
+                    child: Text(
+                      '${d.day}/${d.month}',
+                      style: AppTextStyles.bodySmall,
                     ),
-                  ),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 28,
-                    getTitlesWidget: (v, meta) {
-                      final idx = v.toInt();
-                      if (idx < 0 ||
-                          idx >= daily.length ||
-                          idx % labelStep != 0) {
-                        return const SizedBox.shrink();
-                      }
-                      final d = daily[idx].date;
-                      return SideTitleWidget(
-                        axisSide: meta.axisSide,
-                        child: Text(
-                          '${d.day}/${d.month}',
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                  );
+                },
               ),
             ),
           ),
