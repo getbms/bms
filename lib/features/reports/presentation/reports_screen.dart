@@ -103,6 +103,23 @@ class _PLTabState extends ConsumerState<_PLTab> {
             error: (e, _) => Center(child: Text('Error: $e')),
             data: (daily) {
               final revenue = daily.fold<double>(0, (s, d) => s + d.revenue);
+
+              if (revenue == 0) {
+                return Column(
+                  children: [
+                    Expanded(
+                      child: _EmptyState(
+                        icon: Icons.bar_chart_outlined,
+                        iconColor: AppColors.primary,
+                        title: 'No Sales Data',
+                        subtitle:
+                            'No transactions were recorded for this period.\nTry adjusting the date range.',
+                      ),
+                    ),
+                  ],
+                );
+              }
+
               final cogs = daily.fold<double>(0, (s, d) => s + d.cogs);
               final grossProfit = revenue - cogs;
               final margin = revenue > 0 ? grossProfit / revenue * 100 : 0.0;
@@ -139,15 +156,9 @@ class _PLTabState extends ConsumerState<_PLTab> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  if (daily.any((d) => d.revenue > 0)) ...[
-                    Text('Daily Revenue', style: AppTextStyles.titleMedium),
-                    const SizedBox(height: 12),
-                    _PLChart(daily: daily),
-                  ] else
-                    _EmptyState(
-                      icon: Icons.bar_chart_outlined,
-                      message: 'No sales data for this period.',
-                    ),
+                  Text('Daily Revenue', style: AppTextStyles.titleMedium),
+                  const SizedBox(height: 12),
+                  _PLChart(daily: daily),
                 ],
               );
             },
@@ -284,7 +295,10 @@ class _StockTab extends ConsumerWidget {
         if (rows.isEmpty) {
           return _EmptyState(
             icon: Icons.inventory_2_outlined,
-            message: 'No stock on hand.',
+            iconColor: AppColors.primary,
+            title: 'No Stock on Hand',
+            subtitle:
+                'Products with stock will appear here once\nyou record a goods received note.',
           );
         }
 
@@ -462,8 +476,11 @@ class _AgingTab extends ConsumerWidget {
       data: (rows) {
         if (rows.isEmpty) {
           return _EmptyState(
-            icon: Icons.people_outline,
-            message: 'No outstanding balances.',
+            icon: Icons.check_circle_outline,
+            iconColor: AppColors.success,
+            title: 'All Clear',
+            subtitle:
+                'No customers have outstanding balances.\nAll receivables are settled.',
           );
         }
 
@@ -713,20 +730,50 @@ class _SummaryGrid extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.icon, required this.message});
+  const _EmptyState({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.iconColor = AppColors.textSecondary,
+  });
+
   final IconData icon;
-  final String message;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 48, color: AppColors.textSecondary),
-          const SizedBox(height: 12),
-          Text(message, style: AppTextStyles.bodySmall),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, size: 40, color: iconColor),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: AppTextStyles.titleMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.textSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
