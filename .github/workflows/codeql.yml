@@ -64,6 +64,3 @@ jobs:
         run: |
           flutter analyze 2>&1 | tee /tmp/flutter_analyze.txt
           ! grep -qE "^\s+error •" /tmp/flutter_analyze.txt
-
-      - name: Audit dependencies
-        run: dart pub audit

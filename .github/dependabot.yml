@@ -1,0 +1,69 @@
+version: 2
+
+updates:
+  # GitHub Actions — pin digests and keep them current
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Colombo"
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      actions-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 5
+
+  # Dart / Flutter pub packages
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Colombo"
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "flutter"
+    groups:
+      # Batch all minor + patch updates into one PR
+      pub-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+      # Code-gen stack — keep in sync, they must match
+      drift-codegen:
+        patterns:
+          - "drift"
+          - "drift_dev"
+      riverpod-codegen:
+        patterns:
+          - "flutter_riverpod"
+          - "riverpod"
+          - "riverpod_annotation"
+          - "riverpod_generator"
+      freezed-codegen:
+        patterns:
+          - "freezed"
+          - "freezed_annotation"
+          - "json_serializable"
+          - "json_annotation"
+      router:
+        patterns:
+          - "go_router"
+          - "go_router_builder"
+    # Major bumps open individual PRs for manual review
+    open-pull-requests-limit: 10
+    ignore:
+      # fl_chart 1.x has breaking API changes — review manually
+      - dependency-name: "fl_chart"
+        update-types: ["version-update:semver-major"]
