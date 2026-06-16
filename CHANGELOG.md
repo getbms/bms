@@ -20,6 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Dependabot configuration for both `pub` and `github-actions` ecosystems with grouped minor/patch updates and co-dependent package groups (drift, riverpod, freezed, go_router)
 
 ### Changed
+- `InventoryRepository.adjustStock()` accepts optional `movementType` parameter so callers can record `return_in` movements instead of the default `in`
+- `InvoiceDetailScreen` action row switched from `Row` to `Wrap` to handle three buttons without overflow on narrow screens
 - Dashboard provider expanded to fetch 7-day trend, payment mix, MTD sales, and last-month sales in a single parallel await using Dart 3 record `.wait`
 - Reports screen replaced placeholder card with full three-tab report suite
 - `nextGrnNumber()` in `SuppliersDao` replaced full-table scan with a single `MAX()` aggregate query; O(n) -> O(log n) on the unique index
@@ -39,7 +41,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Banner and logo assets in `docs/` for GitHub org branding
 - Apache 2.0 license
 - GitHub PR template and issue templates (bug report, feature request, task)
-- Sales returns schema tables scaffolded for the next release
+- Sales Returns UI: "Process Return" button on invoice detail (admin/manager only) opens a bottom sheet to select items, quantities, return type (refund/credit/exchange), and reason
+- Return history section on invoice detail showing all past returns with type, total, and date
+- `nextReturnNumber()` in `ReturnsDao` using `MAX()` aggregate for O(log n) return number generation
+- `invoiceReturnsProvider` Riverpod provider to watch returns for a specific invoice
 - Role-based routing with guards (Admin, Manager, Cashier, Viewer)
 - Drift (SQLite) database with UUID primary keys and versioned migrations
 - Collapsible sidebar rail navigation
