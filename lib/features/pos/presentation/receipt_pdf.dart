@@ -275,7 +275,7 @@ class _ItemRow extends pw.StatelessWidget {
   pw.Widget build(pw.Context context) {
     final qtyStr = item.qty % 1 == 0
         ? item.qty.toStringAsFixed(0)
-        : item.qty.toStringAsFixed(1);
+        : item.qty.toStringAsFixed(3).replaceAll(RegExp(r'\.?0+$'), '');
 
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 4),

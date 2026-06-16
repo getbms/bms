@@ -85,13 +85,14 @@ class PosNotifier extends _$PosNotifier {
   @override
   PosState build() => const PosState();
 
-  void addItem(Product product) {
+  void addItem(Product product, {double qty = 1}) {
+    if (qty <= 0) return;
     final items = List<CartItem>.from(state.items);
     final idx = items.indexWhere((i) => i.product.id == product.id);
     if (idx >= 0) {
-      items[idx] = items[idx].copyWith(qty: items[idx].qty + 1);
+      items[idx] = items[idx].copyWith(qty: items[idx].qty + qty);
     } else {
-      items.add(CartItem(product: product, qty: 1, unitPrice: product.sellPrice));
+      items.add(CartItem(product: product, qty: qty, unitPrice: product.sellPrice));
     }
     state = state.copyWith(items: items);
   }

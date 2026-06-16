@@ -6,6 +6,14 @@ import '../features/auth/domain/auth_state.dart';
 import 'auth_provider.dart';
 import 'database_provider.dart';
 
+// Returns for a specific invoice
+
+final invoiceReturnsProvider =
+    FutureProvider.autoDispose.family<List<SalesReturn>, String>(
+  (ref, invoiceId) =>
+      ref.watch(returnsDaoProvider).getForInvoice(invoiceId),
+);
+
 // Filter state
 
 class InvoiceFilter {

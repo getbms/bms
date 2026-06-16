@@ -183,12 +183,68 @@ class _ProductCard extends ConsumerWidget {
   final Product product;
   final double stockQty;
 
+  void _add(BuildContext context, WidgetRef ref) {
+    if (_isDecimalUnit(product.unitType)) {
+      _showQtyDialog(context, ref);
+    } else {
+      ref.read(posProvider.notifier).addItem(product);
+    }
+  }
+
+  void _showQtyDialog(BuildContext context, WidgetRef ref) {
+    final ctrl = TextEditingController();
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(product.name),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType:
+              const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+          ],
+          decoration: InputDecoration(
+            labelText: 'Quantity',
+            suffixText: product.unitType.toUpperCase(),
+            hintText: '0.5',
+          ),
+          onSubmitted: (_) {
+            final qty = double.tryParse(ctrl.text.trim()) ?? 0;
+            if (qty > 0) {
+              ref.read(posProvider.notifier).addItem(product, qty: qty);
+            }
+            Navigator.pop(ctx);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final qty = double.tryParse(ctrl.text.trim()) ?? 0;
+              if (qty > 0) {
+                ref.read(posProvider.notifier).addItem(product, qty: qty);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final outOfStock = stockQty <= 0;
+    final decimal = _isDecimalUnit(product.unitType);
 
     return InkWell(
-      onTap: outOfStock ? null : () => ref.read(posProvider.notifier).addItem(product),
+      onTap: outOfStock ? null : () => _add(context, ref),
       borderRadius: BorderRadius.circular(12),
       child: Ink(
         decoration: BoxDecoration(
@@ -225,13 +281,26 @@ class _ProductCard extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 2),
-              Text(
-                CurrencyUtils.format(product.sellPrice),
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primary),
+              Row(
+                children: [
+                  Text(
+                    CurrencyUtils.format(product.sellPrice),
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primary),
+                  ),
+                  if (decimal) ...[
+                    const SizedBox(width: 4),
+                    Text(
+                      '/${product.unitType}',
+                      style: AppTextStyles.bodySmall,
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: 2),
               Text(
-                outOfStock ? 'Out of stock' : 'Qty: ${stockQty.toStringAsFixed(0)}',
+                outOfStock
+                    ? 'Out of stock'
+                    : 'Stock: ${_formatQty(stockQty)} ${product.unitType}',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: outOfStock ? AppColors.error : AppColors.textSecondary,
                 ),
@@ -258,6 +327,48 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
   void dispose() {
     _tenderedController.dispose();
     super.dispose();
+  }
+
+  void _editQty(CartItem item, PosNotifier notifier) {
+    final ctrl = TextEditingController(text: _formatQty(item.qty));
+    final decimal = _isDecimalUnit(item.product.unitType);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(item.product.name),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+          inputFormatters: decimal
+              ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+              : [FilteringTextInputFormatter.digitsOnly],
+          decoration: InputDecoration(
+            labelText: 'Quantity',
+            suffixText: item.product.unitType.toUpperCase(),
+          ),
+          onSubmitted: (_) {
+            final qty = double.tryParse(ctrl.text.trim()) ?? 0;
+            if (qty > 0) notifier.updateQty(item.product.id, qty);
+            Navigator.pop(ctx);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final qty = double.tryParse(ctrl.text.trim()) ?? 0;
+              if (qty > 0) notifier.updateQty(item.product.id, qty);
+              Navigator.pop(ctx);
+            },
+            child: const Text('Set'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _openCustomerSearch() {
@@ -455,66 +566,90 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                         borderRadius: BorderRadius.circular(8),
                         onLongPress: () => _showLineDiscountSheet(item),
                         child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(item.product.name, style: AppTextStyles.labelLarge),
+                                    if (item.discountPct > 0)
+                                      Text(
+                                        '${item.discountPct.toStringAsFixed(0)}% off  ${CurrencyUtils.format(item.unitPrice)}',
+                                        style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
+                                      )
+                                    else
+                                      Text(
+                                        '${CurrencyUtils.format(item.unitPrice)} / ${item.product.unitType}',
+                                        style: AppTextStyles.bodySmall,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                              // Qty stepper with step awareness + tap-to-edit
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(item.product.name, style: AppTextStyles.labelLarge),
-                                  if (item.discountPct > 0)
-                                    Text(
-                                      '${item.discountPct.toStringAsFixed(0)}% off  ${CurrencyUtils.format(item.unitPrice)}',
-                                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
-                                    )
-                                  else
-                                    Text(CurrencyUtils.format(item.unitPrice), style: AppTextStyles.bodySmall),
+                                  IconButton(
+                                    icon: const Icon(Icons.remove_circle_outline, size: 20),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () {
+                                      final step = _stepFor(item.product.unitType);
+                                      final next = double.parse(
+                                          (item.qty - step).toStringAsFixed(4));
+                                      notifier.updateQty(item.product.id, next);
+                                    },
+                                  ),
+                                  GestureDetector(
+                                    onTap: () => _editQty(item, notifier),
+                                    child: Container(
+                                      constraints: const BoxConstraints(minWidth: 44),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        border: Border.all(color: AppColors.border),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        _formatQty(item.qty),
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.labelLarge,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline, size: 20),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () {
+                                      final step = _stepFor(item.product.unitType);
+                                      final next = double.parse(
+                                          (item.qty + step).toStringAsFixed(4));
+                                      notifier.updateQty(item.product.id, next);
+                                    },
+                                  ),
                                 ],
                               ),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline, size: 20),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  onPressed: () => notifier.updateQty(item.product.id, item.qty - 1),
+                              const SizedBox(width: 6),
+                              SizedBox(
+                                width: 72,
+                                child: Text(
+                                  CurrencyUtils.format(item.lineTotal),
+                                  textAlign: TextAlign.end,
+                                  style: AppTextStyles.labelLarge,
                                 ),
-                                SizedBox(
-                                  width: 32,
-                                  child: Text(
-                                    item.qty.toStringAsFixed(item.qty % 1 == 0 ? 0 : 1),
-                                    textAlign: TextAlign.center,
-                                    style: AppTextStyles.labelLarge,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.add_circle_outline, size: 20),
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  onPressed: () => notifier.updateQty(item.product.id, item.qty + 1),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 8),
-                            SizedBox(
-                              width: 72,
-                              child: Text(
-                                CurrencyUtils.format(item.lineTotal),
-                                textAlign: TextAlign.end,
-                                style: AppTextStyles.labelLarge,
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.close, size: 18, color: AppColors.error),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: () => notifier.removeItem(item.product.id),
-                            ),
-                          ],
+                              IconButton(
+                                icon: const Icon(Icons.close, size: 18, color: AppColors.error),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () => notifier.removeItem(item.product.id),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                       ),
                     );
                   },
@@ -784,6 +919,29 @@ class _CustomerSearchDialogState extends ConsumerState<_CustomerSearchDialog> {
   }
 }
 
+
+// ── Unit-type helpers (shared across cart and product card) ──────────────────
+
+bool _isDecimalUnit(String unitType) =>
+    const {'kg', 'g', 'l', 'ml'}.contains(unitType.toLowerCase());
+
+double _stepFor(String unitType) {
+  switch (unitType.toLowerCase()) {
+    case 'kg':
+    case 'l':
+      return 0.25;
+    case 'g':
+    case 'ml':
+      return 50;
+    default:
+      return 1;
+  }
+}
+
+String _formatQty(double qty) {
+  // Trim trailing zeros: 1.500 → "1.5", 1.000 → "1", 0.250 → "0.25"
+  return qty.toStringAsFixed(3).replaceAll(RegExp(r'\.?0+$'), '');
+}
 
 class _ScanButton extends ConsumerWidget {
   const _ScanButton({required this.onProductFound});

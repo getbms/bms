@@ -76,6 +76,7 @@ class InventoryRepository {
     required String userName,
     String? refId,
     String? refType,
+    String? movementType,
   }) async {
     final existing = await _inventory.getStock(productId);
     final currentQty = existing?.qty ?? 0;
@@ -94,7 +95,7 @@ class InventoryRepository {
     await _inventory.recordMovement(
       StockMovementsCompanion.insert(
         id: _uuid.v7(),
-        type: delta >= 0 ? 'in' : 'out',
+        type: movementType ?? (delta >= 0 ? 'in' : 'out'),
         productId: productId,
         qty: delta.abs(),
         reason: Value(reason),
