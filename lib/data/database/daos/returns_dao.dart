@@ -9,6 +9,19 @@ part 'returns_dao.g.dart';
 class ReturnsDao extends DatabaseAccessor<AppDatabase> with _$ReturnsDaoMixin {
   ReturnsDao(super.db);
 
+  Future<String> nextReturnNumber() async {
+    final maxExpr = salesReturns.returnNo.max();
+    final row =
+        await (selectOnly(salesReturns)..addColumns([maxExpr])).getSingle();
+    final maxVal = row.read(maxExpr);
+    int maxNumber = 0;
+    if (maxVal != null) {
+      final match = RegExp(r'RET-(\d+)').firstMatch(maxVal);
+      if (match != null) maxNumber = int.tryParse(match.group(1)!) ?? 0;
+    }
+    return 'RET-${(maxNumber + 1).toString().padLeft(5, '0')}';
+  }
+
   Future<SalesReturn> insertReturnWithItems(
     SalesReturnsCompanion entry,
     List<ReturnItemsCompanion> items,
