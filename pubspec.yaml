@@ -73,7 +73,7 @@ dev_dependencies:
   json_serializable: ^6.8.0
 
   # Linting
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
   # Testing
   mocktail: ^1.0.4
