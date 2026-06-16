@@ -23,7 +23,21 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard — ${BmsDateUtils.formatDate(DateTime.now())}'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Dashboard'),
+            Text(
+              BmsDateUtils.formatDate(DateTime.now()),
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Colors.white70,
+              ),
+            ),
+          ],
+        ),
       ),
       body: stats.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -392,7 +406,11 @@ class _RevenueTrendChart extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 lineTouchData: LineTouchData(
+                  handleBuiltInTouches: true,
+                  touchSpotThreshold: 20,
                   touchTooltipData: LineTouchTooltipData(
+                    fitInsideHorizontally: true,
+                    fitInsideVertically: true,
                     getTooltipItems: (spots) => spots.map((spot) {
                       final day = trend[spot.x.toInt()];
                       final isRevenue = spot.barIndex == 0;
