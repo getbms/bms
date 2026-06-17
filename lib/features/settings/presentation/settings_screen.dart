@@ -321,16 +321,19 @@ class _StoreInfoTileState extends ConsumerState<_StoreInfoTile> {
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
-            icon: _saving
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.save_outlined, size: 18),
-            label: Text(_saving ? 'Saving...' : 'Save Store Info'),
-            onPressed: _saving ? null : _save,
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton.icon(
+              icon: _saving
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.save_outlined, size: 18),
+              label: Text(_saving ? 'Saving...' : 'Save Store Info'),
+              onPressed: _saving ? null : _save,
+            ),
           ),
         ],
       ),
@@ -346,11 +349,9 @@ class _LanguageTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = ref.watch(languageProvider);
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
-      ),
+    return Material(
+      color: AppColors.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
       child: RadioGroup<String>(
         groupValue: current,
         onChanged: (v) async {
