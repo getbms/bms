@@ -41,122 +41,142 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     ref.listen(authStateProvider, (_, next) {
       next.whenOrNull(
         error: (e, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error),
+          SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: AppColors.error),
         ),
       );
     });
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      // SafeArea + SingleChildScrollView prevents the form from being hidden
-      // behind the soft keyboard on short screens.
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  MediaQuery.of(context).padding.bottom,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      child: Card(
+        // LayoutBuilder + IntrinsicHeight keeps the card vertically centred
+        // on desktop while SingleChildScrollView prevents keyboard overflow
+        // on mobile/short screens.
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(40),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Center(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 32),
+                          child: ConstrainedBox(
+                            constraints:
+                                const BoxConstraints(maxWidth: 400),
+                            child: Card(
+                              child: Padding(
+                                padding: const EdgeInsets.all(40),
+                                child: Form(
+                                  key: _formKey,
                                   child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
-                                      SvgPicture.asset(
-                                        'assets/images/bms_logo.svg',
-                                        height: 72,
+                                      Center(
+                                        child: Column(
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/images/bms_logo.svg',
+                                              height: 72,
+                                            ),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              'Business Management System',
+                                              style: AppTextStyles.bodySmall
+                                                  .copyWith(
+                                                color:
+                                                    AppColors.textSecondary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 36),
+                                      TextFormField(
+                                        controller: _usernameController,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Username',
+                                          prefixIcon:
+                                              Icon(Icons.person_outline),
+                                        ),
+                                        textInputAction:
+                                            TextInputAction.next,
+                                        autofocus: true,
+                                        validator: (v) =>
+                                            (v == null ||
+                                                    v.trim().isEmpty)
+                                                ? 'Required'
+                                                : null,
                                       ),
                                       const SizedBox(height: 16),
-                                      Text(
-                                        'Business Management System',
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: AppColors.textSecondary,
+                                      TextFormField(
+                                        controller: _passwordController,
+                                        obscureText: _obscurePassword,
+                                        decoration: InputDecoration(
+                                          labelText: 'Password',
+                                          prefixIcon:
+                                              const Icon(Icons.lock_outline),
+                                          suffixIcon: IconButton(
+                                            icon: Icon(_obscurePassword
+                                                ? Icons.visibility_off
+                                                : Icons.visibility),
+                                            onPressed: () => setState(() =>
+                                                _obscurePassword =
+                                                    !_obscurePassword),
+                                          ),
                                         ),
+                                        textInputAction:
+                                            TextInputAction.done,
+                                        onFieldSubmitted: (_) => _submit(),
+                                        validator: (v) =>
+                                            (v == null || v.isEmpty)
+                                                ? 'Required'
+                                                : null,
+                                      ),
+                                      const SizedBox(height: 32),
+                                      ElevatedButton(
+                                        onPressed: authAsync.isLoading
+                                            ? null
+                                            : _submit,
+                                        child: authAsync.isLoading
+                                            ? const SizedBox.square(
+                                                dimension: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: Colors.white),
+                                              )
+                                            : const Text('Sign In'),
                                       ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(height: 36),
-                                TextFormField(
-                                  controller: _usernameController,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Username',
-                                    prefixIcon: Icon(Icons.person_outline),
-                                  ),
-                                  textInputAction: TextInputAction.next,
-                                  autofocus: true,
-                                  validator: (v) =>
-                                      (v == null || v.trim().isEmpty)
-                                          ? 'Required'
-                                          : null,
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: _obscurePassword,
-                                  decoration: InputDecoration(
-                                    labelText: 'Password',
-                                    prefixIcon: const Icon(Icons.lock_outline),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(_obscurePassword
-                                          ? Icons.visibility_off
-                                          : Icons.visibility),
-                                      onPressed: () => setState(() =>
-                                          _obscurePassword = !_obscurePassword),
-                                    ),
-                                  ),
-                                  textInputAction: TextInputAction.done,
-                                  onFieldSubmitted: (_) => _submit(),
-                                  validator: (v) =>
-                                      (v == null || v.isEmpty) ? 'Required' : null,
-                                ),
-                                const SizedBox(height: 32),
-                                ElevatedButton(
-                                  onPressed: authAsync.isLoading ? null : _submit,
-                                  child: authAsync.isLoading
-                                      ? const SizedBox.square(
-                                          dimension: 20,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white),
-                                        )
-                                      : const Text('Sign In'),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Text(
-                    '© ${DateTime.now().year} BMS. All rights reserved.',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textDisabled,
-                      fontSize: 11,
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Text(
+                        '© ${DateTime.now().year} BMS. All rights reserved.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textDisabled,
+                          fontSize: 11,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),

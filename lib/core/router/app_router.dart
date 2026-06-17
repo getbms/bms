@@ -24,16 +24,24 @@ import 'route_guard.dart';
 
 part 'app_router.g.dart';
 
-@riverpod
+class _RouterNotifier extends ChangeNotifier {
+  void notify() => notifyListeners();
+}
+
+@Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  final authState = ref.watch(currentAuthStateProvider);
+  final notifier = _RouterNotifier();
+
+  ref.listen(currentAuthStateProvider, (_, __) => notifier.notify());
+  ref.onDispose(notifier.dispose);
 
   return GoRouter(
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: false,
+    refreshListenable: notifier,
     redirect: (context, state) => RouteGuard.redirect(
       state: state,
-      authState: authState,
+      authState: ref.read(currentAuthStateProvider),
     ),
     routes: [
       GoRoute(
