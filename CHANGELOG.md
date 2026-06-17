@@ -6,8 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-## [Phase 5] - 2026-06-18
-
 ### Added
 - Debtors screen: tap any debtor to open a detail sheet showing outstanding balance, credit limit, payment history, and a "Record Payment" button
 - Customer payment recording: amount, payment method (cash/card/bank transfer/cheque), and optional notes; updates balance immediately
