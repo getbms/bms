@@ -1,112 +1,106 @@
-name: Release
+name: Desktop Release
 
 on:
   push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+    branches: [master]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build-windows:
-    name: Windows
+    name: Build Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2  # subosito/flutter-action@v2
         with:
           flutter-version: '3.44.2'
           channel: stable
           cache: true
 
       - run: flutter pub get
-
-      - run: flutter pub run build_runner build --delete-conflicting-outputs
-
+      - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build windows --release
 
-      - name: Package
+      - name: Zip Windows build
         shell: pwsh
-        run: Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath bms-windows.zip
+        run: Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath BMS-windows.zip
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # actions/upload-artifact@v4
         with:
-          name: bms-windows
-          path: bms-windows.zip
+          name: windows-build
+          path: BMS-windows.zip
+          retention-days: 1
 
   build-macos:
-    name: macOS
+    name: Build macOS
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
 
-      - uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2  # subosito/flutter-action@v2
         with:
           flutter-version: '3.44.2'
           channel: stable
           cache: true
 
       - run: flutter pub get
-
-      - run: flutter pub run build_runner build --delete-conflicting-outputs
-
+      - run: dart run build_runner build --delete-conflicting-outputs
       - run: flutter build macos --release
 
       - name: Ad-hoc sign
-        run: codesign --force --deep --sign - build/macos/Build/Products/Release/bms.app
-
-      - name: Package
         run: |
-          cd build/macos/Build/Products/Release
-          zip -r --symlinks ../../../../../bms-macos.zip bms.app
+          APP=$(find build/macos/Build/Products/Release -name "*.app" -maxdepth 1 | head -1)
+          codesign --force --deep --sign - "$APP"
 
-      - uses: actions/upload-artifact@v7
+      - name: Zip macOS app
+        run: |
+          APP=$(find build/macos/Build/Products/Release -name "*.app" -maxdepth 1 | head -1)
+          ditto -c -k --keepParent "$APP" BMS-macos.zip
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # actions/upload-artifact@v4
         with:
-          name: bms-macos
-          path: bms-macos.zip
-
-  build-web:
-    name: Web
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.2'
-          channel: stable
-          cache: true
-
-      - run: flutter pub get
-
-      - run: flutter pub run build_runner build --delete-conflicting-outputs
-
-      - run: flutter build web --release --no-wasm
-
-      - name: Package
-        run: zip -r bms-web.zip build/web
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: bms-web
-          path: bms-web.zip
+          name: macos-build
+          path: BMS-macos.zip
+          retention-days: 1
 
   release:
-    name: Create GitHub Release
-    needs: [build-windows, build-macos, build-web]
+    name: Create Release
+    needs: [build-windows, build-macos]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v8
+      - name: Generate timestamp tag
+        id: tag
+        run: echo "name=build-$(date -u +%Y%m%d-%H%M%S)" >> "$GITHUB_OUTPUT"
 
-      - name: Publish release
-        uses: softprops/action-gh-release@v3
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # actions/download-artifact@v4
         with:
-          files: |
-            bms-windows/bms-windows.zip
-            bms-macos/bms-macos.zip
-            bms-web/bms-web.zip
+          name: windows-build
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # actions/download-artifact@v4
+        with:
+          name: macos-build
+
+      - name: Rename artifacts with tag
+        run: |
+          mv BMS-windows.zip "BMS-windows-${{ steps.tag.outputs.name }}.zip"
+          mv BMS-macos.zip "BMS-macos-${{ steps.tag.outputs.name }}.zip"
+
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
+          prerelease: true
           generate_release_notes: true
+          target_commitish: ${{ github.sha }}
+          files: |
+            BMS-windows-${{ steps.tag.outputs.name }}.zip
+            BMS-macos-${{ steps.tag.outputs.name }}.zip
