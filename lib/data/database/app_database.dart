@@ -86,8 +86,8 @@ class AppDatabase extends _$AppDatabase {
       );
 
   static const _devUserId = '00000000-0000-0000-0000-000000000001';
-  static const _devUsername = 'iamvirul';
-  static const _devPassword = '200528100634@Vn';
+  static const _devUsername = 'dev';
+  static const _devPassword = 'changeme';
 
   Future<void> _ensureDevAccount() async {
     final existing = await (select(users)
@@ -102,7 +102,7 @@ class AppDatabase extends _$AppDatabase {
     await into(users).insert(
       UsersCompanion.insert(
         id: _devUserId,
-        name: 'iamvirul',
+        name: 'Developer',
         username: _devUsername,
         passwordHash: hash,
         role: const Value('developer'),
