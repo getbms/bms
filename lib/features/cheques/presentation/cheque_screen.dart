@@ -362,68 +362,12 @@ class _ChequeRow extends ConsumerWidget {
         _ => AppColors.warningLight,
       };
 
-  void _showStatusMenu(BuildContext context, WidgetRef ref) {
-    final actions = ref.read(chequeActionsProvider);
+  void _openDetail(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Mark as Deposited'),
-              leading: const Icon(Icons.account_balance),
-              enabled: cheque.status == 'pending',
-              onTap: () async {
-                Navigator.of(ctx).pop();
-                try {
-                  await actions.updateStatus(cheque.id, 'deposited');
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-                    );
-                  }
-                }
-              },
-            ),
-            ListTile(
-              title: const Text('Mark as Cleared'),
-              leading: const Icon(Icons.check_circle_outline),
-              enabled: cheque.status != 'cleared',
-              onTap: () async {
-                Navigator.of(ctx).pop();
-                try {
-                  await actions.updateStatus(cheque.id, 'cleared');
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-                    );
-                  }
-                }
-              },
-            ),
-            ListTile(
-              title: const Text('Mark as Bounced'),
-              leading: const Icon(Icons.cancel_outlined),
-              enabled: cheque.status != 'bounced',
-              onTap: () async {
-                Navigator.of(ctx).pop();
-                try {
-                  await actions.updateStatus(cheque.id, 'bounced');
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-                    );
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-      ),
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _ChequeDetailSheet(cheque: cheque),
     );
   }
 
@@ -436,6 +380,7 @@ class _ChequeRow extends ConsumerWidget {
           if (cheque.chequeNo != null) '#${cheque.chequeNo}',
           if (cheque.bank != null) cheque.bank!,
           'Due: ${BmsDateUtils.formatDate(cheque.dueDate)}',
+          if (cheque.representationCount > 0) 'Re-presented ${cheque.representationCount}x',
         ].join(' · '),
         style: AppTextStyles.bodySmall,
       ),
@@ -465,10 +410,320 @@ class _ChequeRow extends ConsumerWidget {
         cheque.type == 'received' ? Icons.arrow_downward : Icons.arrow_upward,
         color: cheque.type == 'received' ? AppColors.success : AppColors.error,
       ),
-      onLongPress: () => _showStatusMenu(context, ref),
-      onTap: () => _showStatusMenu(context, ref),
+      onTap: () => _openDetail(context),
     );
   }
+}
+
+class _ChequeDetailSheet extends ConsumerWidget {
+  const _ChequeDetailSheet({required this.cheque});
+  final Cheque cheque;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final actions = ref.read(chequeActionsProvider);
+    return DraggableScrollableSheet(
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (_, controller) => ListView(
+        controller: controller,
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(cheque.partyName, style: AppTextStyles.titleLarge),
+                    Text(
+                      '${cheque.type == 'received' ? 'Received from' : 'Issued to'} · ${cheque.partyType}',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              Text(CurrencyUtils.format(cheque.amount),
+                  style: AppTextStyles.titleLarge.copyWith(color: AppColors.primary)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _DetailRow(label: 'Cheque No.', value: cheque.chequeNo ?? '-'),
+          _DetailRow(label: 'Bank', value: cheque.bank ?? '-'),
+          _DetailRow(label: 'Due Date', value: BmsDateUtils.formatDate(cheque.dueDate)),
+          if (cheque.notes != null) _DetailRow(label: 'Notes', value: cheque.notes!),
+          const SizedBox(height: 20),
+          Text('Timeline', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 8),
+          _TimelineItem(
+            icon: Icons.fiber_new_outlined,
+            color: AppColors.primary,
+            label: 'Created',
+            date: cheque.createdAt,
+          ),
+          if (cheque.depositDate != null)
+            _TimelineItem(
+              icon: Icons.account_balance_outlined,
+              color: AppColors.info,
+              label: 'Deposited',
+              date: cheque.depositDate!,
+            ),
+          if (cheque.bounceDate != null) ...[
+            _TimelineItem(
+              icon: Icons.cancel_outlined,
+              color: AppColors.error,
+              label: 'Bounced${cheque.bounceReason != null ? ' - ${cheque.bounceReason}' : ''}',
+              date: cheque.bounceDate!,
+            ),
+            if (cheque.representationCount > 0)
+              _TimelineItem(
+                icon: Icons.refresh_outlined,
+                color: AppColors.warning,
+                label: 'Re-presented ${cheque.representationCount}x',
+                date: cheque.updatedAt,
+              ),
+          ],
+          if (cheque.status == 'cleared')
+            _TimelineItem(
+              icon: Icons.check_circle_outline,
+              color: AppColors.success,
+              label: 'Cleared',
+              date: cheque.updatedAt,
+            ),
+          const SizedBox(height: 24),
+          ..._buildActions(context, actions),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildActions(BuildContext context, ChequeActions actions) {
+    Future<void> run(Future<void> Function() fn) async {
+      try {
+        Navigator.of(context).pop();
+        await fn();
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+          );
+        }
+      }
+    }
+
+    if (cheque.status == 'cleared') return [];
+
+    final widgets = <Widget>[];
+
+    if (cheque.status == 'pending') {
+      widgets.add(ElevatedButton.icon(
+        icon: const Icon(Icons.account_balance_outlined),
+        label: const Text('Deposit'),
+        onPressed: () => _depositFlow(context, actions),
+      ));
+      widgets.add(const SizedBox(height: 8));
+    }
+
+    if (cheque.status == 'deposited') {
+      widgets.add(ElevatedButton.icon(
+        icon: const Icon(Icons.check_circle_outline),
+        label: const Text('Mark as Cleared'),
+        style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+        onPressed: () => run(() => actions.clear(cheque.id)),
+      ));
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(OutlinedButton.icon(
+        icon: const Icon(Icons.cancel_outlined),
+        label: const Text('Mark as Bounced'),
+        style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
+        onPressed: () => _bounceFlow(context, actions),
+      ));
+    }
+
+    if (cheque.status == 'bounced') {
+      widgets.add(ElevatedButton.icon(
+        icon: const Icon(Icons.refresh_outlined),
+        label: const Text('Re-present'),
+        style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
+        onPressed: () => run(() => actions.represent(cheque.id)),
+      ));
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(OutlinedButton.icon(
+        icon: const Icon(Icons.check_circle_outline),
+        label: const Text('Mark as Cleared'),
+        style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
+        onPressed: () => run(() => actions.clear(cheque.id)),
+      ));
+    }
+
+    return widgets;
+  }
+
+  void _depositFlow(BuildContext context, ChequeActions actions) {
+    DateTime depositDate = DateTime.now();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(ctx).bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('Confirm Deposit', style: AppTextStyles.titleMedium),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: depositDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2035),
+                  );
+                  if (picked != null) setModal(() => depositDate = picked);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: 'Deposit Date'),
+                  child: Text(BmsDateUtils.formatDate(depositDate), style: AppTextStyles.bodyMedium),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                  try {
+                    await actions.deposit(cheque.id, depositDate: depositDate);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Confirm Deposit'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _bounceFlow(BuildContext context, ChequeActions actions) {
+    DateTime bounceDate = DateTime.now();
+    final reasonCtrl = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(ctx).bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('Record Bounce', style: AppTextStyles.titleMedium),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: bounceDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2035),
+                  );
+                  if (picked != null) setModal(() => bounceDate = picked);
+                },
+                child: InputDecorator(
+                  decoration: const InputDecoration(labelText: 'Bounce Date'),
+                  child: Text(BmsDateUtils.formatDate(bounceDate), style: AppTextStyles.bodyMedium),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                decoration: const InputDecoration(labelText: 'Reason (optional)'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                onPressed: () async {
+                  final reason = reasonCtrl.text.trim().isEmpty ? null : reasonCtrl.text.trim();
+                  reasonCtrl.dispose();
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                  try {
+                    await actions.bounce(cheque.id, bounceDate: bounceDate, reason: reason);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+                      );
+                    }
+                  }
+                },
+                child: const Text('Confirm Bounce'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(label,
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            ),
+            Expanded(child: Text(value, style: AppTextStyles.bodySmall)),
+          ],
+        ),
+      );
+}
+
+class _TimelineItem extends StatelessWidget {
+  const _TimelineItem({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.date,
+  });
+  final IconData icon;
+  final Color color;
+  final String label;
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 10),
+            Expanded(child: Text(label, style: AppTextStyles.bodySmall)),
+            Text(BmsDateUtils.formatDate(date),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+          ],
+        ),
+      );
 }
 
 class _AddChequeSheet extends ConsumerStatefulWidget {

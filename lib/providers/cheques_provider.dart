@@ -90,6 +90,58 @@ class ChequeActions {
           newValue: {'status': status},
         );
   }
+
+  Future<void> deposit(String id, {required DateTime depositDate}) async {
+    await _ref.read(chequesDaoProvider).deposit(id, depositDate: depositDate);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'deposited', 'depositDate': depositDate.toIso8601String()},
+        );
+  }
+
+  Future<void> bounce(String id, {required DateTime bounceDate, String? reason}) async {
+    await _ref.read(chequesDaoProvider).bounce(id, bounceDate: bounceDate, reason: reason);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'bounced', 'bounceDate': bounceDate.toIso8601String(), 'reason': reason},
+        );
+  }
+
+  Future<void> represent(String id) async {
+    await _ref.read(chequesDaoProvider).represent(id);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'pending', 'action': 're-presented'},
+        );
+  }
+
+  Future<void> clear(String id) async {
+    await _ref.read(chequesDaoProvider).clear(id);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'cleared'},
+        );
+  }
 }
 
 final chequeActionsProvider =

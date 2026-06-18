@@ -64,7 +64,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -84,6 +84,12 @@ class AppDatabase extends _$AppDatabase {
           if (from < 4) {
             await m.addColumn(pettyCash, pettyCash.approvalNotes);
             await m.addColumn(pettyCash, pettyCash.approvedAt);
+          }
+          if (from < 5) {
+            await m.addColumn(cheques, cheques.depositDate);
+            await m.addColumn(cheques, cheques.bounceReason);
+            await m.addColumn(cheques, cheques.bounceDate);
+            await m.addColumn(cheques, cheques.representationCount);
           }
         },
         beforeOpen: (details) async {
