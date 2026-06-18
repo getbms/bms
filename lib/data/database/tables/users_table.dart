@@ -10,6 +10,8 @@ class Users extends Table {
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   IntColumn get failedAttempts => integer().withDefault(const Constant(0))();
   DateTimeColumn get lockedUntil => dateTime().nullable()();
+  DateTimeColumn get lastLoginAt => dateTime().nullable()();
+  DateTimeColumn get passwordChangedAt => dateTime().nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 

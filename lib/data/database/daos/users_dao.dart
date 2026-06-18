@@ -50,4 +50,17 @@ class UsersDao extends DatabaseAccessor<AppDatabase> with _$UsersDaoMixin {
   Future<void> setActive(String id, {required bool active}) =>
       (update(users)..where((u) => u.id.equals(id)))
           .write(UsersCompanion(isActive: Value(active), updatedAt: Value(DateTime.now())));
+
+  Future<void> recordLogin(String id) =>
+      (update(users)..where((u) => u.id.equals(id))).write(
+        UsersCompanion(lastLoginAt: Value(DateTime.now()), updatedAt: Value(DateTime.now())),
+      );
+
+  Future<void> recordPasswordChange(String id) =>
+      (update(users)..where((u) => u.id.equals(id))).write(
+        UsersCompanion(
+          passwordChangedAt: Value(DateTime.now()),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 }

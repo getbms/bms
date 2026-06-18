@@ -7,6 +7,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+
 final usersStreamProvider = StreamProvider.autoDispose<List<User>>(
     (ref) => ref.watch(usersDaoProvider).watchAll());
 
@@ -122,10 +123,31 @@ class UserActions {
       id: _uuid.v7(),
       entityType: 'user',
       entityId: id,
-      action: active ? 'update' : 'update',
+      action: 'update',
       userId: _actorId,
       userName: _actorName,
       newValue: {'isActive': active},
+    );
+  }
+
+  Future<void> changeOwnPassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final id = _actorId;
+    await _ref.read(authRepositoryProvider).changePassword(
+          userId: id,
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+        );
+    await _ref.read(auditLogDaoProvider).log(
+      id: _uuid.v7(),
+      entityType: 'user',
+      entityId: id,
+      action: 'update',
+      userId: id,
+      userName: _actorName,
+      newValue: {'action': 'password_changed'},
     );
   }
 }

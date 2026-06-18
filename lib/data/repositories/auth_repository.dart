@@ -120,5 +120,6 @@ class AuthRepository {
       passwordHash: Value(newHash),
       updatedAt: Value(DateTime.now()),
     ));
+    await _dao.recordPasswordChange(userId);
   }
 }

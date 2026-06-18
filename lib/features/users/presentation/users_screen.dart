@@ -136,7 +136,7 @@ class _UserTile extends ConsumerWidget {
           ],
         ],
       ),
-      onTap: canManage ? () => _openDetail(context, ref, isDevSeed) : null,
+      onTap: (canManage || isCurrentUser) ? () => _openDetail(context, ref, isDevSeed) : null,
     );
   }
 
@@ -154,7 +154,12 @@ class _UserTile extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => _UserDetailSheet(user: user, isDevSeed: isDevSeed),
+      builder: (_) => _UserDetailSheet(
+        user: user,
+        isDevSeed: isDevSeed,
+        isCurrentUser: user.id == currentUserId,
+        canManage: canManage,
+      ),
     );
   }
 }
@@ -184,9 +189,16 @@ class _StatusChip extends StatelessWidget {
 }
 
 class _UserDetailSheet extends ConsumerWidget {
-  const _UserDetailSheet({required this.user, required this.isDevSeed});
+  const _UserDetailSheet({
+    required this.user,
+    required this.isDevSeed,
+    required this.isCurrentUser,
+    required this.canManage,
+  });
   final User user;
   final bool isDevSeed;
+  final bool isCurrentUser;
+  final bool canManage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -199,8 +211,38 @@ class _UserDetailSheet extends ConsumerWidget {
           Text(user.name, style: AppTextStyles.titleLarge),
           const SizedBox(height: 4),
           Text('@${user.username}  ·  ${user.role.toUpperCase()}', style: AppTextStyles.bodySmall),
+          if (user.lastLoginAt != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Last login: ${_fmt(user.lastLoginAt!)}',
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
+          if (user.passwordChangedAt != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              'Password changed: ${_fmt(user.passwordChangedAt!)}',
+              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
           const SizedBox(height: 20),
-          if (!isDevSeed) ...[
+          if (isCurrentUser) ...[
+            OutlinedButton.icon(
+              icon: const Icon(Icons.lock_outlined),
+              label: const Text('Change My Password'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useSafeArea: true,
+                  builder: (_) => _ChangeOwnPasswordSheet(userName: user.name),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (canManage && !isDevSeed && !isCurrentUser) ...[
             OutlinedButton.icon(
               icon: Icon(user.isActive ? Icons.block : Icons.check_circle_outline),
               label: Text(user.isActive ? 'Deactivate Account' : 'Activate Account'),
@@ -239,7 +281,8 @@ class _UserDetailSheet extends ConsumerWidget {
                 );
               },
             ),
-          ] else
+          ],
+          if (isDevSeed)
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -254,6 +297,15 @@ class _UserDetailSheet extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  static String _fmt(DateTime dt) {
+    final local = dt.toLocal();
+    return '${local.day.toString().padLeft(2, '0')}/'
+        '${local.month.toString().padLeft(2, '0')}/'
+        '${local.year}  '
+        '${local.hour.toString().padLeft(2, '0')}:'
+        '${local.minute.toString().padLeft(2, '0')}';
   }
 }
 
@@ -484,6 +536,116 @@ class _EditUserSheetState extends ConsumerState<_EditUserSheet> {
   }
 }
 
+
+class _ChangeOwnPasswordSheet extends ConsumerStatefulWidget {
+  const _ChangeOwnPasswordSheet({required this.userName});
+  final String userName;
+
+  @override
+  ConsumerState<_ChangeOwnPasswordSheet> createState() => _ChangeOwnPasswordSheetState();
+}
+
+class _ChangeOwnPasswordSheetState extends ConsumerState<_ChangeOwnPasswordSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _current = TextEditingController();
+  final _newPass = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _obscureCurrent = true;
+  bool _obscureNew = true;
+  bool _saving = false;
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _newPass.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(userActionsProvider).changeOwnPassword(
+            currentPassword: _current.text,
+            newPassword: _newPass.text,
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password changed.')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+      );
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Change Password - ${widget.userName}', style: AppTextStyles.titleLarge),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _current,
+              obscureText: _obscureCurrent,
+              decoration: InputDecoration(
+                labelText: 'Current Password *',
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                ),
+              ),
+              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _newPass,
+              obscureText: _obscureNew,
+              decoration: InputDecoration(
+                labelText: 'New Password *',
+                suffixIcon: IconButton(
+                  icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                ),
+              ),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Required';
+                if (v.length < 6) return 'Min 6 characters';
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _confirm,
+              obscureText: _obscureNew,
+              decoration: const InputDecoration(labelText: 'Confirm New Password *'),
+              validator: (v) => v != _newPass.text ? 'Passwords do not match' : null,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _saving ? null : _save,
+              child: _saving
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Change Password'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _ResetPasswordSheet extends ConsumerStatefulWidget {
   const _ResetPasswordSheet({required this.userId, required this.userName});
