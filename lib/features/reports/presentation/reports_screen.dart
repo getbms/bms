@@ -26,6 +26,12 @@ Future<void> _shareCsv(String filename, String csv) async {
   );
 }
 
+String _csvField(String value) {
+  final escaped = value.replaceAll('"', '""');
+  final safe = RegExp(r'^[=+\-@]').hasMatch(escaped) ? '\t$escaped' : escaped;
+  return '"$safe"';
+}
+
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
 
@@ -183,20 +189,27 @@ class _PLTabState extends ConsumerState<_PLTab> {
                         textStyle: AppTextStyles.bodySmall,
                         visualDensity: VisualDensity.compact,
                       ),
-                      onPressed: () {
-                        final df = DateFormat('yyyy-MM-dd');
-                        final lines = [
-                          'Date,Revenue,COGS,Gross Profit,Margin %',
-                          ...daily.map((d) {
-                            final gp = d.revenue - d.cogs;
-                            final m = d.revenue > 0 ? gp / d.revenue * 100 : 0;
-                            return '${df.format(d.date)},${d.revenue.toStringAsFixed(2)},${d.cogs.toStringAsFixed(2)},${gp.toStringAsFixed(2)},${m.toStringAsFixed(2)}';
-                          }),
-                        ];
-                        _shareCsv(
-                          'pl_${df.format(_range.start)}_${df.format(_range.end)}.csv',
-                          lines.join('\n'),
-                        );
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          final df = DateFormat('yyyy-MM-dd');
+                          final lines = [
+                            'Date,Revenue,COGS,Gross Profit,Margin %',
+                            ...daily.map((d) {
+                              final gp = d.revenue - d.cogs;
+                              final m = d.revenue > 0 ? gp / d.revenue * 100 : 0;
+                              return '${df.format(d.date)},${d.revenue.toStringAsFixed(2)},${d.cogs.toStringAsFixed(2)},${gp.toStringAsFixed(2)},${m.toStringAsFixed(2)}';
+                            }),
+                          ];
+                          await _shareCsv(
+                            'pl_${df.format(_range.start)}_${df.format(_range.end)}.csv',
+                            lines.join('\n'),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Export failed. Please try again.')),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -369,16 +382,23 @@ class _StockTab extends ConsumerWidget {
                         textStyle: AppTextStyles.bodySmall,
                         visualDensity: VisualDensity.compact,
                       ),
-                      onPressed: () {
-                        final lines = [
-                          'Product,Qty,Unit Cost,Total Value',
-                          ...rows.map((r) =>
-                              '"${r.name}",${r.qty.toStringAsFixed(2)},${r.costPrice.toStringAsFixed(2)},${r.value.toStringAsFixed(2)}'),
-                        ];
-                        _shareCsv(
-                          'stock_valuation_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.csv',
-                          lines.join('\n'),
-                        );
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          final lines = [
+                            'Product,Qty,Unit Cost,Total Value',
+                            ...rows.map((r) =>
+                                '${_csvField(r.name)},${r.qty.toStringAsFixed(2)},${r.costPrice.toStringAsFixed(2)},${r.value.toStringAsFixed(2)}'),
+                          ];
+                          await _shareCsv(
+                            'stock_valuation_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.csv',
+                            lines.join('\n'),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Export failed. Please try again.')),
+                          );
+                        }
                       },
                     ),
                   ),
@@ -591,17 +611,24 @@ class _AgingTab extends ConsumerWidget {
                         textStyle: AppTextStyles.bodySmall,
                         visualDensity: VisualDensity.compact,
                       ),
-                      onPressed: () {
-                        const buckets = ['0-30d', '31-60d', '61-90d', '90+d'];
-                        final lines = [
-                          'Customer,Balance,Aging Bucket',
-                          ...rows.map((r) =>
-                              '"${r.name}",${r.balance.toStringAsFixed(2)},${buckets[r.agingBucket.clamp(0, 3)]}'),
-                        ];
-                        _shareCsv(
-                          'debtor_aging_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.csv',
-                          lines.join('\n'),
-                        );
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          const buckets = ['0-30d', '31-60d', '61-90d', '90+d'];
+                          final lines = [
+                            'Customer,Balance,Aging Bucket',
+                            ...rows.map((r) =>
+                                '${_csvField(r.name)},${r.balance.toStringAsFixed(2)},${buckets[r.agingBucket.clamp(0, 3)]}'),
+                          ];
+                          await _shareCsv(
+                            'debtor_aging_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.csv',
+                            lines.join('\n'),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Export failed. Please try again.')),
+                          );
+                        }
                       },
                     ),
                   ],

@@ -52,8 +52,8 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        fillColor: AppColors.surfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.border),
@@ -70,23 +70,21 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        // Resting label inside the field (13sp keeps it proportional to dense inputs)
         labelStyle: const TextStyle(
           fontFamily: 'Inter',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
         ),
-        // Floating label above the field when focused/filled
         floatingLabelStyle: const TextStyle(
           fontFamily: 'Inter',
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.borderFocus,
         ),
         hintStyle: const TextStyle(
           fontFamily: 'Inter',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textDisabled,
         ),
