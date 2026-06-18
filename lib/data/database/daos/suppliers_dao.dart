@@ -5,7 +5,7 @@ import 'package:drift/drift.dart';
 
 part 'suppliers_dao.g.dart';
 
-@DriftAccessor(tables: [Suppliers, Purchases, PurchaseItems, SupplierPayments])
+@DriftAccessor(tables: [Suppliers, PurchaseOrders, PurchaseOrderItems, Purchases, PurchaseItems, SupplierPayments])
 class SuppliersDao extends DatabaseAccessor<AppDatabase> with _$SuppliersDaoMixin {
   SuppliersDao(super.db);
 
@@ -58,6 +58,47 @@ class SuppliersDao extends DatabaseAccessor<AppDatabase> with _$SuppliersDaoMixi
             ..where((p) => p.supplierId.equals(supplierId))
             ..orderBy([(p) => OrderingTerm.desc(p.createdAt)]))
           .get();
+
+  Future<String> insertPO(PurchaseOrdersCompanion entry) =>
+      into(purchaseOrders).insertReturning(entry).then((po) => po.id);
+
+  Future<void> insertPOItems(List<PurchaseOrderItemsCompanion> items) =>
+      batch((b) => b.insertAll(purchaseOrderItems, items));
+
+  Future<List<PurchaseOrder>> getAllPOs() =>
+      (select(purchaseOrders)..orderBy([(po) => OrderingTerm.desc(po.createdAt)])).get();
+
+  Future<List<PurchaseOrder>> getPOsBySupplier(String supplierId) =>
+      (select(purchaseOrders)
+            ..where((po) => po.supplierId.equals(supplierId))
+            ..orderBy([(po) => OrderingTerm.desc(po.createdAt)]))
+          .get();
+
+  Future<List<PurchaseOrderItem>> getPOItems(String poId) =>
+      (select(purchaseOrderItems)..where((i) => i.poId.equals(poId))).get();
+
+  Future<void> updatePOStatus(String poId, String status) =>
+      (update(purchaseOrders)..where((po) => po.id.equals(poId)))
+          .write(PurchaseOrdersCompanion(
+        status: Value(status),
+        updatedAt: Value(DateTime.now()),
+      ));
+
+  Future<String> nextPoNumber() async {
+    return transaction(() async {
+      final maxExpr = purchaseOrders.poNumber.max();
+      final row = await (selectOnly(purchaseOrders)..addColumns([maxExpr])).getSingle();
+      final maxPo = row.read(maxExpr);
+
+      int maxNumber = 0;
+      if (maxPo != null) {
+        final match = RegExp(r'PO-(\d+)').firstMatch(maxPo);
+        if (match != null) maxNumber = int.tryParse(match.group(1)!) ?? 0;
+      }
+
+      return 'PO-${(maxNumber + 1).toString().padLeft(5, '0')}';
+    });
+  }
 
   Future<String> nextGrnNumber() async {
     return transaction(() async {

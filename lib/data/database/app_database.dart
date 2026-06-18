@@ -39,6 +39,8 @@ part 'app_database.g.dart';
     Purchases,
     PurchaseItems,
     SupplierPayments,
+    PurchaseOrders,
+    PurchaseOrderItems,
     Invoices,
     InvoiceItems,
     NoInvoiceSales,
@@ -64,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -90,6 +92,13 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(cheques, cheques.bounceReason);
             await m.addColumn(cheques, cheques.bounceDate);
             await m.addColumn(cheques, cheques.representationCount);
+          }
+          if (from < 6) {
+            await m.createTable(purchaseOrders);
+            await m.createTable(purchaseOrderItems);
+            await m.addColumn(purchases, purchases.poId);
+            await m.addColumn(purchases, purchases.supplierInvoiceNo);
+            await m.addColumn(purchases, purchases.supplierInvoiceAmount);
           }
         },
         beforeOpen: (details) async {
