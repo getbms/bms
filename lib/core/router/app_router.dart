@@ -132,12 +132,12 @@ CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) =>
     CustomTransitionPage<void>(
       key: state.pageKey,
       child: child,
-      transitionDuration: const Duration(milliseconds: 180),
-      reverseTransitionDuration: const Duration(milliseconds: 120),
+      transitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final fade = CurveTween(curve: Curves.easeIn).animate(animation);
-        final slide = Tween<Offset>(begin: const Offset(0.015, 0), end: Offset.zero)
-            .chain(CurveTween(curve: Curves.easeOut))
+        final fade = CurveTween(curve: Curves.easeOut).animate(animation);
+        final slide = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
+            .chain(CurveTween(curve: Curves.easeOutCubic))
             .animate(animation);
         return FadeTransition(
           opacity: fade,
