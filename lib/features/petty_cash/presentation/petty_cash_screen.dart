@@ -149,18 +149,31 @@ class _EntryRow extends ConsumerWidget {
         ),
       ),
       title: Text(entry.description, style: AppTextStyles.labelLarge),
-      subtitle: Wrap(
-        spacing: 6,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _Chip(label: entry.category),
-          Text(BmsDateUtils.formatDate(entry.createdAt), style: AppTextStyles.bodySmall),
-          if (entry.receiptPhotoPath != null)
-            GestureDetector(
-              onTap: () => _viewPhoto(context, entry.receiptPhotoPath!),
-              child: const _Chip(
-                label: 'Receipt',
-                color: AppColors.primary,
-                textColor: Colors.white,
+          Wrap(
+            spacing: 6,
+            children: [
+              _Chip(label: entry.category),
+              Text(BmsDateUtils.formatDate(entry.createdAt), style: AppTextStyles.bodySmall),
+              if (entry.receiptPhotoPath != null)
+                GestureDetector(
+                  onTap: () => _viewPhoto(context, entry.receiptPhotoPath!),
+                  child: const _Chip(
+                    label: 'Receipt',
+                    color: AppColors.primary,
+                    textColor: Colors.white,
+                  ),
+                ),
+            ],
+          ),
+          if (entry.approvalNotes != null && entry.approvalNotes!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                'Reason: ${entry.approvalNotes}',
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.error),
               ),
             ),
         ],
@@ -245,10 +258,52 @@ class _EntryRow extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.cancel_outlined, color: AppColors.error),
               title: const Text('Reject'),
-              onTap: () async {
+              onTap: () {
                 Navigator.of(ctx).pop();
+                _showRejectNotesSheet(context, actions, id);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRejectNotesSheet(
+    BuildContext context,
+    PettyCashActions actions,
+    String id,
+  ) {
+    final notesCtrl = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(ctx).bottom + 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text('Rejection Reason', style: AppTextStyles.titleMedium),
+            const SizedBox(height: 12),
+            TextField(
+              controller: notesCtrl,
+              decoration: const InputDecoration(
+                hintText: 'Optional - explain why this entry is rejected',
+              ),
+              maxLines: 3,
+              autofocus: true,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                final notes = notesCtrl.text.trim().isEmpty ? null : notesCtrl.text.trim();
+                notesCtrl.dispose();
                 try {
-                  await actions.reject(id);
+                  await actions.reject(id, notes: notes);
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -257,6 +312,7 @@ class _EntryRow extends ConsumerWidget {
                   }
                 }
               },
+              child: const Text('Confirm Reject'),
             ),
           ],
         ),

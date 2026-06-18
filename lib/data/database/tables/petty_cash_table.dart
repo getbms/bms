@@ -13,6 +13,8 @@ class PettyCash extends Table {
   TextColumn get receiptPhotoPath => text().nullable()();
   TextColumn get userId => text()();
   TextColumn get approvedBy => text().nullable()();
+  TextColumn get approvalNotes => text().nullable()();
+  DateTimeColumn get approvedAt => dateTime().nullable()();
 
   /// pending | approved | rejected
   TextColumn get status => text().withDefault(const Constant('pending'))();

@@ -93,8 +93,8 @@ class PettyCashActions {
         );
   }
 
-  Future<void> reject(String id) async {
-    await _ref.read(pettyCashDaoProvider).reject(id);
+  Future<void> reject(String id, {String? notes}) async {
+    await _ref.read(pettyCashDaoProvider).reject(id, notes: notes);
     await _ref.read(auditLogDaoProvider).log(
           id: _uuid.v7(),
           entityType: 'petty_cash',
@@ -102,7 +102,7 @@ class PettyCashActions {
           action: 'reject',
           userId: _userId,
           userName: _userName,
-          newValue: {'status': 'rejected'},
+          newValue: {'status': 'rejected', 'notes': notes},
         );
   }
 }
