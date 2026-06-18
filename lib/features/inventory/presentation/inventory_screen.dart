@@ -16,6 +16,18 @@ class InventoryScreen extends ConsumerStatefulWidget {
 class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   final _searchController = TextEditingController();
   String _query = '';
+  bool _lowStockOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(inventoryLowStockFilterProvider)) {
+        setState(() => _lowStockOnly = true);
+        ref.read(inventoryLowStockFilterProvider.notifier).reset();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -44,7 +56,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -63,6 +75,17 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
               onChanged: (v) => setState(() => _query = v.toLowerCase()),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FilterChip(
+                label: const Text('Low Stock Only'),
+                selected: _lowStockOnly,
+                onSelected: (v) => setState(() => _lowStockOnly = v),
+              ),
+            ),
+          ),
           Expanded(
             child: productsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -72,13 +95,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   return {for (final s in list) s.productId: s};
                 }).asData?.value ?? {};
 
-                final filtered = _query.isEmpty
-                    ? products
-                    : products.where((p) {
-                        return p.name.toLowerCase().contains(_query) ||
-                            (p.brand?.toLowerCase().contains(_query) ?? false) ||
-                            (p.barcode?.toLowerCase().contains(_query) ?? false);
-                      }).toList();
+                final filtered = products.where((p) {
+                  if (_query.isNotEmpty) {
+                    final match = p.name.toLowerCase().contains(_query) ||
+                        (p.brand?.toLowerCase().contains(_query) ?? false) ||
+                        (p.barcode?.toLowerCase().contains(_query) ?? false);
+                    if (!match) return false;
+                  }
+                  if (_lowStockOnly) {
+                    final qty = stockMap[p.id]?.qty ?? 0.0;
+                    if (qty > p.reorderLevel) return false;
+                  }
+                  return true;
+                }).toList();
 
                 if (filtered.isEmpty) {
                   return const Center(child: Text('No products found.', style: AppTextStyles.bodySmall));

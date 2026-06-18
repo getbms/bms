@@ -6,6 +6,8 @@ import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/database/daos/reports_dao.dart';
 import 'package:bms/providers/dashboard_provider.dart';
+import 'package:bms/providers/inventory_provider.dart';
+import 'package:bms/providers/invoices_provider.dart';
 import 'package:bms/shared/widgets/stat_card.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -64,14 +66,28 @@ class DashboardScreen extends ConsumerWidget {
                         value: CurrencyUtils.format(s.todaySales),
                         icon: Icons.receipt_long_outlined,
                         color: AppColors.success,
-                        onTap: () => context.go(AppRoutes.pos),
+                        onTap: () {
+                          final now = DateTime.now();
+                          ref.read(invoiceFilterProvider.notifier).update(
+                                InvoiceFilter(
+                                  dateRange: DateTimeRange(
+                                    start: DateTime(now.year, now.month, now.day),
+                                    end: DateTime(now.year, now.month, now.day, 23, 59, 59),
+                                  ),
+                                ),
+                              );
+                          context.go(AppRoutes.invoices);
+                        },
                       ),
                       StatCard(
                         label: 'Low Stock Items',
                         value: '${s.lowStockCount}',
                         icon: Icons.warning_amber_outlined,
                         color: AppColors.warning,
-                        onTap: () => context.go(AppRoutes.inventory),
+                        onTap: () {
+                          ref.read(inventoryLowStockFilterProvider.notifier).activate();
+                          context.go(AppRoutes.inventory);
+                        },
                       ),
                       StatCard(
                         label: 'Cheques Due (7d)',
@@ -84,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
                         value: CurrencyUtils.format(s.totalDebtors),
                         icon: Icons.people_outline,
                         color: AppColors.error,
-                        onTap: () => context.go(AppRoutes.customers),
+                        onTap: () => context.go(AppRoutes.debtors),
                       ),
                     ],
                   );

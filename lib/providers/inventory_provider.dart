@@ -150,3 +150,15 @@ class InventoryActions {
 
 final inventoryActionsProvider =
     Provider<InventoryActions>((ref) => InventoryActions(ref));
+
+// One-shot signal: set true from dashboard KPI card, inventory screen reads+resets it.
+class InventoryLowStockFilterNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void activate() => state = true;
+  void reset() => state = false;
+}
+
+final inventoryLowStockFilterProvider =
+    NotifierProvider<InventoryLowStockFilterNotifier, bool>(InventoryLowStockFilterNotifier.new);
