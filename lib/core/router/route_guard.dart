@@ -1,12 +1,12 @@
+import 'package:bms/core/router/app_router.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../features/auth/domain/auth_state.dart';
-import 'app_router.dart';
 
 /// Role matrix:
 ///   developer - all routes
 ///   admin     - all except /users (user management)
 ///   cashier   - dashboard, pos, inventory (view), customers
+// ignore: avoid_classes_with_only_static_members
 abstract final class RouteGuard {
   static const Set<String> _publicRoutes = {AppRoutes.login};
 

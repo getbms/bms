@@ -1,11 +1,11 @@
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/data/database/app_database.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
-
+// ignore: avoid_classes_with_only_static_members
 abstract final class InvoicePdf {
   static final _dateFmt = DateFormat('dd MMM yyyy');
   static final _timeFmt = DateFormat('hh:mm a');
@@ -50,7 +50,7 @@ abstract final class InvoicePdf {
     doc.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(0),
+        margin: pw.EdgeInsets.zero,
         build: (ctx) => pw.Stack(
           children: [
             pw.Column(
@@ -179,9 +179,9 @@ abstract final class InvoicePdf {
   ) {
     return pw.Container(
       padding: const pw.EdgeInsets.all(16),
-      decoration: pw.BoxDecoration(
+      decoration: const pw.BoxDecoration(
         color: _brandLight,
-        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+        borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
       ),
       child: pw.Row(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -261,9 +261,9 @@ abstract final class InvoicePdf {
         4: const pw.FixedColumnWidth(55),
         5: const pw.FixedColumnWidth(70),
       },
-      border: pw.TableBorder(
-        bottom: const pw.BorderSide(color: _border),
-        horizontalInside: const pw.BorderSide(color: _border, width: 0.5),
+      border: const pw.TableBorder(
+        bottom: pw.BorderSide(color: _border),
+        horizontalInside: pw.BorderSide(color: _border, width: 0.5),
       ),
       children: [
         // Header row
@@ -376,9 +376,9 @@ abstract final class InvoicePdf {
       children: [
         pw.Container(
           padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: pw.BoxDecoration(
+          decoration: const pw.BoxDecoration(
             color: _brandLight,
-            borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
+            borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
           ),
           child: pw.Row(
             mainAxisSize: pw.MainAxisSize.min,

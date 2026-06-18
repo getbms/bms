@@ -1,9 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
@@ -11,6 +7,9 @@ import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/providers/petty_cash_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 class PettyCashScreen extends ConsumerWidget {
   const PettyCashScreen({super.key});
@@ -97,7 +96,7 @@ class _FloatCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('Balance', style: AppTextStyles.bodySmall),
+              const Text('Balance', style: AppTextStyles.bodySmall),
               Text(
                 CurrencyUtils.format(net),
                 style: AppTextStyles.titleMedium.copyWith(
@@ -202,7 +201,7 @@ class _EntryRow extends ConsumerWidget {
               Image.file(file)
             else
               const Padding(
-                padding: EdgeInsets.all(24.0),
+                padding: EdgeInsets.all(24),
                 child: Text('Receipt image not found'),
               ),
             TextButton(
@@ -226,8 +225,8 @@ class _EntryRow extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
+            const Padding(
+              padding: EdgeInsets.all(16),
               child: Text('Approve or Reject?', style: AppTextStyles.titleMedium),
             ),
             const Divider(height: 1),
@@ -431,7 +430,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _type,
+                    initialValue: _type,
                     decoration:
                         const InputDecoration(labelText: 'Type *'),
                     items: const [
@@ -445,7 +444,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _category,
+              initialValue: _category,
               decoration:
                   const InputDecoration(labelText: 'Category *'),
               items: _categories

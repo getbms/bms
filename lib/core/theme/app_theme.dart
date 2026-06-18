@@ -1,17 +1,15 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
-import 'app_text_styles.dart';
 
+// ignore: avoid_classes_with_only_static_members
 abstract final class AppTheme {
   static ThemeData get light {
     const colorScheme = ColorScheme.light(
       primary: AppColors.primary,
-      onPrimary: AppColors.textOnPrimary,
       secondary: AppColors.primaryLight,
       onSecondary: AppColors.textOnPrimary,
       error: AppColors.error,
-      onError: AppColors.textOnPrimary,
-      surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
       surfaceContainerHighest: AppColors.surfaceVariant,
     );
@@ -54,8 +52,8 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         isDense: true,
         filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        fillColor: AppColors.surfaceVariant,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.border),
@@ -72,23 +70,21 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        // Resting label inside the field (13sp keeps it proportional to dense inputs)
         labelStyle: const TextStyle(
           fontFamily: 'Inter',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
         ),
-        // Floating label above the field when focused/filled
         floatingLabelStyle: const TextStyle(
           fontFamily: 'Inter',
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.borderFocus,
         ),
         hintStyle: const TextStyle(
           fontFamily: 'Inter',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textDisabled,
         ),

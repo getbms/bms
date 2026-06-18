@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
@@ -9,6 +5,9 @@ import 'package:bms/data/database/app_database.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:bms/providers/quick_sale_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class QuickSalesScreen extends ConsumerWidget {
   const QuickSalesScreen({super.key});
@@ -121,9 +120,9 @@ class _SaleRow extends StatelessWidget {
         ? sale.qty.toStringAsFixed(0)
         : sale.qty.toStringAsFixed(1);
     return ListTile(
-      leading: CircleAvatar(
+      leading: const CircleAvatar(
         backgroundColor: AppColors.surfaceVariant,
-        child: const Icon(Icons.flash_on_rounded, size: 18, color: AppColors.primary),
+        child: Icon(Icons.flash_on_rounded, size: 18, color: AppColors.primary),
       ),
       title: Text(sale.productName, style: AppTextStyles.labelLarge),
       subtitle: Text(
@@ -219,7 +218,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('New Quick Sale', style: AppTextStyles.titleMedium),
+            const Text('New Quick Sale', style: AppTextStyles.titleMedium),
             const SizedBox(height: 16),
 
             if (_selected == null) ...[
@@ -276,7 +275,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(_selected!.name, style: AppTextStyles.labelLarge),
-                        Text('Selected product', style: AppTextStyles.bodySmall),
+                        const Text('Selected product', style: AppTextStyles.bodySmall),
                       ],
                     ),
                   ),

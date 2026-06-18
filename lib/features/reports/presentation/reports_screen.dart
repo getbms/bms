@@ -1,6 +1,4 @@
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
 
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
@@ -8,6 +6,31 @@ import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/daos/reports_dao.dart';
 import 'package:bms/providers/reports_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
+
+Future<void> _shareCsv(String filename, String csv) async {
+  await SharePlus.instance.share(
+    ShareParams(
+      files: [
+        XFile.fromData(
+          utf8.encode(csv),
+          name: filename,
+          mimeType: 'text/csv',
+        ),
+      ],
+    ),
+  );
+}
+
+String _csvField(String value) {
+  final escaped = value.replaceAll('"', '""');
+  final safe = RegExp(r'^[=+\-@]').hasMatch(escaped) ? '\t$escaped' : escaped;
+  return '"$safe"';
+}
 
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
@@ -78,8 +101,8 @@ class _PLTabState extends ConsumerState<_PLTab> {
     super.initState();
     final now = DateTime.now();
     _range = DateTimeRange(
-      start: DateTime(now.year, now.month, 1),
-      end: DateTime(now.year, now.month + 1, 1).subtract(const Duration(seconds: 1)),
+      start: DateTime(now.year, now.month),
+      end: DateTime(now.year, now.month + 1).subtract(const Duration(microseconds: 1)),
     );
   }
 
@@ -105,7 +128,7 @@ class _PLTabState extends ConsumerState<_PLTab> {
               final revenue = daily.fold<double>(0, (s, d) => s + d.revenue);
 
               if (revenue == 0) {
-                return Column(
+                return const Column(
                   children: [
                     Expanded(
                       child: _EmptyState(
@@ -155,8 +178,43 @@ class _PLTabState extends ConsumerState<_PLTab> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Text('Daily Revenue', style: AppTextStyles.titleMedium),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.download_outlined, size: 16),
+                      label: const Text('Export CSV'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        textStyle: AppTextStyles.bodySmall,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          final df = DateFormat('yyyy-MM-dd');
+                          final lines = [
+                            'Date,Revenue,COGS,Gross Profit,Margin %',
+                            ...daily.map((d) {
+                              final gp = d.revenue - d.cogs;
+                              final m = d.revenue > 0 ? gp / d.revenue * 100 : 0;
+                              return '${df.format(d.date)},${d.revenue.toStringAsFixed(2)},${d.cogs.toStringAsFixed(2)},${gp.toStringAsFixed(2)},${m.toStringAsFixed(2)}';
+                            }),
+                          ];
+                          await _shareCsv(
+                            'pl_${df.format(_range.start)}_${df.format(_range.end)}.csv',
+                            lines.join('\n'),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Export failed. Please try again.')),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Daily Revenue', style: AppTextStyles.titleMedium),
                   const SizedBox(height: 12),
                   _PLChart(daily: daily),
                 ],
@@ -212,7 +270,6 @@ class _PLChart extends StatelessWidget {
           maxY: maxY * 1.2,
           barGroups: barGroups,
           gridData: FlGridData(
-            show: true,
             drawVerticalLine: false,
             getDrawingHorizontalLine: (_) => FlLine(
               color: AppColors.border.withValues(alpha: 0.6),
@@ -235,9 +292,9 @@ class _PLChart extends StatelessWidget {
           ),
           titlesData: FlTitlesData(
             topTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
+                ),
             rightTitles: const AxisTitles(
-                sideTitles: SideTitles(showTitles: false)),
+                ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -292,7 +349,7 @@ class _StockTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (rows) {
         if (rows.isEmpty) {
-          return _EmptyState(
+          return const _EmptyState(
             icon: Icons.inventory_2_outlined,
             iconColor: AppColors.primary,
             title: 'No Stock on Hand',
@@ -314,9 +371,40 @@ class _StockTab extends ConsumerWidget {
                     totalValue: totalValue,
                     itemCount: rows.length,
                   ),
-                  const SizedBox(height: 16),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton.icon(
+                      icon: const Icon(Icons.download_outlined, size: 16),
+                      label: const Text('Export CSV'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        textStyle: AppTextStyles.bodySmall,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          final lines = [
+                            'Product,Qty,Unit Cost,Total Value',
+                            ...rows.map((r) =>
+                                '${_csvField(r.name)},${r.qty.toStringAsFixed(2)},${r.costPrice.toStringAsFixed(2)},${r.value.toStringAsFixed(2)}'),
+                          ];
+                          await _shareCsv(
+                            'stock_valuation_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.csv',
+                            lines.join('\n'),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Export failed. Please try again.')),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
                         Expanded(
@@ -474,7 +562,7 @@ class _AgingTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (rows) {
         if (rows.isEmpty) {
-          return _EmptyState(
+          return const _EmptyState(
             icon: Icons.check_circle_outline,
             iconColor: AppColors.success,
             title: 'All Clear',
@@ -484,7 +572,7 @@ class _AgingTab extends ConsumerWidget {
         }
 
         final total = rows.fold<double>(0, (s, r) => s + r.balance);
-        final bucketAmounts = List.filled(4, 0.0);
+        final bucketAmounts = List<double>.filled(4, 0);
         for (final r in rows) {
           bucketAmounts[r.agingBucket] += r.balance;
         }
@@ -515,6 +603,34 @@ class _AgingTab extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    OutlinedButton.icon(
+                      icon: const Icon(Icons.download_outlined, size: 16),
+                      label: const Text('CSV'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        textStyle: AppTextStyles.bodySmall,
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        try {
+                          const buckets = ['0-30d', '31-60d', '61-90d', '90+d'];
+                          final lines = [
+                            'Customer,Balance,Aging Bucket',
+                            ...rows.map((r) =>
+                                '${_csvField(r.name)},${r.balance.toStringAsFixed(2)},${buckets[r.agingBucket.clamp(0, 3)]}'),
+                          ];
+                          await _shareCsv(
+                            'debtor_aging_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.csv',
+                            lines.join('\n'),
+                          );
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Export failed. Please try again.')),
+                          );
+                        }
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -522,7 +638,7 @@ class _AgingTab extends ConsumerWidget {
             const SizedBox(height: 20),
 
             // Pie chart + legend
-            Text('Balance by Age', style: AppTextStyles.titleMedium),
+            const Text('Balance by Age', style: AppTextStyles.titleMedium),
             const SizedBox(height: 12),
             _AgingChart(
               bucketAmounts: bucketAmounts,
@@ -538,7 +654,7 @@ class _AgingTab extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Debtor list
-            Text('Customers', style: AppTextStyles.titleMedium),
+            const Text('Customers', style: AppTextStyles.titleMedium),
             const SizedBox(height: 8),
             ...rows.map((r) => _DebtorRow(row: r, colors: _bucketColors, labels: _bucketLabels)),
           ],

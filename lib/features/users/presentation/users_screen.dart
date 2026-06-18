@@ -1,12 +1,11 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/users_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../data/database/app_database.dart';
-import '../../../features/auth/domain/auth_state.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../providers/users_provider.dart';
 
 const _devUserId = '00000000-0000-0000-0000-000000000001';
 
@@ -354,7 +353,7 @@ class _AddUserSheetState extends ConsumerState<_AddUserSheet> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _role,
+                initialValue: _role,
                 decoration: const InputDecoration(labelText: 'Role *'),
                 items: [
                   const DropdownMenuItem(value: 'cashier', child: Text('Cashier')),
@@ -461,7 +460,7 @@ class _EditUserSheetState extends ConsumerState<_EditUserSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _role,
+              initialValue: _role,
               decoration: const InputDecoration(labelText: 'Role *'),
               items: [
                 const DropdownMenuItem(value: 'cashier', child: Text('Cashier')),

@@ -1,5 +1,6 @@
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/shared/widgets/notification_bell.dart';
 import 'package:bms/shared/widgets/sidebar_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -35,6 +36,13 @@ class _AppScaffoldState extends State<AppScaffold> {
         ],
       ),
       bottomNavigationBar: isWide ? null : _BottomNav(currentLocation: location),
+      floatingActionButton: isWide
+          ? null
+          : const Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: NotificationBell(iconColor: AppColors.primary),
+            ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
     );
   }
 }

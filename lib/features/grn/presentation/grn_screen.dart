@@ -1,7 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
@@ -9,6 +5,9 @@ import 'package:bms/data/database/app_database.dart';
 import 'package:bms/providers/grn_provider.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:bms/providers/suppliers_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GrnScreen extends ConsumerStatefulWidget {
   const GrnScreen({super.key});
@@ -152,7 +151,7 @@ class _SupplierPickerSheetState extends ConsumerState<_SupplierPickerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Select Supplier', style: AppTextStyles.titleMedium),
+          const Text('Select Supplier', style: AppTextStyles.titleMedium),
           const SizedBox(height: 12),
           TextField(
             decoration: const InputDecoration(
@@ -269,7 +268,7 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Add Product', style: AppTextStyles.titleMedium),
+          const Text('Add Product', style: AppTextStyles.titleMedium),
           const SizedBox(height: 12),
           TextField(
             autofocus: true,
@@ -504,9 +503,9 @@ class _GrnHistoryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final d = purchase.createdAt;
     return ListTile(
-      leading: CircleAvatar(
+      leading: const CircleAvatar(
         backgroundColor: AppColors.surfaceVariant,
-        child: const Icon(Icons.move_to_inbox_rounded, size: 18, color: AppColors.primary),
+        child: Icon(Icons.move_to_inbox_rounded, size: 18, color: AppColors.primary),
       ),
       title: Text(purchase.grnNumber ?? purchase.id, style: AppTextStyles.labelLarge),
       subtitle: Text(

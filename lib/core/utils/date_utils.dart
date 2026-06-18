@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+// ignore: avoid_classes_with_only_static_members
 abstract final class BmsDateUtils {
   static final DateFormat _date = DateFormat('dd MMM yyyy');
   static final DateFormat _dateTime = DateFormat('dd MMM yyyy HH:mm');

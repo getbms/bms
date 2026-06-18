@@ -1,7 +1,6 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/tables/products_table.dart';
 import 'package:drift/drift.dart';
-
-import '../app_database.dart';
-import '../tables/products_table.dart';
 
 part 'inventory_dao.g.dart';
 
@@ -49,10 +48,20 @@ class InventoryDao extends DatabaseAccessor<AppDatabase> with _$InventoryDaoMixi
     ]);
     // Compare qty (real) against reorderLevel (int) via expression cast
     query.where(stock.qty.isSmallerOrEqualValue(0) |
-        CustomExpression<bool>('stock.qty <= products.reorder_level'));
+        const CustomExpression<bool>('stock.qty <= products.reorder_level'));
     return query.watch().map(
           (rows) => rows.map((r) => r.readTable(stock)).toList(),
         );
+  }
+
+  Future<List<Product>> getLowStockProducts() async {
+    final query = select(stock).join([
+      innerJoin(products, products.id.equalsExp(stock.productId)),
+    ]);
+    query.where(stock.qty.isSmallerOrEqualValue(0) |
+        const CustomExpression<bool>('stock.qty <= products.reorder_level'));
+    final rows = await query.get();
+    return rows.map((r) => r.readTable(products)).toList();
   }
 
   Future<void> upsertStock(StockCompanion entry) =>

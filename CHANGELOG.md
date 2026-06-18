@@ -7,6 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Debtors screen: tap any debtor to open a detail sheet showing outstanding balance, credit limit, payment history, and a "Record Payment" button
+- Customer payment recording: amount, payment method (cash/card/bank transfer/cheque), and optional notes; updates balance immediately
+- Supplier detail sheet: payment history section listing past payments with method, notes, amount, and date
+- In-app notification bell in sidebar header (desktop) and floating top-right (mobile) with red badge count
+- Alerts panel: overdue cheques, cheques due within 7 days, low-stock products, and customers exceeding credit limit -- pull-to-refresh supported
+- CSV export on all three Reports tabs: P&L (date, revenue, COGS, gross profit, margin), Stock Valuation (product, qty, unit cost, total value), Debtor Aging (customer, balance, bucket) -- shares via system share sheet
+- Responsive dashboard KPI grid: 2 columns on phones (<480px), 3 on tablets (<840px), 4 on desktop (>=840px)
+- Lint CI workflow running `flutter analyze --fatal-infos --fatal-warnings` on every push and PR
+
+### Changed
+- Gross Profit value on MTD Performance card changed from mint green to white for consistency with the blue card background
+- Save Store Info button in Settings moved to bottom-right of the Store Info section
+- Language selector in Settings converted from `DecoratedBox` to `Material` to prevent invisible ink-splash assertion
+- All relative imports in `lib/` converted to `package:bms/` URIs
+
+### Fixed
+- 446 lint warnings resolved: package imports, `prefer_const_constructors`, `avoid_redundant_argument_values`, `prefer_int_literals`, `directives_ordering`, `unnecessary_underscores`, `avoid_dynamic_calls`, deprecated `Radio.groupValue`/`onChanged` (migrated to `RadioGroup`), positional boolean parameters, and type errors introduced by over-aggressive int-literal substitution
+
+### Added
 - Login screen BMS SVG logo from `assets/images/bms_logo.svg` with dynamic copyright footer (`DateTime.now().year`)
 - POS fractional quantity support for weight/volume unit types (`kg`, `g`, `l`, `ml`) - product card tap opens qty dialog with decimal input, stepper uses unit-appropriate increments (0.25 for kg/l, 50 for g/ml), cart displays formatted decimal quantities
 - Dashboard 30-day revenue trend line chart with dual series (Revenue solid, Gross Profit dashed) and gradient fill below each line

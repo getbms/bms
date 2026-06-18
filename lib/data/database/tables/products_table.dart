@@ -1,6 +1,5 @@
+import 'package:bms/data/database/tables/users_table.dart';
 import 'package:drift/drift.dart';
-
-import 'users_table.dart';
 
 class Categories extends Table {
   TextColumn get id => text()();

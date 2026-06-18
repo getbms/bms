@@ -1,19 +1,18 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/daos/inventory_dao.dart';
+import 'package:bms/features/pos/presentation/receipt_pdf.dart';
+import 'package:bms/providers/customers_provider.dart';
+import 'package:bms/providers/database_provider.dart';
+import 'package:bms/providers/inventory_provider.dart';
+import 'package:bms/providers/pos_provider.dart';
+import 'package:bms/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
-import '../../../providers/customers_provider.dart';
-import '../../../data/database/daos/inventory_dao.dart';
-import '../../../providers/database_provider.dart';
-import '../../../providers/inventory_provider.dart';
-import '../../../providers/pos_provider.dart';
-import '../../../providers/settings_provider.dart';
-import 'receipt_pdf.dart';
 
 class PosScreen extends ConsumerStatefulWidget {
   const PosScreen({super.key});
@@ -122,9 +121,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           ),
           const VerticalDivider(width: 1),
           // Right panel: cart
-          SizedBox(
+          const SizedBox(
             width: 380,
-            child: const _CartPanel(),
+            child: _CartPanel(),
           ),
         ],
       ),
@@ -451,7 +450,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Bill Discount', style: AppTextStyles.titleMedium),
+            const Text('Bill Discount', style: AppTextStyles.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
@@ -546,7 +545,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Cart', style: AppTextStyles.titleMedium),
+              const Text('Cart', style: AppTextStyles.titleMedium),
               Text('${state.items.length} item(s)', style: AppTextStyles.bodySmall),
             ],
           ),
@@ -1073,9 +1072,9 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
                     ..._buildCorners(),
                     // Processing indicator
                     if (_processing)
-                      Container(
+                      const ColoredBox(
                         color: Colors.black45,
-                        child: const Center(
+                        child: Center(
                           child: CircularProgressIndicator(color: Colors.white),
                         ),
                       ),
@@ -1109,13 +1108,13 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
     const size = 24.0;
     const thickness = 3.5;
     const color = AppColors.primary;
-    Widget corner(double top, double left, bool flipH, bool flipV) => Positioned(
+    Widget corner(double top, double left, {required bool flipH, required bool flipV}) => Positioned(
           top: top,
           left: left,
           child: Transform.scale(
             scaleX: flipH ? -1 : 1,
             scaleY: flipV ? -1 : 1,
-            child: SizedBox(
+            child: const SizedBox(
               width: size,
               height: size,
               child: CustomPaint(
@@ -1130,10 +1129,10 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
     const cy = (400 - 220) / 2;
 
     return [
-      corner(cy - thickness, cx - thickness, false, false),
-      corner(cy - thickness, cx + 220 - size + thickness, true, false),
-      corner(cy + 220 - size + thickness, cx - thickness, false, true),
-      corner(cy + 220 - size + thickness, cx + 220 - size + thickness, true, true),
+      corner(cy - thickness, cx - thickness, flipH: false, flipV: false),
+      corner(cy - thickness, cx + 220 - size + thickness, flipH: true, flipV: false),
+      corner(cy + 220 - size + thickness, cx - thickness, flipH: false, flipV: true),
+      corner(cy + 220 - size + thickness, cx + 220 - size + thickness, flipH: true, flipV: true),
     ];
   }
 }

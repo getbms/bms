@@ -1,11 +1,10 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-
-import '../data/database/app_database.dart';
-import '../features/auth/domain/auth_state.dart';
-import 'auth_provider.dart';
-import 'database_provider.dart';
 
 typedef _DateRange = ({DateTime from, DateTime to});
 
@@ -18,7 +17,7 @@ class _QuickSaleDateRangeNotifier extends Notifier<_DateRange> {
   @override
   _DateRange build() {
     final now = DateTime.now();
-    return (from: DateTime(now.year, now.month, 1), to: now);
+    return (from: DateTime(now.year, now.month), to: now);
   }
 
   void set(DateTime from, DateTime to) => state = (from: from, to: to);

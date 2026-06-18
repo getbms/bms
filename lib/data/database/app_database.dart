@@ -1,28 +1,27 @@
 import 'package:bcrypt/bcrypt.dart';
+import 'package:bms/data/database/daos/audit_log_dao.dart';
+import 'package:bms/data/database/daos/cheques_dao.dart';
+import 'package:bms/data/database/daos/customers_dao.dart';
+import 'package:bms/data/database/daos/inventory_dao.dart';
+import 'package:bms/data/database/daos/invoices_dao.dart';
+import 'package:bms/data/database/daos/petty_cash_dao.dart';
+import 'package:bms/data/database/daos/returns_dao.dart';
+import 'package:bms/data/database/daos/suppliers_dao.dart';
+import 'package:bms/data/database/daos/users_dao.dart';
+import 'package:bms/data/database/tables/audit_log_table.dart';
+import 'package:bms/data/database/tables/cheques_table.dart';
+import 'package:bms/data/database/tables/customers_table.dart';
+import 'package:bms/data/database/tables/invoices_table.dart';
+import 'package:bms/data/database/tables/payments_table.dart';
+import 'package:bms/data/database/tables/petty_cash_table.dart';
+import 'package:bms/data/database/tables/products_table.dart';
+import 'package:bms/data/database/tables/returns_table.dart';
+import 'package:bms/data/database/tables/suppliers_table.dart';
+import 'package:bms/data/database/tables/users_table.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:uuid/uuid.dart';
-
-import 'daos/audit_log_dao.dart';
-import 'daos/cheques_dao.dart';
-import 'daos/customers_dao.dart';
-import 'daos/inventory_dao.dart';
-import 'daos/invoices_dao.dart';
-import 'daos/petty_cash_dao.dart';
-import 'daos/returns_dao.dart';
-import 'daos/suppliers_dao.dart';
-import 'daos/users_dao.dart';
-import 'tables/audit_log_table.dart';
-import 'tables/cheques_table.dart';
-import 'tables/customers_table.dart';
-import 'tables/invoices_table.dart';
-import 'tables/payments_table.dart';
-import 'tables/petty_cash_table.dart';
-import 'tables/products_table.dart';
-import 'tables/returns_table.dart';
-import 'tables/suppliers_table.dart';
-import 'tables/users_table.dart';
 
 part 'app_database.g.dart';
 

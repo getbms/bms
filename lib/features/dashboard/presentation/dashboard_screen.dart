@@ -1,9 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
@@ -13,6 +7,11 @@ import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/database/daos/reports_dao.dart';
 import 'package:bms/providers/dashboard_provider.dart';
 import 'package:bms/shared/widgets/stat_card.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -48,43 +47,49 @@ class DashboardScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16),
             children: [
               // ── KPI Grid ────────────────────────────────────────────────
-              GridView.extent(
-                maxCrossAxisExtent: 300,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 3,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  StatCard(
-                    label: "Today's Sales",
-                    value: CurrencyUtils.format(s.todaySales),
-                    icon: Icons.receipt_long_outlined,
-                    color: AppColors.success,
-                    onTap: () => context.go(AppRoutes.pos),
-                  ),
-                  StatCard(
-                    label: 'Low Stock Items',
-                    value: '${s.lowStockCount}',
-                    icon: Icons.warning_amber_outlined,
-                    color: AppColors.warning,
-                    onTap: () => context.go(AppRoutes.inventory),
-                  ),
-                  StatCard(
-                    label: 'Cheques Due (7d)',
-                    value: '${s.chequesThisWeek}',
-                    icon: Icons.calendar_today_outlined,
-                    color: AppColors.primary,
-                    onTap: () => context.go(AppRoutes.cheques),
-                  ),
-                  StatCard(
-                    label: 'Total Receivables',
-                    value: CurrencyUtils.format(s.totalDebtors),
-                    icon: Icons.people_outline,
-                    color: AppColors.error,
-                    onTap: () => context.go(AppRoutes.customers),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final w = constraints.maxWidth;
+                  final cols = w < 480 ? 2 : w < 840 ? 3 : 4;
+                  final ratio = w < 480 ? 2.1 : 3.0;
+                  return GridView.count(
+                    crossAxisCount: cols,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: ratio,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      StatCard(
+                        label: "Today's Sales",
+                        value: CurrencyUtils.format(s.todaySales),
+                        icon: Icons.receipt_long_outlined,
+                        color: AppColors.success,
+                        onTap: () => context.go(AppRoutes.pos),
+                      ),
+                      StatCard(
+                        label: 'Low Stock Items',
+                        value: '${s.lowStockCount}',
+                        icon: Icons.warning_amber_outlined,
+                        color: AppColors.warning,
+                        onTap: () => context.go(AppRoutes.inventory),
+                      ),
+                      StatCard(
+                        label: 'Cheques Due (7d)',
+                        value: '${s.chequesThisWeek}',
+                        icon: Icons.calendar_today_outlined,
+                        onTap: () => context.go(AppRoutes.cheques),
+                      ),
+                      StatCard(
+                        label: 'Total Receivables',
+                        value: CurrencyUtils.format(s.totalDebtors),
+                        icon: Icons.people_outline,
+                        color: AppColors.error,
+                        onTap: () => context.go(AppRoutes.customers),
+                      ),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 20),
@@ -95,7 +100,7 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 28),
 
               // ── 30-Day Revenue Trend ─────────────────────────────────────
-              _SectionHeader(
+              const _SectionHeader(
                 title: 'Revenue Trend',
                 subtitle: 'Last 30 days - Revenue vs Gross Profit',
               ),
@@ -105,7 +110,7 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 28),
 
               // ── Weekly Performance ────────────────────────────────────────
-              _SectionHeader(
+              const _SectionHeader(
                 title: 'Weekly Performance',
                 subtitle: 'Last 7 days',
               ),
@@ -115,7 +120,7 @@ class DashboardScreen extends ConsumerWidget {
               // ── Payment Mix ──────────────────────────────────────────────
               if (s.paymentMix.isNotEmpty) ...[
                 const SizedBox(height: 28),
-                _SectionHeader(
+                const _SectionHeader(
                   title: 'Payment Mix',
                   subtitle: 'Current month by method',
                 ),
@@ -158,7 +163,6 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Column(
@@ -286,7 +290,7 @@ class _MtdPerformanceCard extends StatelessWidget {
               _MtdMetric(
                 label: 'Gross Profit',
                 value: CurrencyUtils.format(s.mtdGrossProfit),
-                color: const Color(0xFF69F0AE),
+                color: Colors.white,
               ),
               const SizedBox(width: 24),
               _MtdMetric(
@@ -351,7 +355,7 @@ class _RevenueTrendChart extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.show_chart_outlined,
+              const Icon(Icons.show_chart_outlined,
                   size: 40, color: AppColors.border),
               const SizedBox(height: 8),
               Text('No sales data for the last 30 days.',
@@ -379,10 +383,10 @@ class _RevenueTrendChart extends StatelessWidget {
       child: Column(
         children: [
           // Legend
-          Row(
+          const Row(
             children: [
               _ChartLegendDot(color: AppColors.primary, label: 'Revenue'),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               _ChartLegendDot(color: AppColors.success, label: 'Gross Profit'),
             ],
           ),
@@ -393,7 +397,6 @@ class _RevenueTrendChart extends StatelessWidget {
                 minY: 0,
                 maxY: maxY > 0 ? maxY * 1.25 : 100,
                 gridData: FlGridData(
-                  show: true,
                   drawVerticalLine: false,
                   horizontalInterval: maxY > 0 ? maxY / 4 : 25,
                   getDrawingHorizontalLine: (_) => FlLine(
@@ -403,7 +406,6 @@ class _RevenueTrendChart extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 lineTouchData: LineTouchData(
-                  handleBuiltInTouches: true,
                   touchSpotThreshold: 20,
                   touchTooltipData: LineTouchTooltipData(
                     fitInsideHorizontally: true,
@@ -444,9 +446,9 @@ class _RevenueTrendChart extends StatelessWidget {
                 ),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -503,7 +505,7 @@ class _RevenueTrendChart extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           AppColors.primary.withValues(alpha: 0.18),
-                          AppColors.primary.withValues(alpha: 0.0),
+                          AppColors.primary.withValues(alpha: 0),
                         ],
                       ),
                     ),
@@ -513,7 +515,6 @@ class _RevenueTrendChart extends StatelessWidget {
                     isCurved: true,
                     curveSmoothness: 0.3,
                     color: AppColors.success,
-                    barWidth: 2,
                     dashArray: [4, 3],
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
@@ -523,7 +524,7 @@ class _RevenueTrendChart extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           AppColors.success.withValues(alpha: 0.10),
-                          AppColors.success.withValues(alpha: 0.0),
+                          AppColors.success.withValues(alpha: 0),
                         ],
                       ),
                     ),
@@ -593,10 +594,10 @@ class _WeeklyGroupedChart extends StatelessWidget {
       height: 240,
       child: Column(
         children: [
-          Row(
+          const Row(
             children: [
               _ChartLegendDot(color: AppColors.primary, label: 'Revenue'),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               _ChartLegendDot(color: AppColors.success, label: 'Gross Profit'),
             ],
           ),
@@ -608,7 +609,6 @@ class _WeeklyGroupedChart extends StatelessWidget {
                 groupsSpace: 16,
                 barGroups: groups,
                 gridData: FlGridData(
-                  show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (_) => FlLine(
                     color: AppColors.border.withValues(alpha: 0.6),
@@ -642,9 +642,9 @@ class _WeeklyGroupedChart extends StatelessWidget {
                 ),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      ),
                   rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                      ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -864,7 +864,7 @@ class _RecentInvoicesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),

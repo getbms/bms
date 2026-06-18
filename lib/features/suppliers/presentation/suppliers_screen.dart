@@ -1,11 +1,11 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/providers/suppliers_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
-import '../../../providers/suppliers_provider.dart';
+import 'package:intl/intl.dart';
 
 class SuppliersScreen extends ConsumerWidget {
   const SuppliersScreen({super.key});
@@ -92,18 +92,35 @@ class _SupplierTile extends StatelessWidget {
   }
 }
 
-class _SupplierDetailSheet extends StatelessWidget {
+class _SupplierDetailSheet extends ConsumerWidget {
   const _SupplierDetailSheet({required this.supplier});
   final Supplier supplier;
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(context).bottom + 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(supplierPaymentHistoryProvider(supplier.id));
+    final balanceColor = supplier.balance > 0 ? AppColors.error : AppColors.success;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) => ListView(
+        controller: scrollController,
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: AppColors.textDisabled,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
           Row(
             children: [
               CircleAvatar(
@@ -120,8 +137,10 @@ class _SupplierDetailSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(supplier.name, style: AppTextStyles.titleLarge),
-                    if (supplier.phone != null) Text(supplier.phone!, style: AppTextStyles.bodySmall),
-                    if (supplier.address != null) Text(supplier.address!, style: AppTextStyles.bodySmall),
+                    if (supplier.phone != null)
+                      Text(supplier.phone!, style: AppTextStyles.bodySmall),
+                    if (supplier.address != null)
+                      Text(supplier.address!, style: AppTextStyles.bodySmall),
                     if (supplier.paymentTerms != null)
                       Text('Terms: ${supplier.paymentTerms}', style: AppTextStyles.bodySmall),
                   ],
@@ -139,19 +158,17 @@ class _SupplierDetailSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Amount Payable', style: AppTextStyles.bodyMedium),
+                const Text('Amount Payable', style: AppTextStyles.bodyMedium),
                 Text(
                   CurrencyUtils.format(supplier.balance),
-                  style: AppTextStyles.titleMedium.copyWith(
-                    color: supplier.balance > 0 ? AppColors.error : AppColors.success,
-                  ),
+                  style: AppTextStyles.titleMedium.copyWith(color: balanceColor),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           OutlinedButton.icon(
-            icon: const Icon(Icons.payment),
+            icon: const Icon(Icons.payment_rounded),
             label: const Text('Record Payment'),
             onPressed: () {
               Navigator.of(context).pop();
@@ -159,9 +176,81 @@ class _SupplierDetailSheet extends StatelessWidget {
                 context: context,
                 isScrollControlled: true,
                 useSafeArea: true,
-                builder: (_) => _SupplierPaymentSheet(supplierId: supplier.id, supplierName: supplier.name),
+                builder: (_) => _SupplierPaymentSheet(
+                    supplierId: supplier.id, supplierName: supplier.name),
               );
             },
+          ),
+          const SizedBox(height: 20),
+          const Text('Payment History', style: AppTextStyles.titleMedium),
+          const SizedBox(height: 8),
+          historyAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Text('Error: $e'),
+            data: (payments) => payments.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text('No payments recorded yet.',
+                        style: AppTextStyles.bodySmall
+                            .copyWith(color: AppColors.textSecondary)),
+                  )
+                : Column(
+                    children: payments.map((p) => _SupplierPaymentRow(payment: p)).toList(),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SupplierPaymentRow extends StatelessWidget {
+  const _SupplierPaymentRow({required this.payment});
+
+  final SupplierPayment payment;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withAlpha(15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.north_east_rounded, color: AppColors.primary, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  payment.method.toUpperCase(),
+                  style: AppTextStyles.bodySmall
+                      .copyWith(color: AppColors.textSecondary, letterSpacing: 0.5),
+                ),
+                if (payment.notes != null)
+                  Text(payment.notes!, style: AppTextStyles.bodySmall),
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(CurrencyUtils.format(payment.amount),
+                  style: AppTextStyles.labelLarge
+                      .copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
+              Text(
+                DateFormat('dd MMM yyyy').format(payment.createdAt),
+                style: AppTextStyles.bodySmall
+                    .copyWith(color: AppColors.textSecondary, fontSize: 11),
+              ),
+            ],
           ),
         ],
       ),
@@ -334,7 +423,7 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _method,
+              initialValue: _method,
               decoration: const InputDecoration(labelText: 'Payment Method'),
               items: const [
                 DropdownMenuItem(value: 'cash', child: Text('Cash')),

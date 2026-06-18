@@ -1,7 +1,6 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/tables/petty_cash_table.dart';
 import 'package:drift/drift.dart';
-
-import '../app_database.dart';
-import '../tables/petty_cash_table.dart';
 
 part 'petty_cash_dao.g.dart';
 

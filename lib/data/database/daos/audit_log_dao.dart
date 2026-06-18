@@ -1,9 +1,8 @@
 import 'dart:convert';
 
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/tables/audit_log_table.dart';
 import 'package:drift/drift.dart';
-
-import '../app_database.dart';
-import '../tables/audit_log_table.dart';
 
 part 'audit_log_dao.g.dart';
 

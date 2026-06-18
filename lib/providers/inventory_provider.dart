@@ -1,13 +1,12 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/daos/inventory_dao.dart';
+import 'package:bms/data/repositories/inventory_repository.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-
-import '../data/database/app_database.dart';
-import '../data/database/daos/inventory_dao.dart';
-import '../data/repositories/inventory_repository.dart';
-import '../features/auth/domain/auth_state.dart';
-import 'auth_provider.dart';
-import 'database_provider.dart';
 
 // Manual providers - avoids riverpod_generator's Drift type serialization issue.
 // inventoryRepository is keepAlive equivalent via Provider (never auto-disposed).

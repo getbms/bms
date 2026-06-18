@@ -1,7 +1,6 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/tables/cheques_table.dart';
 import 'package:drift/drift.dart';
-
-import '../app_database.dart';
-import '../tables/cheques_table.dart';
 
 part 'cheques_dao.g.dart';
 
@@ -32,6 +31,18 @@ class ChequesDao extends DatabaseAccessor<AppDatabase> with _$ChequesDaoMixin {
             (c) =>
                 c.dueDate.isBetweenValues(now, cutoff) &
                 c.status.equals('pending'),
+          )
+          ..orderBy([(c) => OrderingTerm.asc(c.dueDate)]))
+        .get();
+  }
+
+  Future<List<Cheque>> getOverdueCheques() {
+    final now = DateTime.now();
+    return (select(cheques)
+          ..where(
+            (c) =>
+                c.dueDate.isSmallerThanValue(now) &
+                c.status.isIn(['pending', 'deposited']),
           )
           ..orderBy([(c) => OrderingTerm.asc(c.dueDate)]))
         .get();

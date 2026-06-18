@@ -1,10 +1,8 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bms/data/repositories/auth_repository.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../data/repositories/auth_repository.dart';
-import '../features/auth/domain/auth_state.dart';
-import 'database_provider.dart';
 
 part 'auth_provider.g.dart';
 

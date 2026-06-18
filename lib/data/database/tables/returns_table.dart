@@ -1,6 +1,5 @@
+import 'package:bms/data/database/tables/invoices_table.dart';
 import 'package:drift/drift.dart';
-
-import 'invoices_table.dart';
 
 class SalesReturns extends Table {
   TextColumn get id => text()();
@@ -10,6 +9,7 @@ class SalesReturns extends Table {
   /// refund | credit | exchange
   TextColumn get type => text()
       .withDefault(const Constant('refund'))
+      // ignore: recursive_getters
       .check(type.isIn(['refund', 'credit', 'exchange']))();
 
   RealColumn get totalAmount => real().withDefault(const Constant(0))();
@@ -26,8 +26,11 @@ class ReturnItems extends Table {
   TextColumn get returnId => text().references(SalesReturns, #id)();
   TextColumn get productId => text()();
   TextColumn get productName => text()(); // snapshot
+  // ignore: recursive_getters
   RealColumn get qty => real().check(qty.isBiggerThanValue(0))();
+  // ignore: recursive_getters
   RealColumn get unitPrice => real().check(unitPrice.isBiggerOrEqualValue(0))();
+  // ignore: recursive_getters
   RealColumn get subtotal => real().check(subtotal.isBiggerOrEqualValue(0))();
 
   @override

@@ -18,10 +18,10 @@ abstract final class AppConstants {
   static const List<int> chequeReminderDaysBefore = [1, 3, 7];
 
   // Touch targets (WCAG AA minimum)
-  static const double minTouchTargetSize = 48.0;
+  static const double minTouchTargetSize = 48;
 
   // Layout
-  static const double sidebarWidth = 240.0;
-  static const double sidebarCollapsedWidth = 64.0;
-  static const double sidebarBreakpoint = 900.0;
+  static const double sidebarWidth = 240;
+  static const double sidebarCollapsedWidth = 64;
+  static const double sidebarBreakpoint = 900;
 }

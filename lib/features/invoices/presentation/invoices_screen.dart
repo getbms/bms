@@ -1,13 +1,12 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/features/invoices/presentation/invoice_detail_screen.dart';
+import 'package:bms/providers/invoices_provider.dart';
+import 'package:bms/shared/widgets/bms_filter_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../providers/invoices_provider.dart';
-import '../../../shared/widgets/bms_filter_bar.dart';
-import 'invoice_detail_screen.dart';
 
 class InvoicesScreen extends ConsumerWidget {
   const InvoicesScreen({super.key});
@@ -16,7 +15,7 @@ class InvoicesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(title: const Text('Invoices')),
-      body: Column(
+      body: const Column(
         children: [
           _FilterBar(),
           _SummaryBar(),
@@ -56,7 +55,7 @@ class _FilterBarState extends ConsumerState<_FilterBar> {
   Widget build(BuildContext context) {
     final filter = ref.watch(invoiceFilterProvider);
 
-    return Container(
+    return ColoredBox(
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +190,7 @@ class _InvoiceList extends ConsumerWidget {
         return ListView.separated(
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: rows.length,
-          separatorBuilder: (_, __) =>
+          separatorBuilder: (_, _) =>
               const Divider(height: 1, indent: 16, endIndent: 16),
           itemBuilder: (_, i) => _InvoiceTile(row: rows[i]),
         );

@@ -1,11 +1,10 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-
-import '../data/database/app_database.dart';
-import '../features/auth/domain/auth_state.dart';
-import 'auth_provider.dart';
-import 'database_provider.dart';
 
 // Manual providers - riverpod_generator cannot serialize Drift-generated types
 // in function signatures during the build phase, so we use the manual API.

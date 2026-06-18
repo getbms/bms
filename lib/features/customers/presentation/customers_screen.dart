@@ -1,11 +1,10 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/providers/customers_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
-import '../../../providers/customers_provider.dart';
 
 class CustomersScreen extends ConsumerWidget {
   const CustomersScreen({super.key});
@@ -141,7 +140,7 @@ class _CustomerDetailSheet extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Outstanding Balance', style: AppTextStyles.bodyMedium),
+                const Text('Outstanding Balance', style: AppTextStyles.bodyMedium),
                 Text(
                   CurrencyUtils.format(customer.balance),
                   style: AppTextStyles.titleMedium.copyWith(
@@ -328,7 +327,7 @@ class _PaymentSheetState extends ConsumerState<_PaymentSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
-              value: _method,
+              initialValue: _method,
               decoration: const InputDecoration(labelText: 'Payment Method'),
               items: const [
                 DropdownMenuItem(value: 'cash', child: Text('Cash')),

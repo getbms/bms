@@ -1,16 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:drift/drift.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-
-import '../data/database/app_database.dart';
-import '../features/auth/domain/auth_state.dart';
-import 'auth_provider.dart';
-import 'database_provider.dart';
 
 
 const _langKey = 'app_language';
@@ -271,7 +269,7 @@ class SettingsActions {
       final db = _db;
 
       // Products
-      for (final p in (payload['products'] as List? ?? [])) {
+      for (final Map<String, dynamic> p in ((payload['products'] as List?)?.cast<Map<String, dynamic>>() ?? [])) {
         await db.into(db.products).insert(
           ProductsCompanion.insert(
             id: p['id'] as String,
@@ -287,7 +285,7 @@ class SettingsActions {
       }
 
       // Customers
-      for (final c in (payload['customers'] as List? ?? [])) {
+      for (final Map<String, dynamic> c in ((payload['customers'] as List?)?.cast<Map<String, dynamic>>() ?? [])) {
         await db.into(db.customers).insert(
           CustomersCompanion.insert(
             id: c['id'] as String,
@@ -301,7 +299,7 @@ class SettingsActions {
       }
 
       // Stock
-      for (final s in (payload['stock'] as List? ?? [])) {
+      for (final Map<String, dynamic> s in ((payload['stock'] as List?)?.cast<Map<String, dynamic>>() ?? [])) {
         await db.into(db.stock).insert(
           StockCompanion.insert(
             productId: s['product_id'] as String,

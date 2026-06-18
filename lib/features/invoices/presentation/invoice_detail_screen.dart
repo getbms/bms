@@ -1,20 +1,19 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/features/invoices/presentation/invoice_pdf.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
+import 'package:bms/providers/inventory_provider.dart';
+import 'package:bms/providers/invoices_provider.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
-import '../../../features/auth/domain/auth_state.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../providers/database_provider.dart';
-import '../../../providers/inventory_provider.dart';
-import '../../../providers/invoices_provider.dart';
-import 'invoice_pdf.dart';
 
 class InvoiceDetailScreen extends ConsumerWidget {
   const InvoiceDetailScreen({super.key, required this.invoiceId});
@@ -138,7 +137,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
       useSafeArea: true,
       builder: (_) => _ProcessReturnSheet(detail: detail),
     );
-    if (processed == true) {
+    if (processed ?? false) {
       ref.invalidate(invoiceReturnsProvider(detail.invoice.id));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -242,7 +241,7 @@ class _DetailBody extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Items', style: AppTextStyles.titleMedium),
+              const Text('Items', style: AppTextStyles.titleMedium),
               const SizedBox(height: 12),
               Table(
                 columnWidths: const {
@@ -252,8 +251,8 @@ class _DetailBody extends ConsumerWidget {
                   3: FixedColumnWidth(90),
                 },
                 children: [
-                  TableRow(
-                    decoration: const BoxDecoration(
+                  const TableRow(
+                    decoration: BoxDecoration(
                         border: Border(
                             bottom: BorderSide(color: AppColors.border))),
                     children: [
@@ -391,7 +390,7 @@ class _DetailBody extends ConsumerWidget {
         // Return history
         returnsAsync.when(
           loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
           data: (returns) {
             if (returns.isEmpty) return const SizedBox.shrink();
             return Padding(
@@ -585,7 +584,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
       final returnId = uuid.v7();
       // Use discounted unit price (subtotal / qty) so partial returns respect
       // any line-item discount the customer originally received.
-      final totalAmount = returnItems.fold(0.0, (s, e) {
+      final totalAmount = returnItems.fold<double>(0, (s, e) {
         if (e.item.qty <= 0) return s;
         return s + (e.item.subtotal / e.item.qty) * e.qty;
       });
@@ -705,7 +704,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                   padding: const EdgeInsets.all(20),
                   children: [
                     // Items section
-                    Text('Select Items to Return',
+                    const Text('Select Items to Return',
                         style: AppTextStyles.labelLarge),
                     const SizedBox(height: 12),
 
@@ -719,7 +718,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                     const SizedBox(height: 20),
 
                     // Return type
-                    Text('Return Type', style: AppTextStyles.labelLarge),
+                    const Text('Return Type', style: AppTextStyles.labelLarge),
                     const SizedBox(height: 8),
                     _ReturnTypeSelector(
                       value: _type,
@@ -729,7 +728,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                     const SizedBox(height: 20),
 
                     // Reason
-                    Text('Reason', style: AppTextStyles.labelLarge),
+                    const Text('Reason', style: AppTextStyles.labelLarge),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _reasonCtrl,
@@ -752,7 +751,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Return Total',
+                          const Text('Return Total',
                               style: AppTextStyles.titleMedium),
                           Text(
                             CurrencyUtils.format(_totalReturnAmount),

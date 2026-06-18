@@ -1,6 +1,5 @@
-import 'package:drift/drift.dart';
-
 import 'package:bms/data/database/app_database.dart';
+import 'package:drift/drift.dart';
 
 class DailySales {
   DailySales({required this.date, required this.revenue, required this.cogs});

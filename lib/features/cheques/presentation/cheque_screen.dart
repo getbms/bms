@@ -1,12 +1,11 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/core/utils/date_utils.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/providers/cheques_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../core/utils/date_utils.dart';
-import '../../../data/database/app_database.dart';
-import '../../../providers/cheques_provider.dart';
 
 class ChequeScreen extends ConsumerStatefulWidget {
   const ChequeScreen({super.key});
@@ -180,7 +179,7 @@ class _CalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final firstDay = DateTime(monthDate.year, monthDate.month, 1);
+    final firstDay = DateTime(monthDate.year, monthDate.month);
     // weekday: Mon=1 … Sun=7. We want Mon at index 0.
     final startOffset = firstDay.weekday - 1;
     final daysInMonth = DateTime(monthDate.year, monthDate.month + 1, 0).day;
@@ -323,7 +322,6 @@ class _DayChequeSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.5,
       minChildSize: 0.3,
       maxChildSize: 0.9,
       expand: false,
@@ -570,7 +568,7 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _type,
+                      initialValue: _type,
                       decoration: const InputDecoration(labelText: 'Type'),
                       items: const [
                         DropdownMenuItem(value: 'received', child: Text('Received')),
@@ -582,7 +580,7 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _partyType,
+                      initialValue: _partyType,
                       decoration: const InputDecoration(labelText: 'Party Type'),
                       items: const [
                         DropdownMenuItem(value: 'customer', child: Text('Customer')),

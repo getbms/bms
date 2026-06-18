@@ -1,8 +1,7 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/tables/payments_table.dart';
+import 'package:bms/data/database/tables/suppliers_table.dart';
 import 'package:drift/drift.dart';
-
-import '../app_database.dart';
-import '../tables/payments_table.dart';
-import '../tables/suppliers_table.dart';
 
 part 'suppliers_dao.g.dart';
 
@@ -53,6 +52,12 @@ class SuppliersDao extends DatabaseAccessor<AppDatabase> with _$SuppliersDaoMixi
 
   Future<List<PurchaseItem>> getItemsForPurchase(String purchaseId) =>
       (select(purchaseItems)..where((i) => i.purchaseId.equals(purchaseId))).get();
+
+  Future<List<SupplierPayment>> getPaymentsForSupplier(String supplierId) =>
+      (select(supplierPayments)
+            ..where((p) => p.supplierId.equals(supplierId))
+            ..orderBy([(p) => OrderingTerm.desc(p.createdAt)]))
+          .get();
 
   Future<String> nextGrnNumber() async {
     return transaction(() async {

@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 
+// ignore: avoid_classes_with_only_static_members
 abstract final class CurrencyUtils {
   static final NumberFormat _fmt = NumberFormat('#,##0.00');
   static final NumberFormat _fmtCompact = NumberFormat('#,##0');

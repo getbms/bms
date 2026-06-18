@@ -1,14 +1,12 @@
-import 'dart:typed_data';
-
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/providers/pos_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import 'package:bms/providers/pos_provider.dart';
-import 'package:bms/data/database/app_database.dart';
-
+// ignore: avoid_classes_with_only_static_members
 abstract final class ReceiptPdf {
   static final _dateFmt = DateFormat('dd/MM/yyyy HH:mm');
   static final _priceFmt = NumberFormat('#,##0.00');
@@ -100,7 +98,7 @@ abstract final class ReceiptPdf {
             pw.Center(
               child: pw.SizedBox(
                 height: 52,
-                child: pw.Image(headerImage, fit: pw.BoxFit.contain),
+                child: pw.Image(headerImage),
               ),
             ),
             pw.SizedBox(height: 3),

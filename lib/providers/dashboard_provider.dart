@@ -49,7 +49,7 @@ class DashboardStats {
     final now = DateTime.now();
     return salesTrend
         .where((d) => d.date.year == now.year && d.date.month == now.month)
-        .fold(0.0, (s, d) => s + d.grossProfit);
+        .fold(0, (s, d) => s + d.grossProfit);
   }
 
   double get mtdGrossMarginPct {
@@ -70,8 +70,8 @@ Future<DashboardStats> dashboardStats(Ref ref) async {
   final todayStart = DateTime(now.year, now.month, now.day);
   final todayEnd = todayStart.add(const Duration(days: 1));
   final thirtyDaysAgo = todayStart.subtract(const Duration(days: 29));
-  final monthStart = DateTime(now.year, now.month, 1);
-  final lastMonthStart = DateTime(now.year, now.month - 1, 1);
+  final monthStart = DateTime(now.year, now.month);
+  final lastMonthStart = DateTime(now.year, now.month - 1);
 
   final (todayInvs, lowStock, debtors, cheques, recent, trend, thisMonth, lastMonth) =
       await (
@@ -126,5 +126,5 @@ Future<double> todaySalesTotal(Ref ref) async {
       .getByDateRange(start, start.add(const Duration(days: 1)));
   return invoices
       .where((i) => i.status != 'void')
-      .fold<double>(0.0, (sum, inv) => sum + inv.total);
+      .fold<double>(0, (sum, inv) => sum + inv.total);
 }

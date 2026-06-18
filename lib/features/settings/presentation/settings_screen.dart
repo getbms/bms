@@ -1,18 +1,16 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/settings_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../data/database/app_database.dart';
-import '../../../features/auth/domain/auth_state.dart';
-import '../../../providers/auth_provider.dart';
-import '../../../providers/settings_provider.dart';
+import 'package:path_provider/path_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -31,19 +29,19 @@ class SettingsScreen extends ConsumerWidget {
         children: [
           // Store info (admin+)
           if (isAdmin) ...[
-            _SectionHeader(title: 'Store Info', icon: Icons.store_outlined),
+            const _SectionHeader(title: 'Store Info', icon: Icons.store_outlined),
             const _StoreInfoTile(),
             const SizedBox(height: 24),
           ],
 
           // Language
-          _SectionHeader(title: 'Language', icon: Icons.language_outlined),
+          const _SectionHeader(title: 'Language', icon: Icons.language_outlined),
           const _LanguageTile(),
           const SizedBox(height: 24),
 
           // Products CSV import (admin+)
           if (isAdmin) ...[
-            _SectionHeader(title: 'Products', icon: Icons.inventory_2_outlined),
+            const _SectionHeader(title: 'Products', icon: Icons.inventory_2_outlined),
             _ActionTile(
               icon: Icons.upload_file_outlined,
               title: 'Import Products from CSV',
@@ -64,7 +62,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // Database (developer only)
           if (isDev) ...[
-            _SectionHeader(title: 'Database', icon: Icons.storage_outlined),
+            const _SectionHeader(title: 'Database', icon: Icons.storage_outlined),
             _ActionTile(
               icon: Icons.cloud_download_outlined,
               title: 'Export Database',
@@ -85,7 +83,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // Audit log (admin+)
           if (isAdmin) ...[
-            _SectionHeader(title: 'Audit Log', icon: Icons.history_outlined),
+            const _SectionHeader(title: 'Audit Log', icon: Icons.history_outlined),
             _ActionTile(
               icon: Icons.list_alt_outlined,
               title: 'View Audit Log',
@@ -99,7 +97,7 @@ class SettingsScreen extends ConsumerWidget {
           ],
 
           // App info (all roles)
-          _SectionHeader(title: 'About', icon: Icons.info_outline),
+          const _SectionHeader(title: 'About', icon: Icons.info_outline),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -109,9 +107,9 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('BMS - Business Manager', style: AppTextStyles.labelLarge),
+                const Text('BMS - Business Manager', style: AppTextStyles.labelLarge),
                 const SizedBox(height: 4),
-                Text('Version 1.0.0', style: AppTextStyles.bodySmall),
+                const Text('Version 1.0.0', style: AppTextStyles.bodySmall),
                 const SizedBox(height: 4),
                 Text('Role: ${role.toUpperCase()}', style: AppTextStyles.bodySmall),
               ],
@@ -323,16 +321,19 @@ class _StoreInfoTileState extends ConsumerState<_StoreInfoTile> {
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 16),
-          ElevatedButton.icon(
-            icon: _saving
-                ? const SizedBox(
-                    width: 14,
-                    height: 14,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.save_outlined, size: 18),
-            label: Text(_saving ? 'Saving...' : 'Save Store Info'),
-            onPressed: _saving ? null : _save,
+          Align(
+            alignment: Alignment.centerRight,
+            child: ElevatedButton.icon(
+              icon: _saving
+                  ? const SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Icon(Icons.save_outlined, size: 18),
+              label: Text(_saving ? 'Saving...' : 'Save Store Info'),
+              onPressed: _saving ? null : _save,
+            ),
           ),
         ],
       ),
@@ -348,25 +349,25 @@ class _LanguageTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final current = ref.watch(languageProvider);
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: supportedLanguages.map((lang) {
-          final (code, label) = lang;
-          return RadioListTile<String>(
-            title: Text(label, style: AppTextStyles.bodyMedium),
-            value: code,
-            groupValue: current,
-            activeColor: AppColors.primary,
-            dense: true,
-            onChanged: (v) async {
-              if (v != null) await ref.read(languageProvider.notifier).set(v);
-            },
-          );
-        }).toList(),
+    return Material(
+      color: AppColors.surfaceVariant,
+      borderRadius: BorderRadius.circular(12),
+      child: RadioGroup<String>(
+        groupValue: current,
+        onChanged: (v) async {
+          if (v != null) await ref.read(languageProvider.notifier).set(v);
+        },
+        child: Column(
+          children: supportedLanguages.map((lang) {
+            final (code, label) = lang;
+            return RadioListTile<String>(
+              title: Text(label, style: AppTextStyles.bodyMedium),
+              value: code,
+              activeColor: AppColors.primary,
+              dense: true,
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -441,7 +442,7 @@ class _ActionTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),
+              const Icon(Icons.chevron_right, color: AppColors.textSecondary, size: 20),
             ],
           ),
         ),
@@ -480,7 +481,7 @@ class _AuditLogScreenState extends ConsumerState<_AuditLogScreen> {
             tooltip: 'Filter by type',
             onSelected: (v) => setState(() => _filterType = v),
             itemBuilder: (_) => [
-              const PopupMenuItem(value: null, child: Text('All')),
+              const PopupMenuItem(child: Text('All')),
               ..._types.map((t) => PopupMenuItem(value: t, child: Text(t))),
             ],
           ),

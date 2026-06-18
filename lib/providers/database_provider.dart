@@ -1,17 +1,15 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/daos/audit_log_dao.dart';
+import 'package:bms/data/database/daos/cheques_dao.dart';
+import 'package:bms/data/database/daos/customers_dao.dart';
+import 'package:bms/data/database/daos/inventory_dao.dart';
+import 'package:bms/data/database/daos/invoices_dao.dart';
+import 'package:bms/data/database/daos/petty_cash_dao.dart';
+import 'package:bms/data/database/daos/reports_dao.dart';
+import 'package:bms/data/database/daos/returns_dao.dart';
+import 'package:bms/data/database/daos/suppliers_dao.dart';
+import 'package:bms/data/database/daos/users_dao.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../data/database/app_database.dart';
-import '../data/database/daos/audit_log_dao.dart';
-import '../data/database/daos/cheques_dao.dart';
-import '../data/database/daos/customers_dao.dart';
-import '../data/database/daos/inventory_dao.dart';
-import '../data/database/daos/invoices_dao.dart';
-import '../data/database/daos/petty_cash_dao.dart';
-import '../data/database/daos/reports_dao.dart';
-import '../data/database/daos/returns_dao.dart';
-import '../data/database/daos/suppliers_dao.dart';
-import '../data/database/daos/users_dao.dart';
 
 part 'database_provider.g.dart';
 

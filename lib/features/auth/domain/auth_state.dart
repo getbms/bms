@@ -1,6 +1,5 @@
+import 'package:bms/data/models/user_model.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-
-import '../../../data/models/user_model.dart';
 
 part 'auth_state.freezed.dart';
 

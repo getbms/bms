@@ -1,7 +1,6 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/database/tables/returns_table.dart';
 import 'package:drift/drift.dart';
-
-import '../app_database.dart';
-import '../tables/returns_table.dart';
 
 part 'returns_dao.g.dart';
 

@@ -1,10 +1,9 @@
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../data/database/app_database.dart';
-import '../features/auth/domain/auth_state.dart';
-import 'auth_provider.dart';
-import 'database_provider.dart';
 
 // Returns for a specific invoice
 
@@ -47,7 +46,7 @@ class InvoiceFilterNotifier extends Notifier<InvoiceFilter> {
     final now = DateTime.now();
     return InvoiceFilter(
       dateRange: DateTimeRange(
-        start: DateTime(now.year, now.month, 1),
+        start: DateTime(now.year, now.month),
         end: now,
       ),
     );
@@ -140,13 +139,13 @@ final invoiceSummaryProvider = Provider.autoDispose<InvoiceSummary>((ref) {
     data: (rows) {
       final active = rows.where((r) => r.invoice.status != 'void').toList();
       return (
-        total: active.fold(0.0, (s, r) => s + r.invoice.total),
-        collected: active.fold(0.0, (s, r) => s + r.invoice.paidAmount),
+        total: active.fold(0, (s, r) => s + r.invoice.total),
+        collected: active.fold(0, (s, r) => s + r.invoice.paidAmount),
         count: active.length,
       );
     },
     loading: () => (total: 0.0, collected: 0.0, count: 0),
-    error: (_, __) => (total: 0.0, collected: 0.0, count: 0),
+    error: (_, _) => (total: 0.0, collected: 0.0, count: 0),
   );
 });
 

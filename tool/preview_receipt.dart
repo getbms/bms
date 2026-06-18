@@ -21,11 +21,11 @@ void main() async {
   const change = 550.00;
 
   final items = [
-    _Item('Anchor Milk Powder 400g', 2, 750.00),
-    _Item('Milo Tin 400g', 1, 890.00),
-    _Item('Sunlight Soap 100g', 3, 85.00),
-    _Item('Dettol 250ml', 1, 460.00),
-    _Item('Panadol 10 Tab', 2, 55.00),
+    const _Item('Anchor Milk Powder 400g', 2, 750),
+    const _Item('Milo Tin 400g', 1, 890),
+    const _Item('Sunlight Soap 100g', 3, 85),
+    const _Item('Dettol 250ml', 1, 460),
+    const _Item('Panadol 10 Tab', 2, 55),
   ];
 
   // ── Build PDF ────────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ void main() async {
           pw.Center(
             child: pw.SizedBox(
               height: 52,
-              child: pw.Image(headerImage, fit: pw.BoxFit.contain),
+              child: pw.Image(headerImage),
             ),
           ),
           pw.SizedBox(height: 3),
@@ -139,6 +139,7 @@ void main() async {
   final bytes = await doc.save();
   final outPath = '${Platform.environment['HOME']}/Downloads/receipt_preview.pdf';
   await File(outPath).writeAsBytes(bytes);
+  // ignore: avoid_print
   print('Saved: $outPath');
 }
 

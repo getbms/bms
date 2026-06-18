@@ -1,11 +1,10 @@
+import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/core/utils/currency_utils.dart';
+import 'package:bms/data/database/app_database.dart';
+import 'package:bms/providers/inventory_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
-import '../../../core/utils/currency_utils.dart';
-import '../../../data/database/app_database.dart';
-import '../../../providers/inventory_provider.dart';
 
 class InventoryScreen extends ConsumerStatefulWidget {
   const InventoryScreen({super.key});
@@ -225,7 +224,6 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
           await actions.adjustStock(
             productId: widget.product!.id,
             newQty: newQty,
-            reason: 'manual adjustment',
           );
         }
       }
@@ -285,7 +283,7 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _unitType,
+                    initialValue: _unitType,
                     decoration: const InputDecoration(labelText: 'Unit Type *'),
                     items: const [
                       DropdownMenuItem(value: 'pcs', child: Text('Pieces')),

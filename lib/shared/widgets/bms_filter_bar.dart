@@ -1,7 +1,6 @@
+import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import 'package:bms/core/theme/app_text_styles.dart';
 
 /// A date range field that sizes identically to TextField (uses readOnly TextField internally).
 class BmsDateRangeField extends StatelessWidget {
