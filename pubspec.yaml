@@ -82,6 +82,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  generate: true
   # fonts: uncomment after adding Inter font files to assets/fonts/
   # - family: Inter
   #   fonts:
