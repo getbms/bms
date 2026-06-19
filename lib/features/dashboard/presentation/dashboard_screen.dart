@@ -5,6 +5,7 @@ import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/database/daos/reports_dao.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/dashboard_provider.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:bms/providers/invoices_provider.dart';
@@ -27,7 +28,7 @@ class DashboardScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Dashboard'),
+            Text(context.l10n.dashboardTitle),
             Text(
               BmsDateUtils.formatDate(DateTime.now()),
               style: const TextStyle(
@@ -62,7 +63,7 @@ class DashboardScreen extends ConsumerWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       StatCard(
-                        label: "Today's Sales",
+                        label: context.l10n.statTodaysSales,
                         value: CurrencyUtils.format(s.todaySales),
                         icon: Icons.receipt_long_outlined,
                         color: AppColors.success,
@@ -80,7 +81,7 @@ class DashboardScreen extends ConsumerWidget {
                         },
                       ),
                       StatCard(
-                        label: 'Low Stock Items',
+                        label: context.l10n.statLowStock,
                         value: '${s.lowStockCount}',
                         icon: Icons.warning_amber_outlined,
                         color: AppColors.warning,
@@ -90,13 +91,13 @@ class DashboardScreen extends ConsumerWidget {
                         },
                       ),
                       StatCard(
-                        label: 'Cheques Due (7d)',
+                        label: context.l10n.statChequesDue,
                         value: '${s.chequesThisWeek}',
                         icon: Icons.calendar_today_outlined,
                         onTap: () => context.go(AppRoutes.cheques),
                       ),
                       StatCard(
-                        label: 'Total Receivables',
+                        label: context.l10n.statTotalReceivables,
                         value: CurrencyUtils.format(s.totalDebtors),
                         icon: Icons.people_outline,
                         color: AppColors.error,
@@ -113,27 +114,27 @@ class DashboardScreen extends ConsumerWidget {
 
               const SizedBox(height: 28),
 
-              const _SectionHeader(
-                title: 'Revenue Trend',
-                subtitle: 'Last 30 days - Revenue vs Gross Profit',
+              _SectionHeader(
+                title: context.l10n.revenueTrendTitle,
+                subtitle: context.l10n.revenueTrendSubtitle,
               ),
               const SizedBox(height: 12),
               _RevenueTrendChart(trend: s.salesTrend),
 
               const SizedBox(height: 28),
 
-              const _SectionHeader(
-                title: 'Weekly Performance',
-                subtitle: 'Last 7 days',
+              _SectionHeader(
+                title: context.l10n.weeklyPerfTitle,
+                subtitle: context.l10n.weeklyPerfSubtitle,
               ),
               const SizedBox(height: 12),
               _WeeklyGroupedChart(days: s.last7Days),
 
               if (s.paymentMix.isNotEmpty) ...[
                 const SizedBox(height: 28),
-                const _SectionHeader(
-                  title: 'Payment Mix',
-                  subtitle: 'Current month by method',
+                _SectionHeader(
+                  title: context.l10n.paymentMixTitle,
+                  subtitle: context.l10n.paymentMixSubtitle,
                 ),
                 const SizedBox(height: 12),
                 _PaymentMixCard(mix: s.paymentMix),
@@ -142,8 +143,8 @@ class DashboardScreen extends ConsumerWidget {
               if (s.recentInvoices.isNotEmpty) ...[
                 const SizedBox(height: 28),
                 _SectionHeader(
-                  title: 'Recent Invoices',
-                  subtitle: 'Last 30 days',
+                  title: context.l10n.recentInvoicesTitle,
+                  subtitle: context.l10n.recentInvoicesSubtitle,
                   onTap: () => context.go(AppRoutes.invoices),
                 ),
                 const SizedBox(height: 12),
@@ -189,7 +190,7 @@ class _SectionHeader extends StatelessWidget {
           if (onTap != null)
             TextButton(
               onPressed: onTap,
-              child: const Text('View All'),
+              child: Text(context.l10n.viewAll),
             ),
         ],
       );
@@ -226,7 +227,7 @@ class _MtdPerformanceCard extends StatelessWidget {
                   color: Colors.white70, size: 16),
               const SizedBox(width: 6),
               Text(
-                'Month-to-Date Performance',
+                context.l10n.mtdPerformance,
                 style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
               ),
             ],
@@ -279,7 +280,7 @@ class _MtdPerformanceCard extends StatelessWidget {
                             .copyWith(color: growthColor),
                       ),
                       Text(
-                        'vs last month',
+                        context.l10n.mtdVsLastMonth,
                         style: AppTextStyles.bodySmall
                             .copyWith(color: Colors.white60, fontSize: 10),
                       ),
@@ -294,19 +295,19 @@ class _MtdPerformanceCard extends StatelessWidget {
           Row(
             children: [
               _MtdMetric(
-                label: 'Gross Profit',
+                label: context.l10n.mtdGrossProfit,
                 value: CurrencyUtils.format(s.mtdGrossProfit),
                 color: Colors.white,
               ),
               const SizedBox(width: 24),
               _MtdMetric(
-                label: 'Margin',
+                label: context.l10n.mtdMargin,
                 value: '${s.mtdGrossMarginPct.toStringAsFixed(1)}%',
                 color: Colors.white,
               ),
               const SizedBox(width: 24),
               _MtdMetric(
-                label: 'Avg Order',
+                label: context.l10n.mtdAvgOrder,
                 value: CurrencyUtils.format(s.avgOrderValue),
                 color: Colors.white,
               ),
@@ -362,7 +363,7 @@ class _RevenueTrendChart extends StatelessWidget {
               const Icon(Icons.show_chart_outlined,
                   size: 40, color: AppColors.border),
               const SizedBox(height: 8),
-              Text('No sales data for the last 30 days.',
+              Text(context.l10n.noSalesData,
                   style: AppTextStyles.bodySmall
                       .copyWith(color: AppColors.textSecondary)),
             ],
@@ -386,11 +387,11 @@ class _RevenueTrendChart extends StatelessWidget {
       height: 280,
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              _ChartLegendDot(color: AppColors.primary, label: 'Revenue'),
-              SizedBox(width: 16),
-              _ChartLegendDot(color: AppColors.success, label: 'Gross Profit'),
+              _ChartLegendDot(color: AppColors.primary, label: context.l10n.chartRevenue),
+              const SizedBox(width: 16),
+              _ChartLegendDot(color: AppColors.success, label: context.l10n.chartGrossProfit),
             ],
           ),
           const SizedBox(height: 16),
@@ -555,10 +556,10 @@ class _WeeklyGroupedChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (days.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 160,
         child: Center(
-          child: Text('No data.', style: AppTextStyles.bodySmall),
+          child: Text(context.l10n.noData, style: AppTextStyles.bodySmall),
         ),
       );
     }
@@ -595,11 +596,11 @@ class _WeeklyGroupedChart extends StatelessWidget {
       height: 240,
       child: Column(
         children: [
-          const Row(
+          Row(
             children: [
-              _ChartLegendDot(color: AppColors.primary, label: 'Revenue'),
-              SizedBox(width: 16),
-              _ChartLegendDot(color: AppColors.success, label: 'Gross Profit'),
+              _ChartLegendDot(color: AppColors.primary, label: context.l10n.chartRevenue),
+              const SizedBox(width: 16),
+              _ChartLegendDot(color: AppColors.success, label: context.l10n.chartGrossProfit),
             ],
           ),
           const SizedBox(height: 12),
@@ -748,7 +749,7 @@ class _PaymentMixCard extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Total',
+                      context.l10n.total,
                       style: AppTextStyles.bodySmall
                           .copyWith(color: AppColors.textSecondary, fontSize: 10),
                     ),

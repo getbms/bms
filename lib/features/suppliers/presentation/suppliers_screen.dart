@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/suppliers_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,15 +26,15 @@ class SuppliersScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Suppliers'),
+        title: Text(context.l10n.suppliersTitle),
       ),
       body: suppliersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (suppliers) {
           if (suppliers.isEmpty) {
-            return const Center(
-              child: Text('No suppliers yet. Add one with the button above.', style: AppTextStyles.bodySmall),
+            return Center(
+              child: Text(context.l10n.noSuppliersYet, style: AppTextStyles.bodySmall),
             );
           }
           return ListView.builder(
@@ -44,7 +45,7 @@ class SuppliersScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openAddSupplier(context),
-        tooltip: 'Add Supplier',
+        tooltip: context.l10n.addSupplier,
         child: const Icon(Icons.add),
       ),
     );
@@ -158,7 +159,7 @@ class _SupplierDetailSheet extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Amount Payable', style: AppTextStyles.bodyMedium),
+                Text(context.l10n.amountPayable, style: AppTextStyles.bodyMedium),
                 Text(
                   CurrencyUtils.format(supplier.balance),
                   style: AppTextStyles.titleMedium.copyWith(color: balanceColor),
@@ -169,7 +170,7 @@ class _SupplierDetailSheet extends ConsumerWidget {
           const SizedBox(height: 12),
           OutlinedButton.icon(
             icon: const Icon(Icons.payment_rounded),
-            label: const Text('Record Payment'),
+            label: Text(context.l10n.recordPayment),
             onPressed: () {
               Navigator.of(context).pop();
               showModalBottomSheet(
@@ -182,7 +183,7 @@ class _SupplierDetailSheet extends ConsumerWidget {
             },
           ),
           const SizedBox(height: 20),
-          const Text('Payment History', style: AppTextStyles.titleMedium),
+          Text(context.l10n.paymentHistory, style: AppTextStyles.titleMedium),
           const SizedBox(height: 8),
           historyAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -190,7 +191,7 @@ class _SupplierDetailSheet extends ConsumerWidget {
             data: (payments) => payments.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No payments recorded yet.',
+                    child: Text(context.l10n.noPayments,
                         style: AppTextStyles.bodySmall
                             .copyWith(color: AppColors.textSecondary)),
                   )
@@ -294,7 +295,7 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Supplier added.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.supplierAdded)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -315,36 +316,36 @@ class _AddSupplierSheetState extends ConsumerState<_AddSupplierSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Add Supplier', style: AppTextStyles.titleLarge),
+            Text(context.l10n.addSupplier, style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Supplier Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              decoration: InputDecoration(labelText: context.l10n.supplierName),
+              validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _phone,
-              decoration: const InputDecoration(labelText: 'Phone'),
+              decoration: InputDecoration(labelText: context.l10n.phone),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _address,
-              decoration: const InputDecoration(labelText: 'Address'),
+              decoration: InputDecoration(labelText: context.l10n.address),
               maxLines: 2,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _paymentTerms,
-              decoration: const InputDecoration(labelText: 'Payment Terms (e.g. Net 30)'),
+              decoration: InputDecoration(labelText: context.l10n.paymentTerms),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Add Supplier'),
+                  : Text(context.l10n.addSupplier),
             ),
           ],
         ),
@@ -388,7 +389,7 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Payment recorded.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.paymentRecorded)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -409,14 +410,14 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Record Payment - ${widget.supplierName}', style: AppTextStyles.titleLarge),
+            Text(context.l10n.recordPaymentFor(widget.supplierName), style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _amount,
-              decoration: const InputDecoration(labelText: 'Amount *', prefixText: 'Rs. '),
+              decoration: InputDecoration(labelText: context.l10n.amountRequired, prefixText: context.l10n.currencyPrefix),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
+                if (v == null || v.trim().isEmpty) return context.l10n.required;
                 if (double.tryParse(v) == null) return 'Invalid number';
                 return null;
               },
@@ -424,25 +425,25 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _method,
-              decoration: const InputDecoration(labelText: 'Payment Method'),
-              items: const [
-                DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                DropdownMenuItem(value: 'bank', child: Text('Bank Transfer')),
-                DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
+              decoration: InputDecoration(labelText: context.l10n.paymentMethod),
+              items: [
+                DropdownMenuItem(value: 'cash', child: Text(context.l10n.paymentMethodCash)),
+                DropdownMenuItem(value: 'bank', child: Text(context.l10n.paymentMethodBankTransfer)),
+                DropdownMenuItem(value: 'cheque', child: Text(context.l10n.paymentMethodCheque)),
               ],
               onChanged: (v) => setState(() => _method = v ?? 'cash'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _notes,
-              decoration: const InputDecoration(labelText: 'Notes'),
+              decoration: InputDecoration(labelText: context.l10n.notes),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Record Payment'),
+                  : Text(context.l10n.recordPayment),
             ),
           ],
         ),

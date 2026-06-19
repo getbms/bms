@@ -850,6 +850,12 @@ abstract class AppLocalizations {
   /// **'POS / Sales'**
   String get posTitle;
 
+  /// No description provided for @clearCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cart'**
+  String get clearCart;
+
   /// No description provided for @scanOrSearch.
   ///
   /// In en, this message translates to:

@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:bms/providers/users_provider.dart';
 import 'package:flutter/material.dart';
@@ -21,20 +22,19 @@ class UsersScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Management'),
+        title: Text(context.l10n.userManagement),
       ),
       body: usersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (users) {
-          // Admins can only see cashiers; developers see all
           final visible = isDeveloper
               ? users
               : users.where((u) => u.role == 'cashier').toList();
 
           if (visible.isEmpty) {
-            return const Center(
-              child: Text('No users found.', style: AppTextStyles.bodySmall),
+            return Center(
+              child: Text(context.l10n.noUsersFound, style: AppTextStyles.bodySmall),
             );
           }
 
@@ -52,7 +52,7 @@ class UsersScreen extends ConsumerWidget {
       floatingActionButton: isDeveloper
           ? FloatingActionButton(
               onPressed: () => _openAddUser(context, ref, isDeveloper: true),
-              tooltip: 'Add User',
+              tooltip: context.l10n.addUser,
               child: const Icon(Icons.person_add_outlined),
             )
           : null,
@@ -113,7 +113,7 @@ class _UserTile extends ConsumerWidget {
                 color: AppColors.primary.withAlpha(20),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('You', style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 10)),
+              child: Text(context.l10n.youLabel, style: AppTextStyles.bodySmall.copyWith(color: AppColors.primary, fontSize: 10)),
             ),
           ],
         ],
@@ -130,7 +130,7 @@ class _UserTile extends ConsumerWidget {
             const SizedBox(width: 4),
             IconButton(
               icon: const Icon(Icons.edit_outlined, size: 18),
-              tooltip: 'Edit',
+              tooltip: context.l10n.edit,
               onPressed: () => _openEdit(context),
             ),
           ],
@@ -177,7 +177,7 @@ class _StatusChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
-        isActive ? 'Active' : 'Inactive',
+        isActive ? context.l10n.activeStatus : context.l10n.inactiveStatus,
         style: AppTextStyles.bodySmall.copyWith(
           color: isActive ? AppColors.success : AppColors.error,
           fontWeight: FontWeight.w600,
@@ -214,14 +214,14 @@ class _UserDetailSheet extends ConsumerWidget {
           if (user.lastLoginAt != null) ...[
             const SizedBox(height: 4),
             Text(
-              'Last login: ${_fmt(user.lastLoginAt!)}',
+              '${context.l10n.lastLogin} ${_fmt(user.lastLoginAt!)}',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
             ),
           ],
           if (user.passwordChangedAt != null) ...[
             const SizedBox(height: 2),
             Text(
-              'Password changed: ${_fmt(user.passwordChangedAt!)}',
+              '${context.l10n.passwordChangedAt} ${_fmt(user.passwordChangedAt!)}',
               style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
             ),
           ],
@@ -229,7 +229,7 @@ class _UserDetailSheet extends ConsumerWidget {
           if (isCurrentUser) ...[
             OutlinedButton.icon(
               icon: const Icon(Icons.lock_outlined),
-              label: const Text('Change My Password'),
+              label: Text(context.l10n.changeMyPassword),
               onPressed: () {
                 Navigator.of(context).pop();
                 showModalBottomSheet(
@@ -245,7 +245,7 @@ class _UserDetailSheet extends ConsumerWidget {
           if (canManage && !isDevSeed && !isCurrentUser) ...[
             OutlinedButton.icon(
               icon: Icon(user.isActive ? Icons.block : Icons.check_circle_outline),
-              label: Text(user.isActive ? 'Deactivate Account' : 'Activate Account'),
+              label: Text(user.isActive ? context.l10n.deactivateAccount : context.l10n.activateAccount),
               style: OutlinedButton.styleFrom(
                 foregroundColor: user.isActive ? AppColors.error : AppColors.success,
               ),
@@ -255,7 +255,7 @@ class _UserDetailSheet extends ConsumerWidget {
                   await ref.read(userActionsProvider).setActive(user.id, active: !user.isActive);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(user.isActive ? 'Account deactivated.' : 'Account activated.')),
+                      SnackBar(content: Text(user.isActive ? context.l10n.accountDeactivated : context.l10n.accountActivated)),
                     );
                   }
                 } catch (e) {
@@ -270,7 +270,7 @@ class _UserDetailSheet extends ConsumerWidget {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               icon: const Icon(Icons.lock_reset_outlined),
-              label: const Text('Reset Password'),
+              label: Text(context.l10n.resetPassword),
               onPressed: () {
                 Navigator.of(context).pop();
                 showModalBottomSheet(
@@ -290,7 +290,7 @@ class _UserDetailSheet extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                'Developer seed account - cannot be deactivated or deleted.',
+                context.l10n.devSeedWarning,
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
               ),
             ),
@@ -347,7 +347,7 @@ class _AddUserSheetState extends ConsumerState<_AddUserSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User created.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.userCreated)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -369,20 +369,20 @@ class _AddUserSheetState extends ConsumerState<_AddUserSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Create User', style: AppTextStyles.titleLarge),
+              Text(context.l10n.createUser, style: AppTextStyles.titleLarge),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _name,
-                decoration: const InputDecoration(labelText: 'Full Name *'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: InputDecoration(labelText: context.l10n.fullName),
+                validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _username,
-                decoration: const InputDecoration(labelText: 'Username *'),
+                decoration: InputDecoration(labelText: context.l10n.usernameField),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
-                  if (v.trim().length < 3) return 'Min 3 characters';
+                  if (v == null || v.trim().isEmpty) return context.l10n.required;
+                  if (v.trim().length < 3) return context.l10n.minCharsUsername;
                   return null;
                 },
               ),
@@ -391,27 +391,27 @@ class _AddUserSheetState extends ConsumerState<_AddUserSheet> {
                 controller: _password,
                 obscureText: _obscure,
                 decoration: InputDecoration(
-                  labelText: 'Password *',
-                                    suffixIcon: IconButton(
+                  labelText: context.l10n.passwordField,
+                  suffixIcon: IconButton(
                     icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return 'Required';
-                  if (v.length < 6) return 'Min 6 characters';
+                  if (v == null || v.isEmpty) return context.l10n.required;
+                  if (v.length < 6) return context.l10n.minCharsPassword;
                   return null;
                 },
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
                 initialValue: _role,
-                decoration: const InputDecoration(labelText: 'Role *'),
+                decoration: InputDecoration(labelText: context.l10n.roleField),
                 items: [
-                  const DropdownMenuItem(value: 'cashier', child: Text('Cashier')),
-                  const DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                  DropdownMenuItem(value: 'cashier', child: Text(context.l10n.roleCashier)),
+                  DropdownMenuItem(value: 'admin', child: Text(context.l10n.roleAdmin)),
                   if (widget.isDeveloper)
-                    const DropdownMenuItem(value: 'developer', child: Text('Developer')),
+                    DropdownMenuItem(value: 'developer', child: Text(context.l10n.roleDeveloper)),
                 ],
                 onChanged: (v) => setState(() => _role = v ?? 'cashier'),
               ),
@@ -420,7 +420,7 @@ class _AddUserSheetState extends ConsumerState<_AddUserSheet> {
                 onPressed: _saving ? null : _save,
                 child: _saving
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Create User'),
+                    : Text(context.l10n.createUser),
               ),
             ],
           ),
@@ -473,7 +473,7 @@ class _EditUserSheetState extends ConsumerState<_EditUserSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User updated.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.userUpdated)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -497,28 +497,28 @@ class _EditUserSheetState extends ConsumerState<_EditUserSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Edit User', style: AppTextStyles.titleLarge),
+            Text(context.l10n.editUser, style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Full Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              decoration: InputDecoration(labelText: context.l10n.fullName),
+              validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _username,
-              decoration: const InputDecoration(labelText: 'Username *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              decoration: InputDecoration(labelText: context.l10n.usernameField),
+              validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _role,
-              decoration: const InputDecoration(labelText: 'Role *'),
+              decoration: InputDecoration(labelText: context.l10n.roleField),
               items: [
-                const DropdownMenuItem(value: 'cashier', child: Text('Cashier')),
-                const DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                DropdownMenuItem(value: 'cashier', child: Text(context.l10n.roleCashier)),
+                DropdownMenuItem(value: 'admin', child: Text(context.l10n.roleAdmin)),
                 if (isDeveloper)
-                  const DropdownMenuItem(value: 'developer', child: Text('Developer')),
+                  DropdownMenuItem(value: 'developer', child: Text(context.l10n.roleDeveloper)),
               ],
               onChanged: (v) => setState(() => _role = v ?? _role),
             ),
@@ -527,7 +527,7 @@ class _EditUserSheetState extends ConsumerState<_EditUserSheet> {
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Save Changes'),
+                  : Text(context.l10n.saveChanges),
             ),
           ],
         ),
@@ -573,7 +573,7 @@ class _ChangeOwnPasswordSheetState extends ConsumerState<_ChangeOwnPasswordSheet
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password changed.')),
+        SnackBar(content: Text(context.l10n.passwordChanged)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -595,34 +595,34 @@ class _ChangeOwnPasswordSheetState extends ConsumerState<_ChangeOwnPasswordSheet
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Change Password - ${widget.userName}', style: AppTextStyles.titleLarge),
+            Text(context.l10n.changePasswordTitle(widget.userName), style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _current,
               obscureText: _obscureCurrent,
               decoration: InputDecoration(
-                labelText: 'Current Password *',
+                labelText: context.l10n.currentPassword,
                 suffixIcon: IconButton(
                   icon: Icon(_obscureCurrent ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
                 ),
               ),
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+              validator: (v) => v == null || v.isEmpty ? context.l10n.required : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _newPass,
               obscureText: _obscureNew,
               decoration: InputDecoration(
-                labelText: 'New Password *',
+                labelText: context.l10n.newPassword,
                 suffixIcon: IconButton(
                   icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _obscureNew = !_obscureNew),
                 ),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (v.length < 6) return 'Min 6 characters';
+                if (v == null || v.isEmpty) return context.l10n.required;
+                if (v.length < 6) return context.l10n.minCharsPassword;
                 return null;
               },
             ),
@@ -630,15 +630,15 @@ class _ChangeOwnPasswordSheetState extends ConsumerState<_ChangeOwnPasswordSheet
             TextFormField(
               controller: _confirm,
               obscureText: _obscureNew,
-              decoration: const InputDecoration(labelText: 'Confirm New Password *'),
-              validator: (v) => v != _newPass.text ? 'Passwords do not match' : null,
+              decoration: InputDecoration(labelText: context.l10n.confirmNewPassword),
+              validator: (v) => v != _newPass.text ? context.l10n.passwordsMustMatch : null,
             ),
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Change Password'),
+                  : Text(context.l10n.changePassword),
             ),
           ],
         ),
@@ -678,7 +678,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password reset.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.passwordReset)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -699,21 +699,21 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Reset Password - ${widget.userName}', style: AppTextStyles.titleLarge),
+            Text(context.l10n.resetPasswordTitle(widget.userName), style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _password,
               obscureText: _obscure,
               decoration: InputDecoration(
-                labelText: 'New Password *',
-                                suffixIcon: IconButton(
+                labelText: context.l10n.newPassword,
+                suffixIcon: IconButton(
                   icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Required';
-                if (v.length < 6) return 'Min 6 characters';
+                if (v == null || v.isEmpty) return context.l10n.required;
+                if (v.length < 6) return context.l10n.minCharsPassword;
                 return null;
               },
             ),
@@ -722,7 +722,7 @@ class _ResetPasswordSheetState extends ConsumerState<_ResetPasswordSheet> {
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Reset Password'),
+                  : Text(context.l10n.resetPassword),
             ),
           ],
         ),

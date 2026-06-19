@@ -4,6 +4,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:bms/providers/settings_provider.dart';
 import 'package:flutter/foundation.dart';
@@ -23,74 +24,70 @@ class SettingsScreen extends ConsumerWidget {
     final isAdmin = role == 'admin' || isDev;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(context.l10n.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          // Store info (admin+)
           if (isAdmin) ...[
-            const _SectionHeader(title: 'Store Info', icon: Icons.store_outlined),
+            _SectionHeader(title: context.l10n.storeInfo, icon: Icons.store_outlined),
             const _StoreInfoTile(),
             const SizedBox(height: 24),
           ],
 
-          // Language
-          const _SectionHeader(title: 'Language', icon: Icons.language_outlined),
+          _SectionHeader(title: context.l10n.languageSection, icon: Icons.language_outlined),
           const _LanguageTile(),
           const SizedBox(height: 24),
 
           if (isAdmin) ...[
-            const _SectionHeader(title: 'Products', icon: Icons.inventory_2_outlined),
+            _SectionHeader(title: context.l10n.productsSection, icon: Icons.inventory_2_outlined),
             _ActionTile(
               icon: Icons.upload_file_outlined,
-              title: 'Import Products from CSV',
-              subtitle: 'Bulk add products via CSV file\nFormat: name, unit_type, cost_price, sell_price, barcode, brand, reorder_level',
+              title: context.l10n.importProductsCsv,
+              subtitle: context.l10n.importProductsCsvHint,
               color: AppColors.primary,
               onTap: () => _importCsv(context, ref),
             ),
             const SizedBox(height: 8),
             _ActionTile(
               icon: Icons.download_outlined,
-              title: 'Download CSV Template',
-              subtitle: 'Get a blank template to fill in',
+              title: context.l10n.downloadTemplate,
+              subtitle: context.l10n.downloadTemplateHint,
               color: AppColors.success,
               onTap: () => _downloadTemplate(context),
             ),
             const SizedBox(height: 24),
           ],
 
-          // Database (developer only)
           if (isDev) ...[
-            const _SectionHeader(title: 'Database', icon: Icons.storage_outlined),
+            _SectionHeader(title: context.l10n.databaseSection, icon: Icons.storage_outlined),
             _ActionTile(
               icon: Icons.cloud_download_outlined,
-              title: 'Export Database',
-              subtitle: 'Download all data as a JSON backup',
+              title: context.l10n.exportDatabase,
+              subtitle: context.l10n.exportDatabaseHint,
               color: AppColors.primary,
               onTap: () => _exportDb(context, ref),
             ),
             const SizedBox(height: 8),
             _ActionTile(
               icon: Icons.cloud_upload_outlined,
-              title: 'Import Database',
-              subtitle: 'Restore from a JSON backup file',
+              title: context.l10n.importDatabase,
+              subtitle: context.l10n.importDatabaseHint,
               color: AppColors.warning,
               onTap: () => _importDb(context, ref),
             ),
             const SizedBox(height: 24),
 
-            const _SectionHeader(title: 'Database Connection', icon: Icons.dns_outlined),
+            _SectionHeader(title: context.l10n.dbConnectionSection, icon: Icons.dns_outlined),
             const _DbConnectionTile(),
             const SizedBox(height: 24),
           ],
 
-          // Audit log (admin+)
           if (isAdmin) ...[
-            const _SectionHeader(title: 'Audit Log', icon: Icons.history_outlined),
+            _SectionHeader(title: context.l10n.auditLogSection, icon: Icons.history_outlined),
             _ActionTile(
               icon: Icons.list_alt_outlined,
-              title: 'View Audit Log',
-              subtitle: 'See all tracked changes across the system',
+              title: context.l10n.viewAuditLog,
+              subtitle: context.l10n.viewAuditLogHint,
               color: AppColors.primary,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const _AuditLogScreen()),
@@ -99,8 +96,7 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
 
-          // App info (all roles)
-          const _SectionHeader(title: 'About', icon: Icons.info_outline),
+          _SectionHeader(title: context.l10n.aboutSection, icon: Icons.info_outline),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -110,11 +106,11 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('BMS - Business Manager', style: AppTextStyles.labelLarge),
+                Text(context.l10n.appNameVersion, style: AppTextStyles.labelLarge),
                 const SizedBox(height: 4),
-                const Text('Version 1.0.0', style: AppTextStyles.bodySmall),
+                Text(context.l10n.appVersion, style: AppTextStyles.bodySmall),
                 const SizedBox(height: 4),
-                Text('Role: ${role.toUpperCase()}', style: AppTextStyles.bodySmall),
+                Text('${context.l10n.roleLabel} ${role.toUpperCase()}', style: AppTextStyles.bodySmall),
               ],
             ),
           ),
@@ -136,25 +132,25 @@ class SettingsScreen extends ConsumerWidget {
     }
     if (!context.mounted) return;
     final (inserted, skipped, errors) = result;
-    if (inserted == 0 && skipped == 0 && errors.isEmpty) return; // user cancelled
+    if (inserted == 0 && skipped == 0 && errors.isEmpty) return;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('CSV Import Complete'),
+        title: Text(context.l10n.csvImportComplete),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Inserted: $inserted', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.success)),
-            Text('Skipped: $skipped', style: AppTextStyles.bodyMedium),
+            Text('${context.l10n.inserted} $inserted', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.success)),
+            Text('${context.l10n.skipped} $skipped', style: AppTextStyles.bodyMedium),
             if (errors.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Text('Errors:', style: AppTextStyles.bodySmall.copyWith(color: AppColors.error)),
+              Text(context.l10n.errors, style: AppTextStyles.bodySmall.copyWith(color: AppColors.error)),
               ...errors.take(5).map((e) => Text(e, style: AppTextStyles.bodySmall)),
             ],
           ],
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text(context.l10n.ok))],
       ),
     );
   }
@@ -187,13 +183,11 @@ class SettingsScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Import Database'),
-        content: const Text(
-          'This will add records from the backup file. Existing records will not be overwritten. Continue?',
-        ),
+        title: Text(context.l10n.importDatabase),
+        content: Text(context.l10n.importDatabaseMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Import')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.importDatabaseConfirm)),
         ],
       ),
     );
@@ -206,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _downloadBytes(BuildContext context, Uint8List bytes, String filename) async {
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download not supported in web preview')),
+        SnackBar(content: Text(context.l10n.downloadNotSupportedWeb)),
       );
       return;
     }
@@ -216,7 +210,7 @@ class SettingsScreen extends ConsumerWidget {
       await file.writeAsBytes(bytes, flush: true);
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Saved: ${file.path}')),
+        SnackBar(content: Text(context.l10n.fileSaved(file.path))),
       );
     } catch (e) {
       if (!context.mounted) return;
@@ -247,7 +241,6 @@ class _StoreInfoTileState extends ConsumerState<_StoreInfoTile> {
     _nameCtrl = TextEditingController(text: info.name);
     _addressCtrl = TextEditingController(text: info.address);
     _phoneCtrl = TextEditingController(text: info.phone);
-    // Load persisted values then sync controllers
     ref.read(storeInfoProvider.notifier).load().then((_) {
       if (!mounted) return;
       final loaded = ref.read(storeInfoProvider);
@@ -275,8 +268,8 @@ class _StoreInfoTileState extends ConsumerState<_StoreInfoTile> {
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Store info saved'),
+      SnackBar(
+        content: Text(context.l10n.storeInfoSaved),
         backgroundColor: AppColors.success,
       ),
     );
@@ -295,30 +288,30 @@ class _StoreInfoTileState extends ConsumerState<_StoreInfoTile> {
         children: [
           TextField(
             controller: _nameCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Store Name',
-              hintText: 'e.g. My Shop',
-              prefixIcon: Icon(Icons.storefront_outlined),
-                          ),
+            decoration: InputDecoration(
+              labelText: context.l10n.storeName,
+              hintText: context.l10n.storeNameHint,
+              prefixIcon: const Icon(Icons.storefront_outlined),
+            ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _addressCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Address',
-              hintText: 'e.g. 123 Main St, Colombo',
-              prefixIcon: Icon(Icons.location_on_outlined),
-                          ),
+            decoration: InputDecoration(
+              labelText: context.l10n.address,
+              hintText: context.l10n.storeAddressHint,
+              prefixIcon: const Icon(Icons.location_on_outlined),
+            ),
             maxLines: 2,
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _phoneCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Phone',
-              hintText: 'e.g. 077 123 4567',
-              prefixIcon: Icon(Icons.phone_outlined),
-                          ),
+            decoration: InputDecoration(
+              labelText: context.l10n.phone,
+              hintText: context.l10n.storePhoneHint,
+              prefixIcon: const Icon(Icons.phone_outlined),
+            ),
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 16),
@@ -332,7 +325,7 @@ class _StoreInfoTileState extends ConsumerState<_StoreInfoTile> {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Icon(Icons.save_outlined, size: 18),
-              label: Text(_saving ? 'Saving...' : 'Save Store Info'),
+              label: Text(_saving ? context.l10n.saving : context.l10n.saveStoreInfo),
               onPressed: _saving ? null : _save,
             ),
           ),
@@ -446,8 +439,8 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
 
     if (type == DbConnectionType.localSqlite) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('SQLite is the active database - connection OK'),
+        SnackBar(
+          content: Text(context.l10n.sqliteConnOk),
           backgroundColor: AppColors.success,
         ),
       );
@@ -455,7 +448,7 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'MySQL sync is planned for a future release. Settings saved for ${_hostCtrl.text.trim()}:${_portCtrl.text.trim()}.',
+            context.l10n.mysqlSyncPlanned(_hostCtrl.text.trim(), _portCtrl.text.trim()),
           ),
         ),
       );
@@ -477,24 +470,24 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Backend', style: AppTextStyles.labelLarge),
+          Text(context.l10n.dbBackend, style: AppTextStyles.labelLarge),
           const SizedBox(height: 8),
           SegmentedButton<DbConnectionType>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: DbConnectionType.localSqlite,
-                label: Text('SQLite (local)'),
-                icon: Icon(Icons.storage_rounded, size: 16),
+                label: Text(context.l10n.dbSqliteLocal),
+                icon: const Icon(Icons.storage_rounded, size: 16),
               ),
               ButtonSegment(
                 value: DbConnectionType.localMysql,
-                label: Text('MySQL (local)'),
-                icon: Icon(Icons.computer_rounded, size: 16),
+                label: Text(context.l10n.dbMysqlLocal),
+                icon: const Icon(Icons.computer_rounded, size: 16),
               ),
               ButtonSegment(
                 value: DbConnectionType.remoteMysql,
-                label: Text('MySQL (remote)'),
-                icon: Icon(Icons.cloud_outlined, size: 16),
+                label: Text(context.l10n.dbMysqlRemote),
+                icon: const Icon(Icons.cloud_outlined, size: 16),
               ),
             ],
             selected: {type},
@@ -517,10 +510,10 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
                   flex: 3,
                   child: TextField(
                     controller: _hostCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Host',
-                      hintText: '127.0.0.1',
-                      prefixIcon: Icon(Icons.dns_outlined),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.dbHost,
+                      hintText: context.l10n.dbHostHint,
+                      prefixIcon: const Icon(Icons.dns_outlined),
                     ),
                   ),
                 ),
@@ -529,7 +522,7 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
                   width: 88,
                   child: TextField(
                     controller: _portCtrl,
-                    decoration: const InputDecoration(labelText: 'Port'),
+                    decoration: InputDecoration(labelText: context.l10n.dbPort),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -538,18 +531,18 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
             const SizedBox(height: 12),
             TextField(
               controller: _dbCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Database name',
-                hintText: 'bms',
-                prefixIcon: Icon(Icons.table_chart_outlined),
+              decoration: InputDecoration(
+                labelText: context.l10n.dbName,
+                hintText: context.l10n.dbNameHint,
+                prefixIcon: const Icon(Icons.table_chart_outlined),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _userCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Username',
-                prefixIcon: Icon(Icons.person_outline),
+              decoration: InputDecoration(
+                labelText: context.l10n.dbUsername,
+                prefixIcon: const Icon(Icons.person_outline),
               ),
             ),
             const SizedBox(height: 12),
@@ -557,7 +550,7 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
               controller: _passCtrl,
               obscureText: _obscurePass,
               decoration: InputDecoration(
-                labelText: 'Password',
+                labelText: context.l10n.dbPassword,
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(_obscurePass ? Icons.visibility_outlined : Icons.visibility_off_outlined),
@@ -578,7 +571,7 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.wifi_tethering_rounded, size: 16),
-                label: const Text('Test'),
+                label: Text(context.l10n.test),
                 onPressed: (_saving || _testing) ? null : () => _testConnection(type),
               ),
               const SizedBox(width: 8),
@@ -590,7 +583,7 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
                     : const Icon(Icons.save_outlined, size: 16),
-                label: Text(_saving ? 'Saving...' : 'Save'),
+                label: Text(_saving ? context.l10n.saving : context.l10n.save),
                 onPressed: (_saving || _testing) ? null : () => _save(type),
               ),
             ],
@@ -695,17 +688,17 @@ class _AuditLogScreenState extends ConsumerState<_AuditLogScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Audit Log'),
+        title: Text(context.l10n.auditLogTitle),
         actions: [
           PopupMenuButton<String?>(
             icon: Badge(
               isLabelVisible: _filterType != null,
               child: const Icon(Icons.filter_list),
             ),
-            tooltip: 'Filter by type',
+            tooltip: context.l10n.filterByType,
             onSelected: (v) => setState(() => _filterType = v),
             itemBuilder: (_) => [
-              const PopupMenuItem(child: Text('All')),
+              PopupMenuItem(child: Text(context.l10n.filterAll2)),
               ..._types.map((t) => PopupMenuItem(value: t, child: Text(t))),
             ],
           ),
@@ -716,7 +709,7 @@ class _AuditLogScreenState extends ConsumerState<_AuditLogScreen> {
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (logs) {
           if (logs.isEmpty) {
-            return const Center(child: Text('No audit entries.', style: AppTextStyles.bodySmall));
+            return Center(child: Text(context.l10n.noAuditEntries, style: AppTextStyles.bodySmall));
           }
           return ListView.builder(
             itemCount: logs.length,
@@ -787,21 +780,23 @@ class _AuditRow extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (entry.oldValue != null) ...[
-                          Text('Before:', style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700)),
+                          Text(context.l10n.auditBefore, style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700)),
                           Text(entry.oldValue!, style: AppTextStyles.bodySmall),
                           const SizedBox(height: 8),
                         ],
                         if (entry.newValue != null) ...[
-                          Text('After:', style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700)),
+                          Text(context.l10n.auditAfter, style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.w700)),
                           Text(entry.newValue!, style: AppTextStyles.bodySmall),
                         ],
                         const SizedBox(height: 8),
-                        Text('By: ${entry.userName}  at  ${fmt.format(entry.createdAt.toLocal())}',
-                            style: AppTextStyles.bodySmall),
+                        Text(
+                          '${context.l10n.by} ${entry.userName}  ${context.l10n.auditAt}  ${fmt.format(entry.createdAt.toLocal())}',
+                          style: AppTextStyles.bodySmall,
+                        ),
                       ],
                     ),
                   ),
-                  actions: [TextButton(onPressed: () => Navigator.pop(dialogCtx), child: const Text('Close'))],
+                  actions: [TextButton(onPressed: () => Navigator.pop(dialogCtx), child: Text(context.l10n.close))],
                 ),
               )
           : null,

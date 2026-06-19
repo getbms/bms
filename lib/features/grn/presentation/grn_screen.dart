@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/grn_provider.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:bms/providers/suppliers_provider.dart';
@@ -36,16 +37,16 @@ class _GrnScreenState extends ConsumerState<GrnScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GRN - Goods Receipt'),
+        title: Text(context.l10n.grnTitle),
         bottom: TabBar(
           controller: _tabs,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'New GRN'),
-            Tab(text: 'History'),
-            Tab(text: 'Purchase Orders'),
+          tabs: [
+            Tab(text: context.l10n.newGrn),
+            Tab(text: context.l10n.grnHistory),
+            Tab(text: context.l10n.purchaseOrders),
           ],
         ),
       ),
@@ -77,8 +78,8 @@ class _NewGrnTab extends ConsumerWidget {
         const Divider(height: 1),
         Expanded(
           child: state.supplier == null
-              ? const Center(
-                  child: Text('Select a supplier to start', style: AppTextStyles.bodySmall))
+              ? Center(
+                  child: Text(context.l10n.selectSupplierToStart, style: AppTextStyles.bodySmall))
               : _ItemsSection(items: state.items),
         ),
         const Divider(height: 1),
@@ -117,7 +118,7 @@ class _PoLinkRow extends ConsumerWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  linkedPo != null ? 'Linked: ${linkedPo.poNumber}' : 'Link to Purchase Order',
+                  linkedPo != null ? context.l10n.linkedPo(linkedPo.poNumber) : context.l10n.linkToPo,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: linkedPo != null ? AppColors.primary : AppColors.textSecondary,
                   ),
@@ -129,7 +130,7 @@ class _PoLinkRow extends ConsumerWidget {
                   visualDensity: VisualDensity.compact,
                 ),
                 onPressed: () => _showPoPicker(context, ref, openPos),
-                child: Text(linkedPo != null ? 'Change' : 'Select',
+                child: Text(linkedPo != null ? context.l10n.change : 'Select',
                     style: const TextStyle(fontSize: 12)),
               ),
               if (linkedPo != null)
@@ -153,7 +154,7 @@ class _PoLinkRow extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Select Purchase Order', style: AppTextStyles.titleMedium),
+            Text(context.l10n.selectPurchaseOrder, style: AppTextStyles.titleMedium),
             const SizedBox(height: 12),
             ...pos.map((po) => ListTile(
                   dense: true,
@@ -183,7 +184,7 @@ class _SupplierCard extends ConsumerWidget {
     return ListTile(
       leading: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
       title: Text(
-        selected?.name ?? 'Select Supplier',
+        selected?.name ?? context.l10n.selectSupplier,
         style: selected != null
             ? AppTextStyles.labelLarge
             : AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
@@ -232,12 +233,12 @@ class _SupplierPickerSheetState extends ConsumerState<_SupplierPickerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Select Supplier', style: AppTextStyles.titleMedium),
+          Text(context.l10n.selectSupplier, style: AppTextStyles.titleMedium),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search, size: 18),
-              hintText: 'Search...',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search, size: 18),
+              hintText: context.l10n.search,
             ),
             onChanged: (v) => setState(() => _q = v.toLowerCase()),
           ),
@@ -280,11 +281,11 @@ class _ItemsSection extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Text('Items (${items.length})', style: AppTextStyles.labelLarge),
+              Text('${context.l10n.items} (${items.length})', style: AppTextStyles.labelLarge),
               const Spacer(),
               OutlinedButton.icon(
                 icon: const Icon(Icons.add, size: 16),
-                label: const Text('Add Item'),
+                label: Text(context.l10n.addItem),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   visualDensity: VisualDensity.compact,
@@ -296,8 +297,8 @@ class _ItemsSection extends ConsumerWidget {
         ),
         Expanded(
           child: items.isEmpty
-              ? const Center(
-                  child: Text('Add items from your product catalog',
+              ? Center(
+                  child: Text(context.l10n.addItemsHint,
                       style: AppTextStyles.bodySmall))
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -351,13 +352,13 @@ class _ProductPickerSheetState extends ConsumerState<_ProductPickerSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('Add Product', style: AppTextStyles.titleMedium),
+          Text(context.l10n.addProduct, style: AppTextStyles.titleMedium),
           const SizedBox(height: 12),
           TextField(
             autofocus: true,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search, size: 18),
-              hintText: 'Search product...',
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search, size: 18),
+              hintText: context.l10n.searchProduct,
             ),
             onChanged: (v) => setState(() => _q = v.toLowerCase()),
           ),
@@ -445,8 +446,8 @@ class _GrnItemRowState extends ConsumerState<_GrnItemRow> {
               width: 64,
               child: TextField(
                 controller: _qtyCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Qty', contentPadding: EdgeInsets.all(6)),
+                decoration: InputDecoration(
+                    labelText: context.l10n.qty, contentPadding: const EdgeInsets.all(6)),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
                 onChanged: (v) =>
@@ -458,8 +459,8 @@ class _GrnItemRowState extends ConsumerState<_GrnItemRow> {
               width: 84,
               child: TextField(
                 controller: _priceCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Cost', contentPadding: EdgeInsets.all(6)),
+                decoration: InputDecoration(
+                    labelText: context.l10n.cost, contentPadding: const EdgeInsets.all(6)),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
                 onChanged: (v) => notifier.updateItem(pid,
@@ -522,9 +523,9 @@ class _GrnFooterState extends ConsumerState<_GrnFooter> {
               Expanded(
                 child: TextField(
                   controller: _invoiceNoCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Supplier Invoice No (optional)',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.supplierInvoiceNo,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   onChanged: (v) => notifier.setSupplierInvoice(
                     invoiceNo: v.isEmpty ? null : v,
@@ -537,9 +538,9 @@ class _GrnFooterState extends ConsumerState<_GrnFooter> {
                 width: 120,
                 child: TextField(
                   controller: _invoiceAmtCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Inv. Amount',
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: InputDecoration(
+                    labelText: context.l10n.supplierInvoiceAmt,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
@@ -555,7 +556,7 @@ class _GrnFooterState extends ConsumerState<_GrnFooter> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total', style: AppTextStyles.titleMedium),
+              Text(context.l10n.total, style: AppTextStyles.titleMedium),
               Text(CurrencyUtils.format(state.total),
                   style: AppTextStyles.titleMedium.copyWith(color: AppColors.primary)),
             ],
@@ -565,7 +566,7 @@ class _GrnFooterState extends ConsumerState<_GrnFooter> {
             Padding(
               padding: const EdgeInsets.only(top: 4),
               child: Text(
-                'Discrepancy: ${CurrencyUtils.format((state.total - state.supplierInvoiceAmount!).abs())}',
+                context.l10n.discrepancy(CurrencyUtils.format((state.total - state.supplierInvoiceAmount!).abs())),
                 style: AppTextStyles.bodySmall.copyWith(color: AppColors.warning),
               ),
             ),
@@ -584,7 +585,7 @@ class _GrnFooterState extends ConsumerState<_GrnFooter> {
                         if (grnNo != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('GRN $grnNo confirmed - stock updated'),
+                              content: Text(context.l10n.grnConfirmed(grnNo)),
                               backgroundColor: AppColors.success,
                             ),
                           );
@@ -602,15 +603,15 @@ class _GrnFooterState extends ConsumerState<_GrnFooter> {
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Confirm GRN & Stock In',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  : Text(context.l10n.confirmGrn,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
             ),
           ),
           const SizedBox(height: 4),
           TextButton(
             onPressed:
                 state.isSubmitting ? null : () => ref.read(grnProvider.notifier).reset(),
-            child: const Text('Clear', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(context.l10n.clear, style: const TextStyle(color: AppColors.textSecondary)),
           ),
         ],
       ),
@@ -632,7 +633,7 @@ class _GrnHistoryTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (grns) {
         if (grns.isEmpty) {
-          return const Center(child: Text('No GRNs yet.', style: AppTextStyles.bodySmall));
+          return Center(child: Text(context.l10n.noGrnsYet, style: AppTextStyles.bodySmall));
         }
         return ListView.builder(
           itemCount: grns.length,
@@ -684,8 +685,8 @@ class _PoTab extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (pos) {
           if (pos.isEmpty) {
-            return const Center(
-              child: Text('No purchase orders yet.', style: AppTextStyles.bodySmall));
+            return Center(
+              child: Text(context.l10n.noPurchaseOrdersYet, style: AppTextStyles.bodySmall));
           }
           return ListView.builder(
             itemCount: pos.length,
@@ -699,7 +700,7 @@ class _PoTab extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCreatePo(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('New PO'),
+        label: Text(context.l10n.newPo),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
@@ -850,7 +851,7 @@ class _PoDetailSheet extends ConsumerWidget {
             Text(po.notes!, style: AppTextStyles.bodySmall),
           ],
           const SizedBox(height: 16),
-          const Text('Items', style: AppTextStyles.labelLarge),
+          Text(context.l10n.items, style: AppTextStyles.labelLarge),
           const SizedBox(height: 8),
           itemsAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -883,7 +884,7 @@ class _PoDetailSheet extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total', style: AppTextStyles.titleMedium),
+              Text(context.l10n.total, style: AppTextStyles.titleMedium),
               Text(CurrencyUtils.format(po.total),
                   style: AppTextStyles.titleMedium.copyWith(color: AppColors.primary)),
             ],
@@ -928,8 +929,8 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
         children: [
           Row(
             children: [
-              const Expanded(
-                child: Text('New Purchase Order', style: AppTextStyles.titleMedium),
+              Expanded(
+                child: Text(context.l10n.newPurchaseOrder, style: AppTextStyles.titleMedium),
               ),
               IconButton(
                 icon: const Icon(Icons.close),
@@ -942,7 +943,7 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.local_shipping_rounded, color: AppColors.primary),
             title: Text(
-              state.supplier?.name ?? 'Select Supplier',
+              state.supplier?.name ?? context.l10n.selectSupplier,
               style: state.supplier != null
                   ? AppTextStyles.labelLarge
                   : AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
@@ -956,11 +957,11 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(
                 children: [
-                  Text('Items (${state.items.length})', style: AppTextStyles.labelLarge),
+                  Text('${context.l10n.items} (${state.items.length})', style: AppTextStyles.labelLarge),
                   const Spacer(),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Add'),
+                    label: Text(context.l10n.add),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       visualDensity: VisualDensity.compact,
@@ -978,7 +979,7 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
             const SizedBox(height: 8),
             TextField(
               controller: _notesCtrl,
-              decoration: const InputDecoration(labelText: 'Notes (optional)'),
+              decoration: InputDecoration(labelText: context.l10n.notesOptional),
               onChanged: (v) => notifier.setNotes(v.isEmpty ? null : v),
             ),
             const SizedBox(height: 12),
@@ -986,7 +987,7 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total', style: AppTextStyles.titleMedium),
+                  Text(context.l10n.total, style: AppTextStyles.titleMedium),
                   Text(CurrencyUtils.format(state.total),
                       style: AppTextStyles.titleMedium.copyWith(color: AppColors.primary)),
                 ],
@@ -1005,7 +1006,7 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('PO $poNo created'),
+                              content: Text(context.l10n.poCreated(poNo ?? '')),
                               backgroundColor: AppColors.success,
                             ),
                           );
@@ -1025,9 +1026,8 @@ class _CreatePoSheetState extends ConsumerState<_CreatePoSheet> {
                         width: 20,
                         child:
                             CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Create Purchase Order',
-                        style:
-                            TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                    : Text(context.l10n.createPurchaseOrder,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
               ),
             ),
           ],
@@ -1107,8 +1107,8 @@ class _PoItemRowState extends ConsumerState<_PoItemRow> {
               width: 64,
               child: TextField(
                 controller: _qtyCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Qty', contentPadding: EdgeInsets.all(6)),
+                decoration: InputDecoration(
+                    labelText: context.l10n.qty, contentPadding: const EdgeInsets.all(6)),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
                 onChanged: (v) => widget.notifier
@@ -1120,8 +1120,8 @@ class _PoItemRowState extends ConsumerState<_PoItemRow> {
               width: 84,
               child: TextField(
                 controller: _priceCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Cost', contentPadding: EdgeInsets.all(6)),
+                decoration: InputDecoration(
+                    labelText: context.l10n.cost, contentPadding: const EdgeInsets.all(6)),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
                 onChanged: (v) => widget.notifier.updateItem(pid,

@@ -5,6 +5,7 @@ import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/petty_cash_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
 import 'package:flutter/material.dart';
@@ -20,7 +21,7 @@ class PettyCashScreen extends ConsumerWidget {
     final entriesAsync = ref.watch(pettyCashEntriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Petty Cash')),
+      appBar: AppBar(title: Text(context.l10n.pettyCashTitle)),
       body: Column(
         children: [
           BmsDateBar(
@@ -45,8 +46,8 @@ class PettyCashScreen extends ConsumerWidget {
                     _FloatCard(totalIn: totalIn, totalOut: totalOut),
                     Expanded(
                       child: entries.isEmpty
-                          ? const Center(
-                              child: Text('No entries for this period.',
+                          ? Center(
+                              child: Text(context.l10n.noEntriesFound,
                                   style: AppTextStyles.bodySmall),
                             )
                           : ListView.builder(
@@ -68,7 +69,7 @@ class PettyCashScreen extends ConsumerWidget {
           useSafeArea: true,
           builder: (_) => const _AddEntrySheet(),
         ),
-        tooltip: 'Add Entry',
+        tooltip: context.l10n.addEntry,
         child: const Icon(Icons.add),
       ),
     );
@@ -88,14 +89,14 @@ class _FloatCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          _Stat(label: 'In', amount: totalIn, color: AppColors.success),
+          _Stat(label: context.l10n.inLabel, amount: totalIn, color: AppColors.success),
           const SizedBox(width: 16),
-          _Stat(label: 'Out', amount: totalOut, color: AppColors.error),
+          _Stat(label: context.l10n.outLabel, amount: totalOut, color: AppColors.error),
           const Spacer(),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Text('Balance', style: AppTextStyles.bodySmall),
+              Text(context.l10n.balance, style: AppTextStyles.bodySmall),
               Text(
                 CurrencyUtils.format(net),
                 style: AppTextStyles.titleMedium.copyWith(
@@ -209,13 +210,13 @@ class _EntryRow extends ConsumerWidget {
             if (file.existsSync())
               Image.file(file)
             else
-              const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Receipt image not found'),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(context.l10n.receiptNotFound),
               ),
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close'),
+              child: Text(context.l10n.close),
             ),
           ],
         ),
@@ -234,14 +235,14 @@ class _EntryRow extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Approve or Reject?', style: AppTextStyles.titleMedium),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(context.l10n.approveOrReject, style: AppTextStyles.titleMedium),
             ),
             const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.check_circle_outline, color: AppColors.success),
-              title: const Text('Approve'),
+              title: Text(context.l10n.approve),
               onTap: () async {
                 Navigator.of(ctx).pop();
                 try {
@@ -257,7 +258,7 @@ class _EntryRow extends ConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.cancel_outlined, color: AppColors.error),
-              title: const Text('Reject'),
+              title: Text(context.l10n.reject),
               onTap: () {
                 Navigator.of(ctx).pop();
                 _showRejectNotesSheet(context, actions, id);
@@ -285,12 +286,12 @@ class _EntryRow extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Rejection Reason', style: AppTextStyles.titleMedium),
+            Text(context.l10n.rejectionReason, style: AppTextStyles.titleMedium),
             const SizedBox(height: 12),
             TextField(
               controller: notesCtrl,
-              decoration: const InputDecoration(
-                hintText: 'Optional - explain why this entry is rejected',
+              decoration: InputDecoration(
+                hintText: context.l10n.rejectionReasonHint,
               ),
               maxLines: 3,
               autofocus: true,
@@ -312,7 +313,7 @@ class _EntryRow extends ConsumerWidget {
                   }
                 }
               },
-              child: const Text('Confirm Reject'),
+              child: Text(context.l10n.confirmReject),
             ),
           ],
         ),
@@ -431,7 +432,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Entry added.')));
+          .showSnackBar(SnackBar(content: Text(context.l10n.entryAdded)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -453,13 +454,13 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Add Petty Cash Entry', style: AppTextStyles.titleLarge),
+            Text(context.l10n.addPettyCashEntry, style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _description,
-              decoration: const InputDecoration(labelText: 'Description *'),
+              decoration: InputDecoration(labelText: context.l10n.description),
               validator: (v) =>
-                  v == null || v.trim().isEmpty ? 'Required' : null,
+                  v == null || v.trim().isEmpty ? context.l10n.required : null,
             ),
             const SizedBox(height: 12),
             Row(
@@ -467,12 +468,12 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _amount,
-                    decoration: const InputDecoration(
-                        labelText: 'Amount *', prefixText: 'Rs. '),
+                    decoration: InputDecoration(
+                        labelText: context.l10n.amountRequired, prefixText: context.l10n.currencyPrefix),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (v == null || v.trim().isEmpty) return context.l10n.required;
                       if (double.tryParse(v) == null) return 'Invalid';
                       return null;
                     },
@@ -483,10 +484,10 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
                   child: DropdownButtonFormField<String>(
                     initialValue: _type,
                     decoration:
-                        const InputDecoration(labelText: 'Type *'),
-                    items: const [
-                      DropdownMenuItem(value: 'out', child: Text('Out (Expense)')),
-                      DropdownMenuItem(value: 'in', child: Text('In (Income)')),
+                        InputDecoration(labelText: context.l10n.entryType),
+                    items: [
+                      DropdownMenuItem(value: 'out', child: Text(context.l10n.typeOut)),
+                      DropdownMenuItem(value: 'in', child: Text(context.l10n.typeIn)),
                     ],
                     onChanged: (v) => setState(() => _type = v ?? 'out'),
                   ),
@@ -497,7 +498,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
             DropdownButtonFormField<String>(
               initialValue: _category,
               decoration:
-                  const InputDecoration(labelText: 'Category *'),
+                  InputDecoration(labelText: context.l10n.category),
               items: _categories
                   .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                   .toList(),
@@ -506,7 +507,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('Receipt:', style: AppTextStyles.bodySmall),
+                Text(context.l10n.receipt, style: AppTextStyles.bodySmall),
                 const SizedBox(width: 8),
                 if (_photoPath != null) ...[
                   GestureDetector(
@@ -543,12 +544,12 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
                   const SizedBox(width: 8),
                   TextButton(
                     onPressed: () => setState(() => _photoPath = null),
-                    child: const Text('Remove'),
+                    child: Text(context.l10n.removeReceipt),
                   ),
                 ] else ...[
                   OutlinedButton.icon(
                     icon: const Icon(Icons.photo_library_outlined, size: 16),
-                    label: const Text('Gallery'),
+                    label: Text(context.l10n.gallery),
                     style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact),
                     onPressed: _pickPhoto,
@@ -556,7 +557,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
                   const SizedBox(width: 8),
                   OutlinedButton.icon(
                     icon: const Icon(Icons.camera_alt_outlined, size: 16),
-                    label: const Text('Camera'),
+                    label: Text(context.l10n.camera),
                     style: OutlinedButton.styleFrom(
                         visualDensity: VisualDensity.compact),
                     onPressed: _takePhoto,
@@ -572,7 +573,7 @@ class _AddEntrySheetState extends ConsumerState<_AddEntrySheet> {
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Add Entry'),
+                  : Text(context.l10n.addEntry),
             ),
           ],
         ),

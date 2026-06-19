@@ -3,6 +3,7 @@ import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/cheques_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,15 +52,15 @@ class _ChequeScreenState extends ConsumerState<ChequeScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cheques'),
+        title: Text(context.l10n.chequesTitle),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'By Month'),
+          tabs: [
+            Tab(text: context.l10n.upcoming),
+            Tab(text: context.l10n.byMonth),
           ],
         ),
       ),
@@ -72,7 +73,7 @@ class _ChequeScreenState extends ConsumerState<ChequeScreen> with SingleTickerPr
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddCheque,
-        tooltip: 'Add Cheque',
+        tooltip: context.l10n.recordCheque,
         child: const Icon(Icons.add),
       ),
     );
@@ -88,7 +89,7 @@ class _UpcomingTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (cheques) {
         if (cheques.isEmpty) {
-          return const Center(child: Text('No cheques due in the next 7 days.', style: AppTextStyles.bodySmall));
+          return Center(child: Text(context.l10n.noChequesUpcoming, style: AppTextStyles.bodySmall));
         }
         return ListView.builder(
           itemCount: cheques.length,
@@ -449,24 +450,24 @@ class _ChequeDetailSheet extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _DetailRow(label: 'Cheque No.', value: cheque.chequeNo ?? '-'),
-          _DetailRow(label: 'Bank', value: cheque.bank ?? '-'),
-          _DetailRow(label: 'Due Date', value: BmsDateUtils.formatDate(cheque.dueDate)),
-          if (cheque.notes != null) _DetailRow(label: 'Notes', value: cheque.notes!),
+          _DetailRow(label: context.l10n.chequeNo, value: cheque.chequeNo ?? '-'),
+          _DetailRow(label: context.l10n.bank, value: cheque.bank ?? '-'),
+          _DetailRow(label: context.l10n.dueDate, value: BmsDateUtils.formatDate(cheque.dueDate)),
+          if (cheque.notes != null) _DetailRow(label: context.l10n.notes, value: cheque.notes!),
           const SizedBox(height: 20),
-          Text('Timeline', style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary)),
+          Text(context.l10n.timeline, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary)),
           const SizedBox(height: 8),
           _TimelineItem(
             icon: Icons.fiber_new_outlined,
             color: AppColors.primary,
-            label: 'Created',
+            label: context.l10n.chequeCreated,
             date: cheque.createdAt,
           ),
           if (cheque.depositDate != null)
             _TimelineItem(
               icon: Icons.account_balance_outlined,
               color: AppColors.info,
-              label: 'Deposited',
+              label: context.l10n.chequeDeposited,
               date: cheque.depositDate!,
             ),
           if (cheque.bounceDate != null) ...[
@@ -488,7 +489,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
             _TimelineItem(
               icon: Icons.check_circle_outline,
               color: AppColors.success,
-              label: 'Cleared',
+              label: context.l10n.chequeCleared,
               date: cheque.updatedAt,
             ),
           const SizedBox(height: 24),
@@ -519,7 +520,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
     if (cheque.status == 'pending') {
       widgets.add(ElevatedButton.icon(
         icon: const Icon(Icons.account_balance_outlined),
-        label: const Text('Deposit'),
+        label: Text(context.l10n.deposit),
         onPressed: () => _depositFlow(context, actions),
       ));
       widgets.add(const SizedBox(height: 8));
@@ -528,14 +529,14 @@ class _ChequeDetailSheet extends ConsumerWidget {
     if (cheque.status == 'deposited') {
       widgets.add(ElevatedButton.icon(
         icon: const Icon(Icons.check_circle_outline),
-        label: const Text('Mark as Cleared'),
+        label: Text(context.l10n.markCleared),
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
         onPressed: () => run(() => actions.clear(cheque.id)),
       ));
       widgets.add(const SizedBox(height: 8));
       widgets.add(OutlinedButton.icon(
         icon: const Icon(Icons.cancel_outlined),
-        label: const Text('Mark as Bounced'),
+        label: Text(context.l10n.markBounced),
         style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
         onPressed: () => _bounceFlow(context, actions),
       ));
@@ -544,14 +545,14 @@ class _ChequeDetailSheet extends ConsumerWidget {
     if (cheque.status == 'bounced') {
       widgets.add(ElevatedButton.icon(
         icon: const Icon(Icons.refresh_outlined),
-        label: const Text('Re-present'),
+        label: Text(context.l10n.rePresent),
         style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
         onPressed: () => run(() => actions.represent(cheque.id)),
       ));
       widgets.add(const SizedBox(height: 8));
       widgets.add(OutlinedButton.icon(
         icon: const Icon(Icons.check_circle_outline),
-        label: const Text('Mark as Cleared'),
+        label: Text(context.l10n.markCleared),
         style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
         onPressed: () => run(() => actions.clear(cheque.id)),
       ));
@@ -573,7 +574,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Confirm Deposit', style: AppTextStyles.titleMedium),
+              Text(context.l10n.confirmDeposit, style: AppTextStyles.titleMedium),
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () async {
@@ -586,7 +587,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
                   if (picked != null) setModal(() => depositDate = picked);
                 },
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Deposit Date'),
+                  decoration: InputDecoration(labelText: context.l10n.depositDate),
                   child: Text(BmsDateUtils.formatDate(depositDate), style: AppTextStyles.bodyMedium),
                 ),
               ),
@@ -605,7 +606,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
                     }
                   }
                 },
-                child: const Text('Confirm Deposit'),
+                child: Text(context.l10n.confirmDeposit),
               ),
             ],
           ),
@@ -628,7 +629,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Record Bounce', style: AppTextStyles.titleMedium),
+              Text(context.l10n.recordBounce, style: AppTextStyles.titleMedium),
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: () async {
@@ -641,14 +642,14 @@ class _ChequeDetailSheet extends ConsumerWidget {
                   if (picked != null) setModal(() => bounceDate = picked);
                 },
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Bounce Date'),
+                  decoration: InputDecoration(labelText: context.l10n.bounceDate),
                   child: Text(BmsDateUtils.formatDate(bounceDate), style: AppTextStyles.bodyMedium),
                 ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
-                decoration: const InputDecoration(labelText: 'Reason (optional)'),
+                decoration: InputDecoration(labelText: context.l10n.bounceReason),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
@@ -668,7 +669,7 @@ class _ChequeDetailSheet extends ConsumerWidget {
                     }
                   }
                 },
-                child: const Text('Confirm Bounce'),
+                child: Text(context.l10n.confirmBounce),
               ),
             ],
           ),
@@ -791,7 +792,7 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cheque recorded.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.chequeRecorded)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -813,17 +814,17 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Record Cheque', style: AppTextStyles.titleLarge),
+              Text(context.l10n.recordCheque, style: AppTextStyles.titleLarge),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _type,
-                      decoration: const InputDecoration(labelText: 'Type'),
-                      items: const [
-                        DropdownMenuItem(value: 'received', child: Text('Received')),
-                        DropdownMenuItem(value: 'issued', child: Text('Issued')),
+                      decoration: InputDecoration(labelText: context.l10n.chequeType),
+                      items: [
+                        DropdownMenuItem(value: 'received', child: Text(context.l10n.chequeTypeReceived)),
+                        DropdownMenuItem(value: 'issued', child: Text(context.l10n.chequeTypeIssued)),
                       ],
                       onChanged: (v) => setState(() => _type = v ?? 'received'),
                     ),
@@ -832,11 +833,11 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _partyType,
-                      decoration: const InputDecoration(labelText: 'Party Type'),
-                      items: const [
-                        DropdownMenuItem(value: 'customer', child: Text('Customer')),
-                        DropdownMenuItem(value: 'supplier', child: Text('Supplier')),
-                        DropdownMenuItem(value: 'other', child: Text('Other')),
+                      decoration: InputDecoration(labelText: context.l10n.partyType),
+                      items: [
+                        DropdownMenuItem(value: 'customer', child: Text(context.l10n.partyTypeCustomer)),
+                        DropdownMenuItem(value: 'supplier', child: Text(context.l10n.partyTypeSupplier)),
+                        DropdownMenuItem(value: 'other', child: Text(context.l10n.partyTypeOther)),
                       ],
                       onChanged: (v) => setState(() => _partyType = v ?? 'customer'),
                     ),
@@ -846,16 +847,16 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _partyName,
-                decoration: const InputDecoration(labelText: 'Party Name *'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: InputDecoration(labelText: context.l10n.partyName),
+                validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _amount,
-                decoration: const InputDecoration(labelText: 'Amount *', prefixText: 'Rs. '),
+                decoration: InputDecoration(labelText: context.l10n.amount, prefixText: context.l10n.currencyPrefix),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
+                  if (v == null || v.trim().isEmpty) return context.l10n.required;
                   if (double.tryParse(v) == null) return 'Invalid number';
                   return null;
                 },
@@ -864,7 +865,7 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
               GestureDetector(
                 onTap: _pickDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Due Date *'),
+                  decoration: InputDecoration(labelText: context.l10n.dueDate),
                   child: Text(
                     _dueDate != null ? BmsDateUtils.formatDate(_dueDate!) : 'Tap to select',
                     style: _dueDate != null ? AppTextStyles.bodyMedium : AppTextStyles.bodySmall,
@@ -877,14 +878,14 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _chequeNo,
-                      decoration: const InputDecoration(labelText: 'Cheque No.'),
+                      decoration: InputDecoration(labelText: context.l10n.chequeNo),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _bank,
-                      decoration: const InputDecoration(labelText: 'Bank'),
+                      decoration: InputDecoration(labelText: context.l10n.bank),
                     ),
                   ),
                 ],
@@ -892,14 +893,14 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _notes,
-                decoration: const InputDecoration(labelText: 'Notes'),
+                decoration: InputDecoration(labelText: context.l10n.notes),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saving ? null : _save,
                 child: _saving
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Record Cheque'),
+                    : Text(context.l10n.recordCheque),
               ),
             ],
           ),

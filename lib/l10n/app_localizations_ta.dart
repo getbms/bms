@@ -387,6 +387,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get posTitle => 'POS / விற்பனை';
 
   @override
+  String get clearCart => 'கூடையை அழி';
+
+  @override
   String get scanOrSearch => 'பார்கோட் ஸ்கேன் செய் அல்லது தேடு...';
 
   @override

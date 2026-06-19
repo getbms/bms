@@ -1,5 +1,6 @@
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/core/theme/app_theme.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -21,6 +22,7 @@ class BmsApp extends ConsumerWidget {
       locale: Locale(langCode),
       supportedLocales: const [Locale('en'), Locale('si'), Locale('ta')],
       localizationsDelegates: const [
+        AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

@@ -1,5 +1,6 @@
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,7 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             ),
                                             const SizedBox(height: 16),
                                             Text(
-                                              'Business Management System',
+                                              context.l10n.appDescription,
                                               style: AppTextStyles.bodySmall
                                                   .copyWith(
                                                 color:
@@ -100,10 +101,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       const SizedBox(height: 36),
                                       TextFormField(
                                         controller: _usernameController,
-                                        decoration: const InputDecoration(
-                                          labelText: 'Username',
+                                        decoration: InputDecoration(
+                                          labelText: context.l10n.usernameLabel,
                                           prefixIcon:
-                                              Icon(Icons.person_outline),
+                                              const Icon(Icons.person_outline),
                                         ),
                                         textInputAction:
                                             TextInputAction.next,
@@ -111,7 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         validator: (v) =>
                                             (v == null ||
                                                     v.trim().isEmpty)
-                                                ? 'Required'
+                                                ? context.l10n.required
                                                 : null,
                                       ),
                                       const SizedBox(height: 16),
@@ -119,7 +120,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         controller: _passwordController,
                                         obscureText: _obscurePassword,
                                         decoration: InputDecoration(
-                                          labelText: 'Password',
+                                          labelText: context.l10n.passwordLabel,
                                           prefixIcon:
                                               const Icon(Icons.lock_outline),
                                           suffixIcon: IconButton(
@@ -136,7 +137,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         onFieldSubmitted: (_) => _submit(),
                                         validator: (v) =>
                                             (v == null || v.isEmpty)
-                                                ? 'Required'
+                                                ? context.l10n.required
                                                 : null,
                                       ),
                                       const SizedBox(height: 32),
@@ -152,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                         strokeWidth: 2,
                                                         color: Colors.white),
                                               )
-                                            : const Text('Sign In'),
+                                            : Text(context.l10n.signIn),
                                       ),
                                     ],
                                   ),
@@ -166,7 +167,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: Text(
-                        '© ${DateTime.now().year} BMS. All rights reserved.',
+                        context.l10n.copyright(DateTime.now().year),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.textDisabled,
                           fontSize: 11,

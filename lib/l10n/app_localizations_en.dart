@@ -386,6 +386,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posTitle => 'POS / Sales';
 
   @override
+  String get clearCart => 'Clear Cart';
+
+  @override
   String get scanOrSearch => 'Scan barcode or search...';
 
   @override

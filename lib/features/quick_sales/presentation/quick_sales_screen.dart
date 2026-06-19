@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:bms/providers/quick_sale_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
@@ -19,7 +20,7 @@ class QuickSalesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Quick Sales'),
+        title: Text(context.l10n.quickSalesTitle),
       ),
       body: Column(
         children: [
@@ -33,9 +34,9 @@ class QuickSalesScreen extends ConsumerWidget {
             error: (e, _) => Expanded(child: Center(child: Text('Error: $e'))),
             data: (sales) {
               if (sales.isEmpty) {
-                return const Expanded(
+                return Expanded(
                   child: Center(
-                    child: Text('No quick sales for this period.', style: AppTextStyles.bodySmall),
+                    child: Text(context.l10n.noQuickSales, style: AppTextStyles.bodySmall),
                   ),
                 );
               }
@@ -60,7 +61,7 @@ class QuickSalesScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showSaleSheet(context),
         icon: const Icon(Icons.flash_on_rounded),
-        label: const Text('Quick Sale'),
+        label: Text(context.l10n.newQuickSale),
       ),
     );
   }
@@ -91,7 +92,7 @@ class _SummaryBar extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$count sales', style: AppTextStyles.labelLarge),
+              Text('$count ${context.l10n.salesCount}', style: AppTextStyles.labelLarge),
               const Text('for period', style: AppTextStyles.bodySmall),
             ],
           ),
@@ -101,7 +102,7 @@ class _SummaryBar extends StatelessWidget {
             children: [
               Text(CurrencyUtils.format(total),
                   style: AppTextStyles.titleMedium.copyWith(color: AppColors.success)),
-              const Text('total revenue', style: AppTextStyles.bodySmall),
+              Text(context.l10n.totalRevenue, style: AppTextStyles.bodySmall),
             ],
           ),
         ],
@@ -167,8 +168,8 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
     final price = double.tryParse(_priceCtrl.text) ?? 0;
     if (qty <= 0 || price <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Quantity and price must be greater than zero'),
+        SnackBar(
+          content: Text(context.l10n.qtyAndPriceRequired),
           backgroundColor: AppColors.error,
         ),
       );
@@ -187,7 +188,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Quick sale recorded: ${product.name} × $qty'),
+            content: Text(context.l10n.quickSaleRecorded(product.name, qty.toString())),
             backgroundColor: AppColors.success,
           ),
         );
@@ -218,15 +219,15 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('New Quick Sale', style: AppTextStyles.titleMedium),
+            Text(context.l10n.newQuickSale, style: AppTextStyles.titleMedium),
             const SizedBox(height: 16),
 
             if (_selected == null) ...[
               TextField(
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search, size: 18),
-                  hintText: 'Search product...',
-                                  ),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search, size: 18),
+                  hintText: context.l10n.searchProduct,
+                ),
                 onChanged: (v) => setState(() => _search = v.toLowerCase()),
               ),
               const SizedBox(height: 8),
@@ -284,7 +285,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
                       _selected = null;
                       _search = '';
                     }),
-                    child: const Text('Change'),
+                    child: Text(context.l10n.change),
                   ),
                 ],
               ),
@@ -296,7 +297,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
                       controller: _qtyCtrl,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-                      decoration: const InputDecoration(labelText: 'Qty'),
+                      decoration: InputDecoration(labelText: context.l10n.qty),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -305,7 +306,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
                       controller: _priceCtrl,
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-                      decoration: const InputDecoration(labelText: 'Price', prefixText: 'Rs. '),
+                      decoration: InputDecoration(labelText: context.l10n.price, prefixText: context.l10n.currencyPrefix),
                     ),
                   ),
                 ],
@@ -313,7 +314,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
               const SizedBox(height: 12),
               TextField(
                 controller: _notesCtrl,
-                decoration: const InputDecoration(labelText: 'Notes (optional)'),
+                decoration: InputDecoration(labelText: context.l10n.notesOptional),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -323,7 +324,7 @@ class _QuickSaleSheetState extends ConsumerState<_QuickSaleSheet> {
                   style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
                   child: _saving
                       ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Record Sale', style: TextStyle(color: Colors.white)),
+                      : Text(context.l10n.recordSale, style: const TextStyle(color: Colors.white)),
                 ),
               ),
             ],

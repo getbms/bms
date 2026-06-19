@@ -137,6 +137,7 @@
   "productUpdated": "Product updated.",
 
   "posTitle": "POS / Sales",
+  "clearCart": "Clear Cart",
   "scanOrSearch": "Scan barcode or search...",
   "scan": "Scan",
   "outOfStock": "Out of stock",

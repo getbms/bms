@@ -386,6 +386,9 @@ class AppLocalizationsSi extends AppLocalizations {
   String get posTitle => 'POS / විකුණුම්';
 
   @override
+  String get clearCart => 'කූඩය හිස් කරන්න';
+
+  @override
   String get scanOrSearch => 'බාර්කෝඩ් ස්කෑන් කරන්න හෝ සොයන්න...';
 
   @override
