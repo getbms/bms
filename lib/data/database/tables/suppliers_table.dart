@@ -46,7 +46,8 @@ class PurchaseOrderItems extends Table {
 class Purchases extends Table {
   TextColumn get id => text()();
   TextColumn get supplierId => text().references(Suppliers, #id)();
-  TextColumn get poId => text().nullable()();
+  TextColumn get poId =>
+      text().nullable().references(PurchaseOrders, #id, onDelete: KeyAction.setNull)();
   TextColumn get grnNumber => text().nullable().unique()();
   TextColumn get supplierInvoiceNo => text().nullable()();
   RealColumn get supplierInvoiceAmount => real().nullable()();

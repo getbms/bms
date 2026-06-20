@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -99,6 +99,11 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(purchases, purchases.poId);
             await m.addColumn(purchases, purchases.supplierInvoiceNo);
             await m.addColumn(purchases, purchases.supplierInvoiceAmount);
+          }
+          if (from < 7) {
+            // Recreate purchases table to add FK constraint on po_id.
+            // SQLite cannot add FK via ALTER TABLE, so TableMigration is used.
+            await m.alterTable(TableMigration(purchases));
           }
         },
         beforeOpen: (details) async {
