@@ -18,7 +18,7 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
-      fontFamily: 'Inter',
+      fontFamily: 'Poppins',
       textTheme: const TextTheme(
         displayLarge: AppTextStyles.displayLarge,
         headlineMedium: AppTextStyles.headlineMedium,
@@ -35,7 +35,7 @@ abstract final class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Poppins',
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: AppColors.textOnPrimary,
@@ -71,25 +71,25 @@ abstract final class AppTheme {
           borderSide: const BorderSide(color: AppColors.error),
         ),
         labelStyle: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Poppins',
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textSecondary,
         ),
         floatingLabelStyle: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Poppins',
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: AppColors.borderFocus,
         ),
         hintStyle: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Poppins',
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: AppColors.textDisabled,
         ),
         errorStyle: const TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: 'Poppins',
           fontSize: 11,
           color: AppColors.error,
         ),
