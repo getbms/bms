@@ -762,7 +762,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(context.l10n.change, style: AppTextStyles.bodyMedium),
+                      Text(context.l10n.posChange, style: AppTextStyles.bodyMedium),
                       Text(
                         CurrencyUtils.format(state.change > 0 ? state.change : 0),
                         style: AppTextStyles.titleMedium.copyWith(

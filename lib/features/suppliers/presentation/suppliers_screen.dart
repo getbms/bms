@@ -418,7 +418,7 @@ class _SupplierPaymentSheetState extends ConsumerState<_SupplierPaymentSheet> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (v) {
                 if (v == null || v.trim().isEmpty) return context.l10n.required;
-                if (double.tryParse(v) == null) return 'Invalid number';
+                if (double.tryParse(v) == null) return context.l10n.invalidNumber;
                 return null;
               },
             ),

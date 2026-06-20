@@ -150,6 +150,7 @@
   "setCustomer": "வாடிக்கையாளர் (விருப்பமானது)",
   "removeCustomer": "வாடிக்கையாளரை நீக்கு",
   "amountReceived": "பெறப்பட்ட தொகை",
+  "posChange": "மீதி",
   "checkout": "செலுத்து",
   "invoiceCompleted": "விலைப்பட்டியல் {invoiceNo} முடிந்தது!",
   "checkoutFailed": "செலுத்துதல் தோல்வி: {error}",
@@ -452,5 +453,8 @@
   "newQuickSale": "புதிய விரைவு விற்பனை",
   "recordSale": "விற்பனை பதிவு செய்",
   "salesCount": "விற்பனைகள்",
-  "totalRevenue": "மொத்த வருவாய்"
+  "totalRevenue": "மொத்த வருவாய்",
+
+  "invalidNumber": "தவறான எண்",
+  "connectionSettingsSaved": "இணைப்பு அமைப்புகள் சேமிக்கப்பட்டன"
 }

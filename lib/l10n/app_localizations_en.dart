@@ -428,6 +428,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get amountReceived => 'Amount Received';
 
   @override
+  String get posChange => 'Change';
+
+  @override
   String get checkout => 'Checkout';
 
   @override
@@ -1341,4 +1344,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get totalRevenue => 'total revenue';
+
+  @override
+  String get invalidNumber => 'Invalid number';
+
+  @override
+  String get connectionSettingsSaved => 'Connection settings saved';
 }

@@ -428,6 +428,9 @@ class AppLocalizationsSi extends AppLocalizations {
   String get amountReceived => 'ලැබුණු මුදල';
 
   @override
+  String get posChange => 'ශේෂය';
+
+  @override
   String get checkout => 'ගෙවීම';
 
   @override
@@ -500,7 +503,7 @@ class AppLocalizationsSi extends AppLocalizations {
   String get summaryOutstanding => 'ශේෂ';
 
   @override
-  String get walkIn => 'ගෙදර';
+  String get walkIn => 'සෘජු ගනුදෙනු';
 
   @override
   String get due => 'ගෙවිය යුතු';
@@ -1224,7 +1227,7 @@ class AppLocalizationsSi extends AppLocalizations {
   String get roleField => 'භූමිකාව *';
 
   @override
-  String get roleCashier => 'කෙළිය';
+  String get roleCashier => 'කේෂියර්';
 
   @override
   String get roleAdmin => 'පරිපාලක';
@@ -1338,4 +1341,10 @@ class AppLocalizationsSi extends AppLocalizations {
 
   @override
   String get totalRevenue => 'මුළු ආදායම';
+
+  @override
+  String get invalidNumber => 'වලංගු නොවන සංඛ්‍යාව';
+
+  @override
+  String get connectionSettingsSaved => 'සම්බන්ධතා සැකසීම් සුරකිනා ලදී';
 }

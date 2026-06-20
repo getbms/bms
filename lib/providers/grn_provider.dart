@@ -349,32 +349,37 @@ class PoNotifier extends Notifier<PoFormState> {
       final userId = authState is Authenticated ? authState.user.id : 'system';
       final userName = authState is Authenticated ? authState.user.name : 'system';
 
+      final db = ref.read(appDatabaseProvider);
       final suppliersDao = ref.read(suppliersDaoProvider);
       final auditDao = ref.read(auditLogDaoProvider);
 
-      final poNumber = await suppliersDao.nextPoNumber();
       final poId = _uuid.v7();
+      final poNumber = await db.transaction<String>(() async {
+        final number = await suppliersDao.nextPoNumber();
 
-      await suppliersDao.insertPO(PurchaseOrdersCompanion.insert(
-        id: poId,
-        supplierId: supplier.id,
-        poNumber: poNumber,
-        total: Value(total),
-        notes: Value(state.notes),
-        createdBy: userId,
-      ));
+        await suppliersDao.insertPO(PurchaseOrdersCompanion.insert(
+          id: poId,
+          supplierId: supplier.id,
+          poNumber: number,
+          total: Value(total),
+          notes: Value(state.notes),
+          createdBy: userId,
+        ));
 
-      await suppliersDao.insertPOItems(
-        items
-            .map((i) => PurchaseOrderItemsCompanion.insert(
-                  id: _uuid.v7(),
-                  poId: poId,
-                  productId: i.product.id,
-                  orderedQty: i.orderedQty,
-                  costPrice: i.costPrice,
-                ))
-            .toList(),
-      );
+        await suppliersDao.insertPOItems(
+          items
+              .map((i) => PurchaseOrderItemsCompanion.insert(
+                    id: _uuid.v7(),
+                    poId: poId,
+                    productId: i.product.id,
+                    orderedQty: i.orderedQty,
+                    costPrice: i.costPrice,
+                  ))
+              .toList(),
+        );
+
+        return number;
+      });
 
       await auditDao.log(
         id: _uuid.v7(),

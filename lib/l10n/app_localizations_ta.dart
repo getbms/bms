@@ -429,6 +429,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get amountReceived => 'பெறப்பட்ட தொகை';
 
   @override
+  String get posChange => 'மீதி';
+
+  @override
   String get checkout => 'செலுத்து';
 
   @override
@@ -1345,4 +1348,10 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get totalRevenue => 'மொத்த வருவாய்';
+
+  @override
+  String get invalidNumber => 'தவறான எண்';
+
+  @override
+  String get connectionSettingsSaved => 'இணைப்பு அமைப்புகள் சேமிக்கப்பட்டன';
 }

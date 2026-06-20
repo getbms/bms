@@ -427,7 +427,7 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
     if (!mounted) return;
     setState(() => _saving = false);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Connection settings saved'), backgroundColor: AppColors.success),
+      SnackBar(content: Text(context.l10n.connectionSettingsSaved), backgroundColor: AppColors.success),
     );
   }
 

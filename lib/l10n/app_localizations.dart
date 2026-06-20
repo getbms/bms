@@ -934,6 +934,12 @@ abstract class AppLocalizations {
   /// **'Amount Received'**
   String get amountReceived;
 
+  /// No description provided for @posChange.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get posChange;
+
   /// No description provided for @checkout.
   ///
   /// In en, this message translates to:
@@ -2679,6 +2685,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'total revenue'**
   String get totalRevenue;
+
+  /// No description provided for @invalidNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid number'**
+  String get invalidNumber;
+
+  /// No description provided for @connectionSettingsSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection settings saved'**
+  String get connectionSettingsSaved;
 }
 
 class _AppLocalizationsDelegate

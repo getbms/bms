@@ -151,7 +151,7 @@
   "setCustomer": "Set Customer (optional)",
   "removeCustomer": "Remove Customer",
   "amountReceived": "Amount Received",
-  "change": "Change",
+  "posChange": "Change",
   "checkout": "Checkout",
   "invoiceCompleted": "Invoice {invoiceNo} completed!",
   "@invoiceCompleted": { "placeholders": { "invoiceNo": { "type": "String" } } },
@@ -470,5 +470,8 @@
   "newQuickSale": "New Quick Sale",
   "recordSale": "Record Sale",
   "salesCount": "sales",
-  "totalRevenue": "total revenue"
+  "totalRevenue": "total revenue",
+
+  "invalidNumber": "Invalid number",
+  "connectionSettingsSaved": "Connection settings saved"
 }

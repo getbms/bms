@@ -150,6 +150,7 @@
   "setCustomer": "ගනුදෙනුකරු (අමතර)",
   "removeCustomer": "ගනුදෙනුකරු ඉවත් කරන්න",
   "amountReceived": "ලැබුණු මුදල",
+  "posChange": "ශේෂය",
   "checkout": "ගෙවීම",
   "invoiceCompleted": "ඉන්වොයිස් {invoiceNo} සම්පූර්ණ!",
   "checkoutFailed": "ගෙවීම අසාර්ථකයි: {error}",
@@ -173,7 +174,7 @@
   "summaryTotalSales": "මුළු විකුණුම්",
   "summaryCollected": "එකතු කළ",
   "summaryOutstanding": "ශේෂ",
-  "walkIn": "ගෙදර",
+  "walkIn": "සෘජු ගනුදෙනු",
   "due": "ගෙවිය යුතු",
   "noInvoicesFound": "මේ කාලය සඳහා ඉන්වොයිස් නොමැත.",
 
@@ -416,7 +417,7 @@
   "usernameField": "පරිශීලක නාමය *",
   "passwordField": "මුරපදය *",
   "roleField": "භූමිකාව *",
-  "roleCashier": "කෙළිය",
+  "roleCashier": "කේෂියර්",
   "roleAdmin": "පරිපාලක",
   "roleDeveloper": "සංවර්ධක",
   "userCreated": "පරිශීලකයා සාදන ලදී.",
@@ -452,5 +453,8 @@
   "newQuickSale": "නව ඉක්මන් විකිණීම",
   "recordSale": "විකිණීම සටහන් කරන්න",
   "salesCount": "විකිණීම්",
-  "totalRevenue": "මුළු ආදායම"
+  "totalRevenue": "මුළු ආදායම",
+
+  "invalidNumber": "වලංගු නොවන සංඛ්‍යාව",
+  "connectionSettingsSaved": "සම්බන්ධතා සැකසීම් සුරකිනා ලදී"
 }
