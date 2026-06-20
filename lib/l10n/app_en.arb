@@ -23,6 +23,7 @@
   "change": "Change",
   "test": "Test",
   "refresh": "Refresh",
+  "retry": "Retry",
 
   "total": "Total",
   "subtotal": "Subtotal",

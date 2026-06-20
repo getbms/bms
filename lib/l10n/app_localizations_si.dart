@@ -71,6 +71,9 @@ class AppLocalizationsSi extends AppLocalizations {
   String get refresh => 'යළි පූරණය';
 
   @override
+  String get retry => 'නැවත උත්සාහ කරන්න';
+
+  @override
   String get total => 'මුළු එකතුව';
 
   @override

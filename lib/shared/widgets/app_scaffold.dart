@@ -1,5 +1,6 @@
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/core/theme/app_colors.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/shared/widgets/notification_bell.dart';
 import 'package:bms/shared/widgets/sidebar_nav.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class AppScaffold extends StatefulWidget {
 }
 
 class _AppScaffoldState extends State<AppScaffold> {
-  bool _collapsed = true; // default: icon-only
+  bool _collapsed = true;
 
   @override
   Widget build(BuildContext context) {
@@ -52,22 +53,25 @@ class _BottomNav extends StatelessWidget {
 
   final String currentLocation;
 
-  static const _items = [
-    (label: 'Dashboard', icon: Icons.grid_view_rounded, route: AppRoutes.dashboard),
-    (label: 'POS', icon: Icons.point_of_sale_rounded, route: AppRoutes.pos),
-    (label: 'Inventory', icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
-    (label: 'Customers', icon: Icons.people_rounded, route: AppRoutes.customers),
-    (label: 'More', icon: Icons.menu_rounded, route: AppRoutes.reports),
-  ];
+  static List<({String label, IconData icon, String route})> _buildItems(
+          BuildContext context) =>
+      [
+        (label: context.l10n.navDashboard, icon: Icons.grid_view_rounded, route: AppRoutes.dashboard),
+        (label: context.l10n.navPos, icon: Icons.point_of_sale_rounded, route: AppRoutes.pos),
+        (label: context.l10n.navInventory, icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
+        (label: context.l10n.navCustomers, icon: Icons.people_rounded, route: AppRoutes.customers),
+        (label: context.l10n.navMore, icon: Icons.menu_rounded, route: AppRoutes.reports),
+      ];
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = _items.indexWhere((i) => currentLocation.startsWith(i.route));
+    final items = _buildItems(context);
+    final currentIndex = items.indexWhere((i) => currentLocation.startsWith(i.route));
 
     return NavigationBar(
       selectedIndex: currentIndex < 0 ? 0 : currentIndex,
-      onDestinationSelected: (i) => context.go(_items[i].route),
-      destinations: _items
+      onDestinationSelected: (i) => context.go(items[i].route),
+      destinations: items
           .map((i) => NavigationDestination(icon: Icon(i.icon), label: i.label))
           .toList(),
     );

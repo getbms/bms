@@ -71,6 +71,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get refresh => 'புதுப்பி';
 
   @override
+  String get retry => 'மீண்டும் முயற்சி';
+
+  @override
   String get total => 'மொத்தம்';
 
   @override

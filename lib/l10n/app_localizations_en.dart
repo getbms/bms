@@ -71,6 +71,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refresh => 'Refresh';
 
   @override
+  String get retry => 'Retry';
+
+  @override
   String get total => 'Total';
 
   @override
