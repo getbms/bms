@@ -4,6 +4,7 @@ import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/database/daos/inventory_dao.dart';
 import 'package:bms/features/pos/presentation/receipt_pdf.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/customers_provider.dart';
 import 'package:bms/providers/database_provider.dart';
 import 'package:bms/providers/inventory_provider.dart';
@@ -67,18 +68,17 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('POS / Sales'),
+        title: Text(context.l10n.posTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_sweep_outlined),
-            tooltip: 'Clear Cart',
+            tooltip: context.l10n.clearCart,
             onPressed: () => ref.read(posProvider.notifier).clearCart(),
           ),
         ],
       ),
       body: Row(
         children: [
-          // Left panel: product search + grid
           Expanded(
             flex: 6,
             child: Column(
@@ -92,7 +92,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                           controller: _searchController,
                           autofocus: true,
                           decoration: InputDecoration(
-                            hintText: 'Scan barcode or search...',
+                            hintText: context.l10n.scanOrSearch,
                             prefixIcon: const Icon(Icons.search),
                             suffixIcon: _searchQuery.isNotEmpty
                                 ? IconButton(
@@ -120,7 +120,6 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             ),
           ),
           const VerticalDivider(width: 1),
-          // Right panel: cart
           const SizedBox(
             width: 380,
             child: _CartPanel(),
@@ -154,7 +153,7 @@ class _ProductGrid extends ConsumerWidget {
                 (p.barcode?.toLowerCase().contains(searchQuery) ?? false)).toList();
 
         if (filtered.isEmpty) {
-          return const Center(child: Text('No products found.', style: AppTextStyles.bodySmall));
+          return Center(child: Text(context.l10n.noProductsFound, style: AppTextStyles.bodySmall));
         }
 
         return GridView.builder(
@@ -205,7 +204,7 @@ class _ProductCard extends ConsumerWidget {
             FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
           ],
           decoration: InputDecoration(
-            labelText: 'Quantity',
+            labelText: context.l10n.quantity,
             suffixText: product.unitType.toUpperCase(),
             hintText: '0.5',
           ),
@@ -220,7 +219,7 @@ class _ProductCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -230,7 +229,7 @@ class _ProductCard extends ConsumerWidget {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Add'),
+            child: Text(context.l10n.add),
           ),
         ],
       ),
@@ -298,8 +297,8 @@ class _ProductCard extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 outOfStock
-                    ? 'Out of stock'
-                    : 'Stock: ${_formatQty(stockQty)} ${product.unitType}',
+                    ? context.l10n.outOfStock
+                    : '${context.l10n.stock} ${_formatQty(stockQty)} ${product.unitType}',
                 style: AppTextStyles.bodySmall.copyWith(
                   color: outOfStock ? AppColors.error : AppColors.textSecondary,
                 ),
@@ -343,7 +342,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
               ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
               : [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(
-            labelText: 'Quantity',
+            labelText: context.l10n.quantity,
             suffixText: item.product.unitType.toUpperCase(),
           ),
           onSubmitted: (_) {
@@ -355,7 +354,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(context.l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -363,7 +362,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
               if (qty > 0) notifier.updateQty(item.product.id, qty);
               Navigator.pop(ctx);
             },
-            child: const Text('Set'),
+            child: Text(context.l10n.set),
           ),
         ],
       ),
@@ -393,7 +392,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Line Discount - ${item.product.name}', style: AppTextStyles.titleMedium),
+            Text(context.l10n.lineDiscount(item.product.name), style: AppTextStyles.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
@@ -414,7 +413,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                     ref.read(posProvider.notifier).setLineDiscount(item.product.id, 0);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Remove'),
+                  child: Text(context.l10n.remove),
                 ),
                 const Spacer(),
                 ElevatedButton(
@@ -423,7 +422,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                     ref.read(posProvider.notifier).setLineDiscount(item.product.id, pct);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Apply'),
+                  child: Text(context.l10n.apply),
                 ),
               ],
             ),
@@ -450,7 +449,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Bill Discount', style: AppTextStyles.titleMedium),
+            Text(context.l10n.billDiscount, style: AppTextStyles.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
@@ -471,7 +470,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                     ref.read(posProvider.notifier).setBillDiscount(0);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Remove'),
+                  child: Text(context.l10n.remove),
                 ),
                 const Spacer(),
                 ElevatedButton(
@@ -480,7 +479,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                     ref.read(posProvider.notifier).setBillDiscount(pct);
                     Navigator.pop(ctx);
                   },
-                  child: const Text('Apply'),
+                  child: Text(context.l10n.apply),
                 ),
               ],
             ),
@@ -492,7 +491,6 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
 
   Future<void> _checkout() async {
     final notifier = ref.read(posProvider.notifier);
-    // Capture state before checkout clears the cart
     final snapshot = ref.read(posProvider);
     try {
       final invoiceNo = await notifier.checkout();
@@ -500,7 +498,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
       if (invoiceNo != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Invoice $invoiceNo completed!'),
+            content: Text(context.l10n.invoiceCompleted(invoiceNo)),
             backgroundColor: AppColors.success,
           ),
         );
@@ -526,7 +524,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Checkout failed: $e'), backgroundColor: AppColors.error),
+        SnackBar(content: Text(context.l10n.checkoutFailed(e.toString())), backgroundColor: AppColors.error),
       );
     }
   }
@@ -538,22 +536,20 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
 
     return Column(
       children: [
-        // Header
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           color: AppColors.surfaceVariant,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Cart', style: AppTextStyles.titleMedium),
-              Text('${state.items.length} item(s)', style: AppTextStyles.bodySmall),
+              Text(context.l10n.cart, style: AppTextStyles.titleMedium),
+              Text('${state.items.length} ${context.l10n.cartItems}', style: AppTextStyles.bodySmall),
             ],
           ),
         ),
-        // Cart items
         Expanded(
           child: state.isEmpty
-              ? const Center(child: Text('Cart is empty', style: AppTextStyles.bodySmall))
+              ? Center(child: Text(context.l10n.cartEmpty, style: AppTextStyles.bodySmall))
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: state.items.length,
@@ -586,7 +582,6 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                                   ],
                                 ),
                               ),
-                              // Qty stepper with step awareness + tap-to-edit
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -654,23 +649,20 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                   },
                 ),
         ),
-        // Bottom panel
         const Divider(height: 1),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Subtotal
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Subtotal', style: AppTextStyles.bodyMedium),
+                  Text(context.l10n.subtotal, style: AppTextStyles.bodyMedium),
                   Text(CurrencyUtils.format(state.subtotal), style: AppTextStyles.bodyMedium),
                 ],
               ),
               const SizedBox(height: 4),
-              // Bill discount
               Row(
                 children: [
                   GestureDetector(
@@ -682,7 +674,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                         Text(
                           state.billDiscountPct > 0
                               ? 'Discount (${state.billDiscountPct.toStringAsFixed(0)}%)'
-                              : 'Add Discount',
+                              : context.l10n.addDiscount,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.warning,
                             decoration: TextDecoration.underline,
@@ -703,15 +695,14 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Total', style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w700)),
+                  Text(context.l10n.total, style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w700)),
                   Text(CurrencyUtils.format(state.total), style: AppTextStyles.posAmount.copyWith(fontSize: 22)),
                 ],
               ),
               const SizedBox(height: 12),
-              // Customer
               OutlinedButton.icon(
                 icon: const Icon(Icons.person_outline, size: 18),
-                label: Text(state.customer?.name ?? 'Set Customer (optional)'),
+                label: Text(state.customer?.name ?? context.l10n.setCustomer),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   visualDensity: VisualDensity.compact,
@@ -723,44 +714,42 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => notifier.setCustomer(null),
-                    child: const Text('Remove Customer'),
+                    child: Text(context.l10n.removeCustomer),
                   ),
                 ),
               const SizedBox(height: 12),
-              // Payment method
               Row(
                 children: [
                   _PayMethodBtn(
-                    label: 'Cash',
+                    label: context.l10n.paymentMethodCash,
                     color: AppColors.paymentCash,
                     selected: state.paymentMethod == 'cash',
                     onTap: () => notifier.setPaymentMethod('cash'),
                   ),
                   const SizedBox(width: 8),
                   _PayMethodBtn(
-                    label: 'Card',
+                    label: context.l10n.paymentMethodCard,
                     color: AppColors.paymentCard,
                     selected: state.paymentMethod == 'card',
                     onTap: () => notifier.setPaymentMethod('card'),
                   ),
                   const SizedBox(width: 8),
                   _PayMethodBtn(
-                    label: 'Credit',
+                    label: context.l10n.paymentMethodCredit,
                     color: AppColors.paymentCredit,
                     selected: state.paymentMethod == 'credit',
                     onTap: () => notifier.setPaymentMethod('credit'),
                   ),
                 ],
               ),
-              // Cash tendered + change
               if (state.paymentMethod == 'cash') ...[
                 const SizedBox(height: 12),
                 TextField(
                   controller: _tenderedController,
-                  decoration: const InputDecoration(
-                    labelText: 'Amount Received',
+                  decoration: InputDecoration(
+                    labelText: context.l10n.amountReceived,
                     prefixText: 'Rs. ',
-                                      ),
+                  ),
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
                   onChanged: (v) {
@@ -773,7 +762,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Change', style: AppTextStyles.bodyMedium),
+                      Text(context.l10n.posChange, style: AppTextStyles.bodyMedium),
                       Text(
                         CurrencyUtils.format(state.change > 0 ? state.change : 0),
                         style: AppTextStyles.titleMedium.copyWith(
@@ -795,7 +784,7 @@ class _CartPanelState extends ConsumerState<_CartPanel> {
                   child: state.isSubmitting
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                       : Text(
-                          'Checkout',
+                          context.l10n.checkout,
                           style: AppTextStyles.labelLarge.copyWith(color: Colors.white, fontSize: 16),
                         ),
                 ),
@@ -873,10 +862,10 @@ class _CustomerSearchDialogState extends ConsumerState<_CustomerSearchDialog> {
               child: TextField(
                 controller: _searchCtrl,
                 autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Search customers...',
-                  prefixIcon: Icon(Icons.search),
-                                  ),
+                decoration: InputDecoration(
+                  hintText: context.l10n.searchCustomers,
+                  prefixIcon: const Icon(Icons.search),
+                ),
                 onChanged: (v) => setState(() => _query = v.toLowerCase()),
               ),
             ),
@@ -918,9 +907,6 @@ class _CustomerSearchDialogState extends ConsumerState<_CustomerSearchDialog> {
   }
 }
 
-
-// ── Unit-type helpers (shared across cart and product card) ──────────────────
-
 bool _isDecimalUnit(String unitType) =>
     const {'kg', 'g', 'l', 'ml'}.contains(unitType.toLowerCase());
 
@@ -959,7 +945,7 @@ class _ScanButton extends ConsumerWidget {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         icon: const Icon(Icons.qr_code_scanner, size: 20),
-        label: const Text('Scan'),
+        label: Text(context.l10n.scan),
         onPressed: () => showDialog<void>(
           context: context,
           builder: (_) => _BarcodeScanDialog(
@@ -971,7 +957,6 @@ class _ScanButton extends ConsumerWidget {
     );
   }
 }
-
 
 class _BarcodeScanDialog extends StatefulWidget {
   const _BarcodeScanDialog({
@@ -1028,15 +1013,14 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
         height: 440,
         child: Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
               child: Row(
                 children: [
                   const Icon(Icons.qr_code_scanner, color: AppColors.primary, size: 20),
                   const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text('Scan Barcode', style: AppTextStyles.titleMedium),
+                  Expanded(
+                    child: Text(context.l10n.scanBarcode, style: AppTextStyles.titleMedium),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
@@ -1047,7 +1031,6 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
             ),
             const Divider(height: 1),
 
-            // Scanner viewport
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(bottom: Radius.circular(16)),
@@ -1057,7 +1040,6 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
                       controller: _controller,
                       onDetect: _onDetect,
                     ),
-                    // Scan window overlay
                     Center(
                       child: Container(
                         width: 220,
@@ -1068,9 +1050,7 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
                         ),
                       ),
                     ),
-                    // Corner accents
                     ..._buildCorners(),
-                    // Processing indicator
                     if (_processing)
                       const ColoredBox(
                         color: Colors.black45,
@@ -1078,7 +1058,6 @@ class _BarcodeScanDialogState extends State<_BarcodeScanDialog> {
                           child: CircularProgressIndicator(color: Colors.white),
                         ),
                       ),
-                    // Error banner
                     if (_lastError != null)
                       Positioned(
                         bottom: 0,

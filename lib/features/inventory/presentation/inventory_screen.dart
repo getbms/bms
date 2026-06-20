@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/inventory_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,6 +17,18 @@ class InventoryScreen extends ConsumerStatefulWidget {
 class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   final _searchController = TextEditingController();
   String _query = '';
+  bool _lowStockOnly = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(inventoryLowStockFilterProvider)) {
+        setState(() => _lowStockOnly = true);
+        ref.read(inventoryLowStockFilterProvider.notifier).reset();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -39,16 +52,16 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventory'),
+        title: Text(context.l10n.inventoryTitle),
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search products...',
+                hintText: context.l10n.searchProducts,
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _query.isNotEmpty
                     ? IconButton(
@@ -63,6 +76,17 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
               onChanged: (v) => setState(() => _query = v.toLowerCase()),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: FilterChip(
+                label: Text(context.l10n.lowStockOnly),
+                selected: _lowStockOnly,
+                onSelected: (v) => setState(() => _lowStockOnly = v),
+              ),
+            ),
+          ),
           Expanded(
             child: productsAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -72,16 +96,22 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   return {for (final s in list) s.productId: s};
                 }).asData?.value ?? {};
 
-                final filtered = _query.isEmpty
-                    ? products
-                    : products.where((p) {
-                        return p.name.toLowerCase().contains(_query) ||
-                            (p.brand?.toLowerCase().contains(_query) ?? false) ||
-                            (p.barcode?.toLowerCase().contains(_query) ?? false);
-                      }).toList();
+                final filtered = products.where((p) {
+                  if (_query.isNotEmpty) {
+                    final match = p.name.toLowerCase().contains(_query) ||
+                        (p.brand?.toLowerCase().contains(_query) ?? false) ||
+                        (p.barcode?.toLowerCase().contains(_query) ?? false);
+                    if (!match) return false;
+                  }
+                  if (_lowStockOnly) {
+                    final qty = stockMap[p.id]?.qty ?? 0.0;
+                    if (qty > p.reorderLevel) return false;
+                  }
+                  return true;
+                }).toList();
 
                 if (filtered.isEmpty) {
-                  return const Center(child: Text('No products found.', style: AppTextStyles.bodySmall));
+                  return Center(child: Text(context.l10n.noProductsFound, style: AppTextStyles.bodySmall));
                 }
 
                 return ListView.builder(
@@ -141,7 +171,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openForm(),
-        tooltip: 'Add Product',
+        tooltip: context.l10n.addProduct,
         child: const Icon(Icons.add),
       ),
     );
@@ -231,7 +261,7 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_isEdit ? 'Product updated.' : 'Product added.')),
+        SnackBar(content: Text(_isEdit ? context.l10n.productUpdated : context.l10n.productAdded)),
       );
     } catch (e) {
       if (!mounted) return;
@@ -253,12 +283,12 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(_isEdit ? 'Edit Product' : 'New Product', style: AppTextStyles.titleLarge),
+            Text(_isEdit ? context.l10n.editProduct : context.l10n.addProduct, style: AppTextStyles.titleLarge),
             const SizedBox(height: 16),
             TextFormField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Product Name *'),
-              validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+              decoration: InputDecoration(labelText: context.l10n.productName),
+              validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
             ),
             const SizedBox(height: 12),
             Row(
@@ -266,14 +296,14 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _brand,
-                    decoration: const InputDecoration(labelText: 'Brand'),
+                    decoration: InputDecoration(labelText: context.l10n.brand),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextFormField(
                     controller: _barcode,
-                    decoration: const InputDecoration(labelText: 'Barcode'),
+                    decoration: InputDecoration(labelText: context.l10n.barcode),
                   ),
                 ),
               ],
@@ -284,14 +314,14 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     initialValue: _unitType,
-                    decoration: const InputDecoration(labelText: 'Unit Type *'),
-                    items: const [
-                      DropdownMenuItem(value: 'pcs', child: Text('Pieces')),
-                      DropdownMenuItem(value: 'kg', child: Text('Kg')),
-                      DropdownMenuItem(value: 'g', child: Text('Grams')),
-                      DropdownMenuItem(value: 'l', child: Text('Litres')),
-                      DropdownMenuItem(value: 'ml', child: Text('Ml')),
-                      DropdownMenuItem(value: 'box', child: Text('Box')),
+                    decoration: InputDecoration(labelText: context.l10n.unitType),
+                    items: [
+                      DropdownMenuItem(value: 'pcs', child: Text(context.l10n.unitPieces)),
+                      DropdownMenuItem(value: 'kg', child: Text(context.l10n.unitKg)),
+                      DropdownMenuItem(value: 'g', child: Text(context.l10n.unitGrams)),
+                      DropdownMenuItem(value: 'l', child: Text(context.l10n.unitLitres)),
+                      DropdownMenuItem(value: 'ml', child: Text(context.l10n.unitMl)),
+                      DropdownMenuItem(value: 'box', child: Text(context.l10n.unitBox)),
                     ],
                     onChanged: (v) => setState(() => _unitType = v ?? 'pcs'),
                   ),
@@ -300,7 +330,7 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _reorderLevel,
-                    decoration: const InputDecoration(labelText: 'Reorder Level'),
+                    decoration: InputDecoration(labelText: context.l10n.reorderLevel),
                     keyboardType: TextInputType.number,
                   ),
                 ),
@@ -312,10 +342,10 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _costPrice,
-                    decoration: const InputDecoration(labelText: 'Cost Price *', prefixText: 'Rs. '),
+                    decoration: InputDecoration(labelText: context.l10n.costPrice, prefixText: context.l10n.currencyPrefix),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (v == null || v.trim().isEmpty) return context.l10n.required;
                       if (double.tryParse(v) == null) return 'Invalid number';
                       return null;
                     },
@@ -325,10 +355,10 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
                 Expanded(
                   child: TextFormField(
                     controller: _sellPrice,
-                    decoration: const InputDecoration(labelText: 'Sell Price *', prefixText: 'Rs. '),
+                    decoration: InputDecoration(labelText: context.l10n.sellPrice, prefixText: context.l10n.currencyPrefix),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     validator: (v) {
-                      if (v == null || v.trim().isEmpty) return 'Required';
+                      if (v == null || v.trim().isEmpty) return context.l10n.required;
                       if (double.tryParse(v) == null) return 'Invalid number';
                       return null;
                     },
@@ -340,7 +370,7 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _stockQty,
-                decoration: const InputDecoration(labelText: 'Stock Qty'),
+                decoration: InputDecoration(labelText: context.l10n.stockQty),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
               ),
             ],
@@ -349,7 +379,7 @@ class _ProductFormSheetState extends ConsumerState<_ProductFormSheet> {
               onPressed: _saving ? null : _save,
               child: _saving
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : Text(_isEdit ? 'Update Product' : 'Add Product'),
+                  : Text(_isEdit ? context.l10n.updateProduct : context.l10n.addProduct),
             ),
           ],
         ),

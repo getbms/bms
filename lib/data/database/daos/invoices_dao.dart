@@ -42,8 +42,6 @@ class InvoicesDao extends DatabaseAccessor<AppDatabase> with _$InvoicesDaoMixin 
         ),
       );
 
-  // No-invoice sales
-
   Future<void> insertNoInvoiceSale(NoInvoiceSalesCompanion entry) =>
       into(noInvoiceSales).insert(entry);
 

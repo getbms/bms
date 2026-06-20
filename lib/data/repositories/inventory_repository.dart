@@ -49,7 +49,6 @@ class InventoryRepository {
       ),
     );
 
-    // Initialize stock at zero
     await _inventory.upsertStock(StockCompanion.insert(productId: id, qty: const Value(0)));
 
     await _audit.log(

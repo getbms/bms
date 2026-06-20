@@ -10,12 +10,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-
 const _langKey = 'app_language';
 const _storeNameKey = 'store_name';
 const _storeAddressKey = 'store_address';
 const _storePhoneKey = 'store_phone';
-
+const _dbConnectionKey = 'db_connection_settings';
 
 class StoreInfo {
   const StoreInfo({
@@ -36,7 +35,7 @@ class StoreInfoNotifier extends Notifier<StoreInfo> {
   }
 
   Future<void> load() async {
-    final s = ref.read(secureStorageProvider);
+    final s = ref.read(sessionStorageProvider);
     state = StoreInfo(
       name: (await s.read(key: _storeNameKey)) ?? 'BMS Store',
       address: (await s.read(key: _storeAddressKey)) ?? '',
@@ -49,7 +48,7 @@ class StoreInfoNotifier extends Notifier<StoreInfo> {
     required String address,
     required String phone,
   }) async {
-    final s = ref.read(secureStorageProvider);
+    final s = ref.read(sessionStorageProvider);
     await Future.wait([
       s.write(key: _storeNameKey, value: name),
       s.write(key: _storeAddressKey, value: address),
@@ -64,16 +63,19 @@ final storeInfoProvider =
 
 class LanguageNotifier extends Notifier<String> {
   @override
-  String build() => 'en';
+  String build() {
+    Future.microtask(load);
+    return 'en';
+  }
 
   Future<void> load() async {
-    final saved = await ref.read(secureStorageProvider).read(key: _langKey);
+    final saved = await ref.read(sessionStorageProvider).read(key: _langKey);
     if (saved != null) state = saved;
   }
 
   Future<void> set(String code) async {
     state = code;
-    await ref.read(secureStorageProvider).write(key: _langKey, value: code);
+    await ref.read(sessionStorageProvider).write(key: _langKey, value: code);
   }
 }
 
@@ -85,15 +87,103 @@ const supportedLanguages = [
   ('ta', 'Tamil'),
 ];
 
-// Audit log provider 
+// ---- Database connection settings ----
+
+enum DbConnectionType { localSqlite, localMysql, remoteMysql }
+
+class DbConnectionSettings {
+  const DbConnectionSettings({
+    this.type = DbConnectionType.localSqlite,
+    this.host = '127.0.0.1',
+    this.port = 3306,
+    this.database = 'bms',
+    this.username = 'root',
+    this.password = '',
+  });
+
+  factory DbConnectionSettings.fromJson(Map<String, dynamic> j) => DbConnectionSettings(
+        type: DbConnectionType.values.firstWhere(
+          (e) => e.name == j['type'],
+          orElse: () => DbConnectionType.localSqlite,
+        ),
+        host: (j['host'] as String?) ?? '127.0.0.1',
+        port: (j['port'] as num?)?.toInt() ?? 3306,
+        database: (j['database'] as String?) ?? 'bms',
+        username: (j['username'] as String?) ?? 'root',
+        password: (j['password'] as String?) ?? '',
+      );
+
+  final DbConnectionType type;
+  final String host;
+  final int port;
+  final String database;
+  final String username;
+  final String password;
+
+  bool get isLocalSqlite => type == DbConnectionType.localSqlite;
+
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        'host': host,
+        'port': port,
+        'database': database,
+        'username': username,
+        'password': password,
+      };
+
+  DbConnectionSettings copyWith({
+    DbConnectionType? type,
+    String? host,
+    int? port,
+    String? database,
+    String? username,
+    String? password,
+  }) =>
+      DbConnectionSettings(
+        type: type ?? this.type,
+        host: host ?? this.host,
+        port: port ?? this.port,
+        database: database ?? this.database,
+        username: username ?? this.username,
+        password: password ?? this.password,
+      );
+}
+
+class DbConnectionNotifier extends Notifier<DbConnectionSettings> {
+  @override
+  DbConnectionSettings build() {
+    Future.microtask(load);
+    return const DbConnectionSettings();
+  }
+
+  Future<void> load() async {
+    final raw = await ref.read(sessionStorageProvider).read(key: _dbConnectionKey);
+    if (raw != null) {
+      try {
+        state = DbConnectionSettings.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      } catch (_) {
+        // corrupted - reset to default
+      }
+    }
+  }
+
+  Future<void> save(DbConnectionSettings settings) async {
+    state = settings;
+    await ref.read(sessionStorageProvider).write(
+          key: _dbConnectionKey,
+          value: jsonEncode(settings.toJson()),
+        );
+  }
+}
+
+final dbConnectionSettingsProvider =
+    NotifierProvider<DbConnectionNotifier, DbConnectionSettings>(DbConnectionNotifier.new);
 
 final auditLogProvider =
     FutureProvider.autoDispose.family<List<AuditLogData>, String?>(
   (ref, entityType) =>
       ref.watch(auditLogDaoProvider).getAll(entityType: entityType),
 );
-
-// Settings actions (export / import / CSV) 
 
 class SettingsActions {
   SettingsActions(this._ref);
@@ -111,8 +201,6 @@ class SettingsActions {
     final s = _ref.read(currentAuthStateProvider);
     return s is Authenticated ? s.user.name : 'system';
   }
-
-  // CSV product import 
 
   /// Returns (inserted, skipped, errors).
   Future<(int, int, List<String>)> importProductsFromCsv() async {
@@ -191,8 +279,6 @@ class SettingsActions {
     return (inserted, skipped, errors);
   }
 
-  // Database export as JSON
-
   Future<Uint8List> exportDatabaseAsJson() async {
     final db = _db;
     final products = await db.select(db.products).get();
@@ -251,8 +337,6 @@ class SettingsActions {
     return Uint8List.fromList(utf8.encode(const JsonEncoder.withIndent('  ').convert(payload)));
   }
 
-  // Database import from JSON
-
   Future<String> importDatabaseFromJson() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
@@ -268,7 +352,6 @@ class SettingsActions {
       final payload = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
       final db = _db;
 
-      // Products
       for (final Map<String, dynamic> p in ((payload['products'] as List?)?.cast<Map<String, dynamic>>() ?? [])) {
         await db.into(db.products).insert(
           ProductsCompanion.insert(
@@ -284,7 +367,6 @@ class SettingsActions {
         );
       }
 
-      // Customers
       for (final Map<String, dynamic> c in ((payload['customers'] as List?)?.cast<Map<String, dynamic>>() ?? [])) {
         await db.into(db.customers).insert(
           CustomersCompanion.insert(
@@ -298,7 +380,6 @@ class SettingsActions {
         );
       }
 
-      // Stock
       for (final Map<String, dynamic> s in ((payload['stock'] as List?)?.cast<Map<String, dynamic>>() ?? [])) {
         await db.into(db.stock).insert(
           StockCompanion.insert(
@@ -339,8 +420,6 @@ class SettingsActions {
     }
     return null;
   }
-
-  // CSV helpers
 
   List<String> _parseCsvLine(String line) {
     final cols = <String>[];

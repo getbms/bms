@@ -10,7 +10,6 @@ abstract final class InvoicePdf {
   static final _dateFmt = DateFormat('dd MMM yyyy');
   static final _timeFmt = DateFormat('hh:mm a');
 
-  // Primary brand color
   static const _brand = PdfColor.fromInt(0xFF1565C0);
   static const _brandLight = PdfColor.fromInt(0xFFE3F2FD);
   static const _textPrimary = PdfColor.fromInt(0xFF1A1A2E);
@@ -88,7 +87,6 @@ abstract final class InvoicePdf {
 
     return doc;
   }
-
 
   static pw.Widget _buildHeader(
     pw.Font font,
@@ -170,7 +168,6 @@ abstract final class InvoicePdf {
         ],
       );
 
-
   static pw.Widget _buildBillTo(
     pw.Font font,
     pw.Font fontBold,
@@ -220,7 +217,6 @@ abstract final class InvoicePdf {
     );
   }
 
-
   static pw.Widget _buildItemsTable(
     pw.Font font,
     pw.Font fontBold,
@@ -266,7 +262,6 @@ abstract final class InvoicePdf {
         horizontalInside: pw.BorderSide(color: _border, width: 0.5),
       ),
       children: [
-        // Header row
         pw.TableRow(
           decoration: const pw.BoxDecoration(color: _brand),
           children: [
@@ -274,7 +269,6 @@ abstract final class InvoicePdf {
               cell(headers[i], f: fontBold, color: PdfColors.white, align: aligns[i]),
           ],
         ),
-        // Data rows
         for (int i = 0; i < items.length; i++)
           pw.TableRow(
             decoration: pw.BoxDecoration(color: i.isOdd ? _rowAlt : PdfColors.white),
@@ -302,7 +296,6 @@ abstract final class InvoicePdf {
       ],
     );
   }
-
 
   static pw.Widget _buildTotals(
     pw.Font font,
@@ -362,7 +355,6 @@ abstract final class InvoicePdf {
     );
   }
 
-
   static pw.Widget _buildPaymentInfo(
     pw.Font font,
     pw.Font fontBold,
@@ -406,7 +398,6 @@ abstract final class InvoicePdf {
     );
   }
 
-
   static pw.Widget _buildVoidInfo(pw.Font font, pw.Font fontBold, Invoice invoice) =>
       pw.Container(
         padding: const pw.EdgeInsets.all(12),
@@ -433,7 +424,6 @@ abstract final class InvoicePdf {
         ),
       );
 
-
   static pw.Widget _buildVoidWatermark(pw.Font fontBold) => pw.Center(
         child: pw.Transform.rotate(
           angle: -0.5,
@@ -451,7 +441,6 @@ abstract final class InvoicePdf {
           ),
         ),
       );
-
 
   static pw.Widget _buildFooter(pw.Font font, pw.Font fontSemiBold, Invoice invoice) =>
       pw.Container(
@@ -471,7 +460,6 @@ abstract final class InvoicePdf {
           ],
         ),
       );
-
 
   static String _paymentLabel(String type) => switch (type) {
         'cash' => 'Cash',

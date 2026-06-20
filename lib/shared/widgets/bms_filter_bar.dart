@@ -1,4 +1,5 @@
 import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -53,12 +54,12 @@ class BmsSearchField extends StatelessWidget {
     super.key,
     required this.controller,
     required this.onChanged,
-    this.hintText = 'Search...',
+    this.hintText,
   });
 
   final TextEditingController controller;
   final void Function(String) onChanged;
-  final String hintText;
+  final String? hintText;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +70,7 @@ class BmsSearchField extends StatelessWidget {
           controller: controller,
           onChanged: onChanged,
           decoration: InputDecoration(
-            hintText: hintText,
+            hintText: hintText ?? context.l10n.search,
             prefixIcon: const Icon(Icons.search, size: 18),
             suffixIcon: value.text.isNotEmpty
                 ? IconButton(
@@ -96,7 +97,7 @@ class BmsFilterRow extends StatelessWidget {
     required this.onDatePick,
     required this.searchController,
     required this.onSearch,
-    this.searchHint = 'Search...',
+    this.searchHint,
   });
 
   final DateTime start;
@@ -104,7 +105,7 @@ class BmsFilterRow extends StatelessWidget {
   final void Function(DateTimeRange) onDatePick;
   final TextEditingController searchController;
   final void Function(String) onSearch;
-  final String searchHint;
+  final String? searchHint;
 
   @override
   Widget build(BuildContext context) {
@@ -126,7 +127,7 @@ class BmsFilterRow extends StatelessWidget {
             child: BmsSearchField(
               controller: searchController,
               onChanged: onSearch,
-              hintText: searchHint,
+              hintText: searchHint ?? context.l10n.search,
             ),
           ),
         ],

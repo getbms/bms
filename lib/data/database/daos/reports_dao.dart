@@ -57,12 +57,10 @@ class ReportsDao {
       '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
 
   Future<List<DailySales>> getDailySales(DateTime from, DateTime to) async {
-    // Invoice revenue (non-void)
     final invoiceList = await (_db.select(_db.invoices)
           ..where((i) => i.createdAt.isBetweenValues(from, to) & i.status.equals('void').not()))
         .get();
 
-    // Invoice COGS: items × product cost price
     final cogsQuery = _db.select(_db.invoiceItems).join([
       innerJoin(_db.invoices, _db.invoices.id.equalsExp(_db.invoiceItems.invoiceId)),
       innerJoin(_db.products, _db.products.id.equalsExp(_db.invoiceItems.productId)),
@@ -73,19 +71,16 @@ class ReportsDao {
     );
     final cogsRows = await cogsQuery.get();
 
-    // Quick-sale revenue
     final qsList = await (_db.select(_db.noInvoiceSales)
           ..where((s) => s.createdAt.isBetweenValues(from, to)))
         .get();
 
-    // Quick-sale COGS: qty × product cost price
     final qsCogsQuery = _db.select(_db.noInvoiceSales).join([
       innerJoin(_db.products, _db.products.id.equalsExp(_db.noInvoiceSales.productId)),
     ]);
     qsCogsQuery.where(_db.noInvoiceSales.createdAt.isBetweenValues(from, to));
     final qsCogsRows = await qsCogsQuery.get();
 
-    // Merge into day buckets
     final Map<String, double> revByDay = {};
     final Map<String, double> cogsByDay = {};
 

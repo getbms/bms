@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/customers_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,14 +16,14 @@ class DebtorsScreen extends ConsumerWidget {
     final debtorsAsync = ref.watch(debtorsFutureProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Debtors')),
+      appBar: AppBar(title: Text(context.l10n.debtorsTitle)),
       body: debtorsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (debtors) {
           if (debtors.isEmpty) {
-            return const Center(
-              child: Text('No outstanding debts.', style: AppTextStyles.bodySmall),
+            return Center(
+              child: Text(context.l10n.noDebts, style: AppTextStyles.bodySmall),
             );
           }
 
@@ -74,7 +75,7 @@ class _SummaryBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Total Outstanding', style: AppTextStyles.bodySmall),
+                Text(context.l10n.totalOutstanding, style: AppTextStyles.bodySmall),
                 Text(CurrencyUtils.format(total),
                     style: AppTextStyles.headlineMedium.copyWith(color: AppColors.error)),
                 Text('$count debtor${count == 1 ? '' : 's'}', style: AppTextStyles.bodySmall),
@@ -84,9 +85,9 @@ class _SummaryBanner extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              _AgingChip(label: '30+ days', count: over30, color: AppColors.warning),
+              _AgingChip(label: context.l10n.aging30, count: over30, color: AppColors.warning),
               const SizedBox(height: 6),
-              _AgingChip(label: '60+ days', count: over60, color: AppColors.error),
+              _AgingChip(label: context.l10n.aging60, count: over60, color: AppColors.error),
             ],
           ),
         ],
@@ -130,17 +131,17 @@ class _DebtorTile extends StatelessWidget {
     return AppColors.success;
   }
 
-  String _agingLabel(DateTime dt) {
+  String _agingLabel(BuildContext context, DateTime dt) {
     final days = DateTime.now().difference(dt).inDays;
-    if (days > 60) return '60+ days';
-    if (days > 30) return '30+ days';
-    return 'Current';
+    if (days > 60) return context.l10n.aging60;
+    if (days > 30) return context.l10n.aging30;
+    return context.l10n.agingCurrent;
   }
 
   @override
   Widget build(BuildContext context) {
     final color = _agingColor(customer.updatedAt);
-    final label = _agingLabel(customer.updatedAt);
+    final label = _agingLabel(context, customer.updatedAt);
 
     return ListTile(
       onTap: () => showModalBottomSheet(
@@ -176,8 +177,6 @@ class _DebtorTile extends StatelessWidget {
   }
 }
 
-// ── Detail + Payment Sheet ──────────────────────────────────────────────────
-
 class _DebtorDetailSheet extends ConsumerWidget {
   const _DebtorDetailSheet({required this.customer});
 
@@ -197,7 +196,6 @@ class _DebtorDetailSheet extends ConsumerWidget {
         controller: scrollController,
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         children: [
-          // drag handle
           Center(
             child: Container(
               width: 36,
@@ -210,7 +208,6 @@ class _DebtorDetailSheet extends ConsumerWidget {
             ),
           ),
 
-          // Header
           Row(
             children: [
               CircleAvatar(
@@ -239,7 +236,6 @@ class _DebtorDetailSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
 
-          // Balance card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -252,7 +248,7 @@ class _DebtorDetailSheet extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Outstanding Balance', style: AppTextStyles.bodySmall),
+                    Text(context.l10n.outstandingBalance, style: AppTextStyles.bodySmall),
                     Text(
                       CurrencyUtils.format(customer.balance),
                       style: AppTextStyles.headlineMedium.copyWith(color: color),
@@ -263,7 +259,7 @@ class _DebtorDetailSheet extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text('Credit Limit', style: AppTextStyles.bodySmall),
+                      Text(context.l10n.creditLimit, style: AppTextStyles.bodySmall),
                       Text(
                         CurrencyUtils.format(customer.creditLimit),
                         style: AppTextStyles.labelLarge,
@@ -275,10 +271,9 @@ class _DebtorDetailSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
 
-          // Record Payment button
           ElevatedButton.icon(
             icon: const Icon(Icons.payment_rounded),
-            label: const Text('Record Payment'),
+            label: Text(context.l10n.recordPayment),
             onPressed: () {
               Navigator.of(context).pop();
               showModalBottomSheet(
@@ -295,8 +290,7 @@ class _DebtorDetailSheet extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
 
-          // Payment History
-          const Text('Payment History', style: AppTextStyles.titleMedium),
+          Text(context.l10n.paymentHistory, style: AppTextStyles.titleMedium),
           const SizedBox(height: 8),
           historyAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
@@ -304,7 +298,7 @@ class _DebtorDetailSheet extends ConsumerWidget {
             data: (payments) => payments.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text('No payments recorded yet.',
+                    child: Text(context.l10n.noPayments,
                         style: AppTextStyles.bodySmall
                             .copyWith(color: AppColors.textSecondary)),
                   )
@@ -374,8 +368,6 @@ class _PaymentHistoryRow extends StatelessWidget {
   }
 }
 
-// ── Record Payment Sheet ────────────────────────────────────────────────────
-
 class _RecordPaymentSheet extends ConsumerStatefulWidget {
   const _RecordPaymentSheet({
     required this.customerId,
@@ -418,7 +410,7 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Payment recorded.')));
+          SnackBar(content: Text(context.l10n.paymentRecorded)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -438,7 +430,7 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('Record Payment', style: AppTextStyles.titleLarge),
+            Text(context.l10n.recordPayment, style: AppTextStyles.titleLarge),
             Text(widget.customerName,
                 style:
                     AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
@@ -453,7 +445,7 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Outstanding', style: AppTextStyles.bodySmall),
+                    Text(context.l10n.summaryOutstanding, style: AppTextStyles.bodySmall),
                     Text(CurrencyUtils.format(widget.outstanding),
                         style: AppTextStyles.labelLarge
                             .copyWith(color: AppColors.error)),
@@ -464,11 +456,11 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
             ],
             TextFormField(
               controller: _amount,
-              decoration: const InputDecoration(labelText: 'Amount *', prefixText: 'Rs. '),
+              decoration: InputDecoration(labelText: context.l10n.amountRequired, prefixText: context.l10n.currencyPrefix),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               autofocus: true,
               validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Required';
+                if (v == null || v.trim().isEmpty) return context.l10n.required;
                 final n = double.tryParse(v);
                 if (n == null || n <= 0) return 'Enter a valid amount';
                 return null;
@@ -477,19 +469,19 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               initialValue: _method,
-              decoration: const InputDecoration(labelText: 'Payment Method'),
-              items: const [
-                DropdownMenuItem(value: 'cash', child: Text('Cash')),
-                DropdownMenuItem(value: 'card', child: Text('Card')),
-                DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer')),
-                DropdownMenuItem(value: 'cheque', child: Text('Cheque')),
+              decoration: InputDecoration(labelText: context.l10n.paymentMethod),
+              items: [
+                DropdownMenuItem(value: 'cash', child: Text(context.l10n.paymentMethodCash)),
+                DropdownMenuItem(value: 'card', child: Text(context.l10n.paymentMethodCard)),
+                DropdownMenuItem(value: 'bank_transfer', child: Text(context.l10n.paymentMethodBankTransfer)),
+                DropdownMenuItem(value: 'cheque', child: Text(context.l10n.paymentMethodCheque)),
               ],
               onChanged: (v) => setState(() => _method = v ?? 'cash'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _notes,
-              decoration: const InputDecoration(labelText: 'Notes (optional)'),
+              decoration: InputDecoration(labelText: context.l10n.notesOptional),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
@@ -500,7 +492,7 @@ class _RecordPaymentSheetState extends ConsumerState<_RecordPaymentSheet> {
                       width: 20,
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
-                  : const Text('Save Payment'),
+                  : Text(context.l10n.savePayment),
             ),
           ],
         ),

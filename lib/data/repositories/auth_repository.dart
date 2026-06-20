@@ -3,20 +3,20 @@ import 'dart:async';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:bms/core/constants/app_constants.dart';
 import 'package:bms/core/errors/app_exception.dart';
+import 'package:bms/core/storage/session_storage.dart';
 import 'package:bms/core/utils/logger.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/database/daos/users_dao.dart';
 import 'package:bms/data/models/user_model.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthRepository {
-  AuthRepository({required UsersDao usersDao, required FlutterSecureStorage secureStorage})
+  AuthRepository({required UsersDao usersDao, required SessionStorage sessionStorage})
       : _dao = usersDao,
-        _storage = secureStorage;
+        _storage = sessionStorage;
 
   final UsersDao _dao;
-  final FlutterSecureStorage _storage;
+  final SessionStorage _storage;
 
   Future<UserModel> login(String username, String password) async {
     final user = await _dao.findByUsername(username.trim().toLowerCase());
@@ -60,6 +60,7 @@ class AuthRepository {
     }
 
     await _dao.resetFailedAttempts(user.id);
+    await _dao.recordLogin(user.id);
 
     final model = UserModel(
       id: user.id,
@@ -69,7 +70,6 @@ class AuthRepository {
       isActive: user.isActive,
     );
 
-    // Persist session to secure storage
     await _storage.write(key: AppConstants.sessionKey, value: user.id);
     appLogger.i('Login', error: {'userId': user.id, 'role': user.role});
 
@@ -120,5 +120,6 @@ class AuthRepository {
       passwordHash: Value(newHash),
       updatedAt: Value(DateTime.now()),
     ));
+    await _dao.recordPasswordChange(userId);
   }
 }

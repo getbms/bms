@@ -1,5 +1,6 @@
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 
 class BmsErrorWidget extends StatelessWidget {
@@ -32,7 +33,7 @@ class BmsErrorWidget extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(context.l10n.retry),
               ),
             ],
           ],

@@ -55,4 +55,45 @@ class ChequesDao extends DatabaseAccessor<AppDatabase> with _$ChequesDaoMixin {
           updatedAt: Value(DateTime.now()),
         ),
       );
+
+  Future<void> deposit(String id, {required DateTime depositDate}) =>
+      (update(cheques)..where((c) => c.id.equals(id))).write(
+        ChequesCompanion(
+          status: const Value('deposited'),
+          depositDate: Value(depositDate),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+
+  Future<void> bounce(String id, {required DateTime bounceDate, String? reason}) =>
+      (update(cheques)..where((c) => c.id.equals(id))).write(
+        ChequesCompanion(
+          status: const Value('bounced'),
+          bounceDate: Value(bounceDate),
+          bounceReason: Value(reason),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+
+  Future<void> represent(String id) async {
+    final cheque = await findById(id);
+    if (cheque == null) return;
+    await (update(cheques)..where((c) => c.id.equals(id))).write(
+      ChequesCompanion(
+        status: const Value('pending'),
+        bounceDate: const Value(null),
+        bounceReason: const Value(null),
+        representationCount: Value(cheque.representationCount + 1),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<void> clear(String id) =>
+      (update(cheques)..where((c) => c.id.equals(id))).write(
+        ChequesCompanion(
+          status: const Value('cleared'),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
 }

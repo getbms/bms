@@ -5,15 +5,11 @@ import 'package:bms/providers/database_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Returns for a specific invoice
-
 final invoiceReturnsProvider =
     FutureProvider.autoDispose.family<List<SalesReturn>, String>(
   (ref, invoiceId) =>
       ref.watch(returnsDaoProvider).getForInvoice(invoiceId),
 );
-
-// Filter state
 
 class InvoiceFilter {
   const InvoiceFilter({
@@ -57,8 +53,6 @@ class InvoiceFilterNotifier extends Notifier<InvoiceFilter> {
 
 final invoiceFilterProvider =
     NotifierProvider<InvoiceFilterNotifier, InvoiceFilter>(InvoiceFilterNotifier.new);
-
-// Invoice list with customer name resolved
 
 typedef InvoiceRow = ({Invoice invoice, String? customerName});
 
@@ -110,8 +104,6 @@ final invoicesListProvider = FutureProvider.autoDispose<List<InvoiceRow>>((ref) 
   return rows;
 });
 
-// Invoice detail with items + customer
-
 typedef InvoiceDetail = ({Invoice invoice, List<InvoiceItem> items, Customer? customer});
 
 final invoiceDetailProvider =
@@ -128,8 +120,6 @@ final invoiceDetailProvider =
 
   return (invoice: invoice, items: items, customer: customer);
 });
-
-// Invoice summary for filter period footer
 
 typedef InvoiceSummary = ({double total, double collected, int count});
 
@@ -148,8 +138,6 @@ final invoiceSummaryProvider = Provider.autoDispose<InvoiceSummary>((ref) {
     error: (_, _) => (total: 0.0, collected: 0.0, count: 0),
   );
 });
-
-// Invoice actions
 
 class InvoiceActions {
   InvoiceActions(this._ref);

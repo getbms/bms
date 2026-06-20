@@ -1,3 +1,4 @@
+import 'package:bms/core/storage/session_storage.dart';
 import 'package:bms/data/repositories/auth_repository.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
 import 'package:bms/providers/database_provider.dart';
@@ -14,9 +15,12 @@ FlutterSecureStorage secureStorage(Ref ref) => const FlutterSecureStorage(
     );
 
 @Riverpod(keepAlive: true)
+SessionStorage sessionStorage(Ref ref) => SessionStorage(ref.watch(secureStorageProvider));
+
+@Riverpod(keepAlive: true)
 AuthRepository authRepository(Ref ref) => AuthRepository(
       usersDao: ref.watch(usersDaoProvider),
-      secureStorage: ref.watch(secureStorageProvider),
+      sessionStorage: ref.watch(sessionStorageProvider),
     );
 
 @riverpod

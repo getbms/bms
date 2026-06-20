@@ -39,6 +39,8 @@ part 'app_database.g.dart';
     Purchases,
     PurchaseItems,
     SupplierPayments,
+    PurchaseOrders,
+    PurchaseOrderItems,
     Invoices,
     InvoiceItems,
     NoInvoiceSales,
@@ -64,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +79,32 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(salesReturns);
             await m.createTable(returnItems);
           }
+          if (from < 3) {
+            await m.addColumn(users, users.lastLoginAt);
+            await m.addColumn(users, users.passwordChangedAt);
+          }
+          if (from < 4) {
+            await m.addColumn(pettyCash, pettyCash.approvalNotes);
+            await m.addColumn(pettyCash, pettyCash.approvedAt);
+          }
+          if (from < 5) {
+            await m.addColumn(cheques, cheques.depositDate);
+            await m.addColumn(cheques, cheques.bounceReason);
+            await m.addColumn(cheques, cheques.bounceDate);
+            await m.addColumn(cheques, cheques.representationCount);
+          }
+          if (from < 6) {
+            await m.createTable(purchaseOrders);
+            await m.createTable(purchaseOrderItems);
+            await m.addColumn(purchases, purchases.poId);
+            await m.addColumn(purchases, purchases.supplierInvoiceNo);
+            await m.addColumn(purchases, purchases.supplierInvoiceAmount);
+          }
+          if (from < 7) {
+            // Recreate purchases table to add FK constraint on po_id.
+            // SQLite cannot add FK via ALTER TABLE, so TableMigration is used.
+            await m.alterTable(TableMigration(purchases));
+          }
         },
         beforeOpen: (details) async {
           await customStatement('PRAGMA journal_mode=WAL');
@@ -86,8 +114,8 @@ class AppDatabase extends _$AppDatabase {
       );
 
   static const _devUserId = '00000000-0000-0000-0000-000000000001';
-  static const _devUsername = 'iamvirul';
-  static const _devPassword = '200528100634@Vn';
+  static const _devUsername = 'dev';
+  static const _devPassword = 'changeme';
 
   Future<void> _ensureDevAccount() async {
     final existing = await (select(users)
@@ -102,7 +130,7 @@ class AppDatabase extends _$AppDatabase {
     await into(users).insert(
       UsersCompanion.insert(
         id: _devUserId,
-        name: 'iamvirul',
+        name: 'Developer',
         username: _devUsername,
         passwordHash: hash,
         role: const Value('developer'),

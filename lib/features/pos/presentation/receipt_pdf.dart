@@ -94,7 +94,6 @@ abstract final class ReceiptPdf {
         build: (ctx) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.stretch,
           children: [
-            // Illustration
             pw.Center(
               child: pw.SizedBox(
                 height: 52,
@@ -103,7 +102,6 @@ abstract final class ReceiptPdf {
             ),
             pw.SizedBox(height: 3),
 
-            // Store name
             pw.Center(
               child: pw.Text(
                 storeName,
@@ -133,7 +131,6 @@ abstract final class ReceiptPdf {
             _dashedLine(),
             pw.SizedBox(height: 4),
 
-            // Invoice meta
             _row2(font, 'Invoice:', invoiceNo),
             pw.SizedBox(height: 2),
             _row2(font, 'Date:', _dateFmt.format(now)),
@@ -145,7 +142,6 @@ abstract final class ReceiptPdf {
             _dashedLine(),
             pw.SizedBox(height: 4),
 
-            // Column headers
             pw.Row(
               children: [
                 pw.Expanded(
@@ -176,14 +172,12 @@ abstract final class ReceiptPdf {
             _dashedLine(),
             pw.SizedBox(height: 3),
 
-            // Items
             ...items.map((item) => _ItemRow(item: item, font: font, fontBold: fontBold)),
 
             pw.SizedBox(height: 4),
             _dashedLine(),
             pw.SizedBox(height: 4),
 
-            // Totals
             if (discountAmount > 0) ...[
               _row2(font, 'Subtotal', 'Rs. ${_f(subtotal)}'),
               pw.SizedBox(height: 2),
@@ -201,7 +195,6 @@ abstract final class ReceiptPdf {
             _dashedLine(),
             pw.SizedBox(height: 4),
 
-            // Payment
             _row2(font, 'Payment:', paymentMethod.toUpperCase()),
             if (paymentMethod == 'cash' && amountTendered > 0) ...[
               pw.SizedBox(height: 2),
@@ -214,7 +207,6 @@ abstract final class ReceiptPdf {
             _dashedLine(),
             pw.SizedBox(height: 6),
 
-            // Footer
             pw.Center(
               child: pw.Text(
                 'Thank you for your purchase!',

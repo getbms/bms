@@ -4,6 +4,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/daos/reports_dao.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/reports_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -59,16 +60,16 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reports'),
+        title: Text(context.l10n.reportsTitle),
         bottom: TabBar(
           controller: _tabs,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'P&L'),
-            Tab(text: 'Stock Value'),
-            Tab(text: 'Aging'),
+          tabs: [
+            Tab(text: context.l10n.tabPL),
+            Tab(text: context.l10n.tabStockValue),
+            Tab(text: context.l10n.tabAging),
           ],
         ),
       ),
@@ -83,8 +84,6 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen>
     );
   }
 }
-
-// ─── P&L Tab ────────────────────────────────────────────────────────────────
 
 class _PLTab extends ConsumerStatefulWidget {
   const _PLTab();
@@ -128,15 +127,14 @@ class _PLTabState extends ConsumerState<_PLTab> {
               final revenue = daily.fold<double>(0, (s, d) => s + d.revenue);
 
               if (revenue == 0) {
-                return const Column(
+                return Column(
                   children: [
                     Expanded(
                       child: _EmptyState(
                         icon: Icons.bar_chart_outlined,
                         iconColor: AppColors.primary,
-                        title: 'No Sales Data',
-                        subtitle:
-                            'No transactions were recorded for this period.\nTry adjusting the date range.',
+                        title: context.l10n.noSalesDataTitle,
+                        subtitle: context.l10n.noSalesDataMessage,
                       ),
                     ),
                   ],
@@ -153,25 +151,25 @@ class _PLTabState extends ConsumerState<_PLTab> {
                   _SummaryGrid(
                     items: [
                       (
-                        label: 'Revenue',
+                        label: context.l10n.revenue,
                         value: CurrencyUtils.format(revenue),
                         color: AppColors.success,
                         icon: Icons.trending_up,
                       ),
                       (
-                        label: 'COGS',
+                        label: context.l10n.cogs,
                         value: CurrencyUtils.format(cogs),
                         color: AppColors.error,
                         icon: Icons.shopping_cart_outlined,
                       ),
                       (
-                        label: 'Gross Profit',
+                        label: context.l10n.grossProfit,
                         value: CurrencyUtils.format(grossProfit),
                         color: grossProfit >= 0 ? AppColors.primary : AppColors.error,
                         icon: Icons.account_balance_outlined,
                       ),
                       (
-                        label: 'Margin',
+                        label: context.l10n.margin,
                         value: '${margin.toStringAsFixed(1)}%',
                         color: margin >= 20 ? AppColors.success : AppColors.warning,
                         icon: Icons.percent,
@@ -183,7 +181,7 @@ class _PLTabState extends ConsumerState<_PLTab> {
                     alignment: Alignment.centerRight,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.download_outlined, size: 16),
-                      label: const Text('Export CSV'),
+                      label: Text(context.l10n.exportCsv),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         textStyle: AppTextStyles.bodySmall,
@@ -191,6 +189,7 @@ class _PLTabState extends ConsumerState<_PLTab> {
                       ),
                       onPressed: () async {
                         final messenger = ScaffoldMessenger.of(context);
+                        final exportFailedMsg = context.l10n.exportFailed;
                         try {
                           final df = DateFormat('yyyy-MM-dd');
                           final lines = [
@@ -207,14 +206,14 @@ class _PLTabState extends ConsumerState<_PLTab> {
                           );
                         } catch (_) {
                           messenger.showSnackBar(
-                            const SnackBar(content: Text('Export failed. Please try again.')),
+                            SnackBar(content: Text(exportFailedMsg)),
                           );
                         }
                       },
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text('Daily Revenue', style: AppTextStyles.titleMedium),
+                  Text(context.l10n.dailyRevenue, style: AppTextStyles.titleMedium),
                   const SizedBox(height: 12),
                   _PLChart(daily: daily),
                 ],
@@ -241,7 +240,6 @@ class _PLChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final maxY = daily.map((d) => d.revenue).fold<double>(0, (a, b) => a > b ? a : b);
 
-    // Show a label every N days depending on range length
     final labelStep = daily.length <= 10
         ? 1
         : daily.length <= 20
@@ -335,8 +333,6 @@ class _PLChart extends StatelessWidget {
   }
 }
 
-// ─── Stock Valuation Tab ─────────────────────────────────────────────────────
-
 class _StockTab extends ConsumerWidget {
   const _StockTab();
 
@@ -349,12 +345,11 @@ class _StockTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (rows) {
         if (rows.isEmpty) {
-          return const _EmptyState(
+          return _EmptyState(
             icon: Icons.inventory_2_outlined,
             iconColor: AppColors.primary,
-            title: 'No Stock on Hand',
-            subtitle:
-                'Products with stock will appear here once\nyou record a goods received note.',
+            title: context.l10n.noStockTitle,
+            subtitle: context.l10n.noStockMessage,
           );
         }
 
@@ -376,7 +371,7 @@ class _StockTab extends ConsumerWidget {
                     alignment: Alignment.centerRight,
                     child: OutlinedButton.icon(
                       icon: const Icon(Icons.download_outlined, size: 16),
-                      label: const Text('Export CSV'),
+                      label: Text(context.l10n.exportCsv),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         textStyle: AppTextStyles.bodySmall,
@@ -384,6 +379,7 @@ class _StockTab extends ConsumerWidget {
                       ),
                       onPressed: () async {
                         final messenger = ScaffoldMessenger.of(context);
+                        final exportFailedMsg = context.l10n.exportFailed;
                         try {
                           final lines = [
                             'Product,Qty,Unit Cost,Total Value',
@@ -396,29 +392,29 @@ class _StockTab extends ConsumerWidget {
                           );
                         } catch (_) {
                           messenger.showSnackBar(
-                            const SnackBar(content: Text('Export failed. Please try again.')),
+                            SnackBar(content: Text(exportFailedMsg)),
                           );
                         }
                       },
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
                     child: Row(
                       children: [
                         Expanded(
-                            child: Text('Product',
+                            child: Text(context.l10n.product,
                                 style: AppTextStyles.bodySmall)),
                         SizedBox(
                           width: 48,
-                          child: Text('Qty',
+                          child: Text(context.l10n.qty,
                               style: AppTextStyles.bodySmall,
                               textAlign: TextAlign.end),
                         ),
                         SizedBox(
                           width: 80,
-                          child: Text('Value',
+                          child: Text(context.l10n.value,
                               style: AppTextStyles.bodySmall,
                               textAlign: TextAlign.end),
                         ),
@@ -464,12 +460,12 @@ class _TotalValueCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Stock Value',
+                  Text(context.l10n.totalStockValue,
                       style: AppTextStyles.bodySmall),
                   Text(CurrencyUtils.format(totalValue),
                       style: AppTextStyles.titleLarge
                           .copyWith(color: AppColors.primary)),
-                  Text('$itemCount products with stock',
+                  Text('$itemCount ${context.l10n.productsWithStock}',
                       style: AppTextStyles.bodySmall),
                 ],
               ),
@@ -540,12 +536,9 @@ class _StockValueRow extends StatelessWidget {
   }
 }
 
-// ─── Debtor Aging Tab ────────────────────────────────────────────────────────
-
 class _AgingTab extends ConsumerWidget {
   const _AgingTab();
 
-  static const _bucketLabels = ['0-30 days', '31-60 days', '61-90 days', '90+ days'];
   static const _bucketColors = [
     AppColors.success,
     AppColors.warning,
@@ -555,6 +548,13 @@ class _AgingTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final bucketLabels = [
+      context.l10n.aging0_30,
+      context.l10n.aging31_60,
+      context.l10n.aging61_90,
+      context.l10n.aging90plus,
+    ];
+
     final async = ref.watch(debtorAgingProvider);
 
     return async.when(
@@ -562,12 +562,11 @@ class _AgingTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (rows) {
         if (rows.isEmpty) {
-          return const _EmptyState(
+          return _EmptyState(
             icon: Icons.check_circle_outline,
             iconColor: AppColors.success,
-            title: 'All Clear',
-            subtitle:
-                'No customers have outstanding balances.\nAll receivables are settled.',
+            title: context.l10n.allClearTitle,
+            subtitle: context.l10n.allClearMessage,
           );
         }
 
@@ -580,7 +579,6 @@ class _AgingTab extends ConsumerWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Summary card
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -593,7 +591,7 @@ class _AgingTab extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Total Outstanding',
+                          Text(context.l10n.totalOutstanding,
                               style: AppTextStyles.bodySmall),
                           Text(CurrencyUtils.format(total),
                               style: AppTextStyles.titleLarge
@@ -605,7 +603,7 @@ class _AgingTab extends ConsumerWidget {
                     ),
                     OutlinedButton.icon(
                       icon: const Icon(Icons.download_outlined, size: 16),
-                      label: const Text('CSV'),
+                      label: Text(context.l10n.csvExport),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         textStyle: AppTextStyles.bodySmall,
@@ -613,6 +611,7 @@ class _AgingTab extends ConsumerWidget {
                       ),
                       onPressed: () async {
                         final messenger = ScaffoldMessenger.of(context);
+                        final exportFailedMsg = context.l10n.exportFailed;
                         try {
                           const buckets = ['0-30d', '31-60d', '61-90d', '90+d'];
                           final lines = [
@@ -626,7 +625,7 @@ class _AgingTab extends ConsumerWidget {
                           );
                         } catch (_) {
                           messenger.showSnackBar(
-                            const SnackBar(content: Text('Export failed. Please try again.')),
+                            SnackBar(content: Text(exportFailedMsg)),
                           );
                         }
                       },
@@ -637,26 +636,24 @@ class _AgingTab extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
 
-            // Pie chart + legend
-            const Text('Balance by Age', style: AppTextStyles.titleMedium),
+            Text(context.l10n.balanceByAge, style: AppTextStyles.titleMedium),
             const SizedBox(height: 12),
             _AgingChart(
               bucketAmounts: bucketAmounts,
               total: total,
-              labels: _bucketLabels,
+              labels: bucketLabels,
               colors: _bucketColors,
             ),
             const SizedBox(height: 8),
             _AgingLegend(
                 bucketAmounts: bucketAmounts,
-                labels: _bucketLabels,
+                labels: bucketLabels,
                 colors: _bucketColors),
             const SizedBox(height: 24),
 
-            // Debtor list
-            const Text('Customers', style: AppTextStyles.titleMedium),
+            Text(context.l10n.customers, style: AppTextStyles.titleMedium),
             const SizedBox(height: 8),
-            ...rows.map((r) => _DebtorRow(row: r, colors: _bucketColors, labels: _bucketLabels)),
+            ...rows.map((r) => _DebtorRow(row: r, colors: _bucketColors, labels: bucketLabels)),
           ],
         );
       },
@@ -797,15 +794,12 @@ class _DebtorRow extends StatelessWidget {
   }
 }
 
-// ─── Shared helpers ──────────────────────────────────────────────────────────
-
 class _SummaryGrid extends StatelessWidget {
   const _SummaryGrid({required this.items});
   final List<({String label, String value, Color color, IconData icon})> items;
 
   @override
   Widget build(BuildContext context) {
-    // Build rows of 2 cards — content-driven height, no aspect ratio distortion
     final rows = <Widget>[];
     for (int i = 0; i < items.length; i += 2) {
       rows.add(Row(

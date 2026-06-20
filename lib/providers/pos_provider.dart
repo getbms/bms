@@ -189,7 +189,6 @@ class PosNotifier extends _$PosNotifier {
           })
           .toList());
 
-      // Deduct stock for each item
       for (final item in state.items) {
         final current = await inventoryDao.getStock(item.product.id);
         final newQty = (current?.qty ?? 0) - item.qty;
@@ -210,7 +209,6 @@ class PosNotifier extends _$PosNotifier {
         ));
       }
 
-      // Update customer balance for credit sales
       if (state.customer != null && state.paymentMethod == 'credit') {
         await customersDao.updateBalance(state.customer!.id, state.total);
       }

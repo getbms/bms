@@ -7,6 +7,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- Full internationalisation (i18n): ~470 ARB keys across `app_en.arb`, `app_si.arb`, and `app_ta.arb`; all screens and shared widgets migrated from hardcoded English strings to `context.l10n.*` calls
+- Sinhala (si) and Tamil (ta) translations for every user-facing string including parameterised strings (invoice number, GRN number, discrepancy amount, aging buckets)
+- Poppins font (Regular / Medium / SemiBold / Bold) bundled in `assets/fonts/` and set as the app-wide typeface, replacing the placeholder Inter reference
+
+### Changed
+- Sidebar nav and bottom nav labels now re-evaluate on every build via `_buildSections(context)` / `_buildItems(context)`, fixing locale-change not reflecting in nav labels without a restart
+- `ConfirmationDialog.confirmLabel` / `cancelLabel` made nullable; default falls back to `context.l10n.confirm` / `context.l10n.cancel` so the dialog localises automatically without callers changing
+- `BmsSearchField.hintText` and `BmsFilterRow.searchHint` made nullable; default falls back to `context.l10n.search`
+- Duplicate ARB key `change` (POS cash-change display) renamed to `posChange` to avoid collision with the general-purpose `change` (modify) key; si/ta receive correct distinct translations
+
+### Fixed
+- PO creation race condition: `nextPoNumber()` call and subsequent `insertPO` / `insertPOItems` now execute inside a single `db.transaction()`, matching the existing GRN atomic pattern
+- `purchases.po_id` missing FK constraint: column now declares `.references(PurchaseOrders, #id, onDelete: KeyAction.setNull)`; schema bumped to v7 with a `TableMigration(purchases)` step so existing databases are recreated with the constraint
+- Wrong Sinhala translations: `walkIn` was "ගෙදර" (home) corrected to "සෘජු ගනුදෙනු"; `roleCashier` was "කෙළිය" (game) corrected to "කේෂියර්"
+- Hardcoded "Connection settings saved" snackbar in settings screen replaced with `context.l10n.connectionSettingsSaved`
+- Hardcoded "Invalid number" validator message in suppliers screen replaced with `context.l10n.invalidNumber`
+
+### Added
+- Dashboard KPI drill-down navigation: tapping "Today's Sales" filters invoices to today, "Low Stock" opens inventory pre-filtered to low-stock items, "Total Receivables" goes to the Debtors screen
+- User management: last login timestamp and password-changed-at timestamp recorded and displayed in the user detail sheet
+- User self-service password change: any user can change their own password from the user detail sheet (current password required)
+- Petty cash rejection notes: managers can enter an optional reason when rejecting a petty cash request; reason is displayed in the entry list
+- Petty cash approval timestamp: `approvedAt` recorded on both approve and reject actions
+- Cheque lifecycle tracking: deposit date, bounce date, bounce reason, and re-presentation count columns added; full event timeline shown in cheque detail sheet
+- Cheque actions: Deposit (with date picker), Bounce (date + optional reason), Re-present (resets to pending, increments counter), Clear
+- Purchase Orders: create POs with supplier, line items (qty + cost), notes, and auto-generated PO number (PO-00001 format); PO list with status badges (Draft / Sent / Partial / Received / Cancelled) in a dedicated GRN tab
+- GRN supplier invoice linking: optional supplier invoice number and invoice amount fields on GRN confirmation; discrepancy warning shown when invoice amount differs from received total
+- GRN to PO linking: open GRNs can be linked to an existing PO; confirming a GRN automatically marks the linked PO as received
+- Language switching wired to `MaterialApp.locale`: selecting English / Sinhala / Tamil in Settings now applies the locale to the entire app immediately; preference persisted across sessions
+- Database connection settings (developer role): choose between SQLite (local, default), MySQL local, or MySQL remote; MySQL connection fields (host, port, database name, username, password) stored securely; settings persist across sessions; MySQL sync engine planned for a future release
+
+### Fixed
+- Web platform: replaced `flutter_secure_storage` with an in-memory `SessionStorage` wrapper on web to avoid `window.crypto.subtle.generateKey()` failure in sandboxed / non-HTTPS contexts
+- Language preference was saved to storage but never applied to `MaterialApp`; language switching now takes effect immediately without a restart
+
 - Debtors screen: tap any debtor to open a detail sheet showing outstanding balance, credit limit, payment history, and a "Record Payment" button
 - Customer payment recording: amount, payment method (cash/card/bank transfer/cheque), and optional notes; updates balance immediately
 - Supplier detail sheet: payment history section listing past payments with method, notes, amount, and date

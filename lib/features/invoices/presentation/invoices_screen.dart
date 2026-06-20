@@ -2,6 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/features/invoices/presentation/invoice_detail_screen.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/invoices_provider.dart';
 import 'package:bms/shared/widgets/bms_filter_bar.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class InvoicesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Invoices')),
+      appBar: AppBar(title: Text(context.l10n.invoicesTitle)),
       body: const Column(
         children: [
           _FilterBar(),
@@ -37,12 +38,12 @@ class _FilterBar extends ConsumerStatefulWidget {
 class _FilterBarState extends ConsumerState<_FilterBar> {
   final _searchCtrl = TextEditingController();
 
-  static const List<(String?, String)> _statuses = [
-    (null, 'All'),
-    ('paid', 'Paid'),
-    ('partial', 'Partial'),
-    ('open', 'Open'),
-    ('void', 'Void'),
+  List<(String?, String)> _statuses(BuildContext context) => [
+    (null, context.l10n.filterAll),
+    ('paid', context.l10n.filterPaid),
+    ('partial', context.l10n.filterPartial),
+    ('open', context.l10n.filterOpen),
+    ('void', context.l10n.filterVoid),
   ];
 
   @override
@@ -70,14 +71,14 @@ class _FilterBarState extends ConsumerState<_FilterBar> {
             onSearch: (v) => ref
                 .read(invoiceFilterProvider.notifier)
                 .update(ref.read(invoiceFilterProvider).copyWith(query: v)),
-            searchHint: 'Search invoice / customer',
+            searchHint: context.l10n.searchInvoice,
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: _statuses.map((s) {
+                children: _statuses(context).map((s) {
                   final (value, label) = s;
                   final selected = filter.status == value;
                   return Padding(
@@ -123,14 +124,14 @@ class _SummaryBar extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          _SummaryItem(label: 'Invoices', value: summary.count.toString()),
+          _SummaryItem(label: context.l10n.summaryInvoices, value: summary.count.toString()),
           _divider(),
-          _SummaryItem(label: 'Total Sales', value: CurrencyUtils.format(summary.total)),
+          _SummaryItem(label: context.l10n.summaryTotalSales, value: CurrencyUtils.format(summary.total)),
           _divider(),
-          _SummaryItem(label: 'Collected', value: CurrencyUtils.format(summary.collected)),
+          _SummaryItem(label: context.l10n.summaryCollected, value: CurrencyUtils.format(summary.collected)),
           _divider(),
           _SummaryItem(
-            label: 'Outstanding',
+            label: context.l10n.summaryOutstanding,
             value: CurrencyUtils.format(summary.total - summary.collected),
             highlight: summary.total - summary.collected > 0,
           ),
@@ -183,8 +184,8 @@ class _InvoiceList extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (rows) {
         if (rows.isEmpty) {
-          return const Center(
-            child: Text('No invoices in this period.', style: AppTextStyles.bodySmall),
+          return Center(
+            child: Text(context.l10n.noInvoicesFound, style: AppTextStyles.bodySmall),
           );
         }
         return ListView.separated(
@@ -238,7 +239,7 @@ class _InvoiceTile extends StatelessWidget {
       ),
       subtitle: Text(
         [
-          row.customerName ?? 'Walk-in',
+          row.customerName ?? context.l10n.walkIn,
           _dateFmt.format(inv.createdAt),
           _paymentLabel(inv.paymentType),
         ].join('  ·  '),

@@ -26,7 +26,6 @@ class DashboardStats {
   final int chequesThisWeek;
   final List<Invoice> recentInvoices;
 
-  // 30-day daily trend (revenue + COGS so grossProfit is available)
   final List<DailySales> salesTrend;
 
   final Map<String, double> paymentMix;

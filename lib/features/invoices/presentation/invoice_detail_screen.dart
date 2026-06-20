@@ -4,6 +4,7 @@ import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
 import 'package:bms/features/invoices/presentation/invoice_pdf.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:bms/providers/database_provider.dart';
 import 'package:bms/providers/inventory_provider.dart';
@@ -33,13 +34,13 @@ class InvoiceDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: detailAsync.maybeWhen(
           data: (d) => Text(d.invoice.invoiceNo),
-          orElse: () => const Text('Invoice'),
+          orElse: () => Text(context.l10n.invoiceTitle),
         ),
         actions: [
           detailAsync.maybeWhen(
             data: (d) => IconButton(
               icon: const Icon(Icons.picture_as_pdf_outlined),
-              tooltip: 'Export PDF',
+              tooltip: context.l10n.exportPdf,
               onPressed: () => _exportPdf(context, d, cashierName),
             ),
             orElse: () => const SizedBox.shrink(),
@@ -80,20 +81,20 @@ class InvoiceDetailScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogCtx) => AlertDialog(
-        title: const Text('Void Invoice'),
+        title: Text(context.l10n.voidInvoice),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'This will void ${invoice.invoiceNo}. Stock will NOT be auto-restored.',
+              context.l10n.voidInvoiceMessage(invoice.invoiceNo),
               style: AppTextStyles.bodySmall,
             ),
             const SizedBox(height: 16),
             TextField(
               controller: reasonCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Reason *',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: context.l10n.voidReason,
+                border: const OutlineInputBorder(),
               ),
               autofocus: true,
             ),
@@ -102,15 +103,15 @@ class InvoiceDetailScreen extends ConsumerWidget {
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(dialogCtx, false),
-              child: const Text('Cancel')),
+              child: Text(context.l10n.cancel)),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () {
               if (reasonCtrl.text.trim().isEmpty) return;
               Navigator.pop(dialogCtx, true);
             },
-            child:
-                const Text('Void', style: TextStyle(color: Colors.white)),
+            child: Text(context.l10n.voidAction,
+                style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -124,7 +125,7 @@ class InvoiceDetailScreen extends ConsumerWidget {
     ref.invalidate(invoicesListProvider);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invoice voided')),
+        SnackBar(content: Text(context.l10n.invoiceVoided)),
       );
     }
   }
@@ -141,14 +142,12 @@ class InvoiceDetailScreen extends ConsumerWidget {
       ref.invalidate(invoiceReturnsProvider(detail.invoice.id));
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Return processed and stock restored')),
+          SnackBar(content: Text(context.l10n.returnProcessed)),
         );
       }
     }
   }
 }
-
-// ── Detail Body ──────────────────────────────────────────────────────────────
 
 class _DetailBody extends ConsumerWidget {
   const _DetailBody({
@@ -178,7 +177,6 @@ class _DetailBody extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: [
-        // Status banner
         if (isVoided)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -194,13 +192,13 @@ class _DetailBody extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('VOIDED',
+                      Text(context.l10n.voided,
                           style: AppTextStyles.labelLarge
                               .copyWith(color: AppColors.error)),
                       if (inv.voidReason != null)
                         Text(inv.voidReason!, style: AppTextStyles.bodySmall),
                       if (inv.voidApprovedBy != null)
-                        Text('By: ${inv.voidApprovedBy}',
+                        Text('${context.l10n.by} ${inv.voidApprovedBy}',
                             style: AppTextStyles.bodySmall),
                     ],
                   ),
@@ -211,23 +209,22 @@ class _DetailBody extends ConsumerWidget {
 
         if (isVoided) const SizedBox(height: 16),
 
-        // Header card
         _Card(
           child: Column(
             children: [
-              _InfoRow(label: 'Invoice No', value: inv.invoiceNo),
+              _InfoRow(label: context.l10n.invoiceNo, value: inv.invoiceNo),
               _InfoRow(
-                  label: 'Date',
+                  label: context.l10n.date,
                   value: '${inv.createdAt.day.toString().padLeft(2, '0')} '
                       '${_monthName(inv.createdAt.month)} ${inv.createdAt.year}  '
                       '${inv.createdAt.hour.toString().padLeft(2, '0')}:'
                       '${inv.createdAt.minute.toString().padLeft(2, '0')}'),
-              _InfoRow(label: 'Customer', value: customer?.name ?? 'Walk-in'),
+              _InfoRow(label: context.l10n.customer, value: customer?.name ?? 'Walk-in'),
               if (customer?.phone != null)
-                _InfoRow(label: 'Phone', value: customer!.phone!),
-              _InfoRow(label: 'Payment', value: _paymentLabel(inv.paymentType)),
+                _InfoRow(label: context.l10n.phone, value: customer!.phone!),
+              _InfoRow(label: context.l10n.payment, value: _paymentLabel(context, inv.paymentType)),
               _InfoRow(
-                label: 'Status',
+                label: context.l10n.status,
                 valueWidget: _StatusChip(status: inv.status),
               ),
             ],
@@ -236,12 +233,11 @@ class _DetailBody extends ConsumerWidget {
 
         const SizedBox(height: 16),
 
-        // Items table
         _Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Items', style: AppTextStyles.titleMedium),
+              Text(context.l10n.items, style: AppTextStyles.titleMedium),
               const SizedBox(height: 12),
               Table(
                 columnWidths: const {
@@ -317,27 +313,26 @@ class _DetailBody extends ConsumerWidget {
 
         const SizedBox(height: 16),
 
-        // Totals card
         _Card(
           child: Column(
             children: [
-              _TotalRow(label: 'Subtotal', value: inv.subtotal),
+              _TotalRow(label: context.l10n.subtotal, value: inv.subtotal),
               if (inv.discountAmount > 0)
                 _TotalRow(
-                    label: 'Discount',
+                    label: context.l10n.discount,
                     value: -inv.discountAmount,
                     color: AppColors.error),
               const Divider(height: 20),
               _TotalRow(
-                  label: 'Total',
+                  label: context.l10n.total,
                   value: inv.total,
                   style: AppTextStyles.titleMedium,
                   color: AppColors.primary),
               const SizedBox(height: 8),
-              _TotalRow(label: 'Amount Received', value: inv.paidAmount),
+              _TotalRow(label: context.l10n.amountReceived2, value: inv.paidAmount),
               if (inv.total - inv.paidAmount > 0)
                 _TotalRow(
-                  label: 'Balance Due',
+                  label: context.l10n.balanceDue,
                   value: inv.total - inv.paidAmount,
                   color: AppColors.error,
                 ),
@@ -347,14 +342,13 @@ class _DetailBody extends ConsumerWidget {
 
         const SizedBox(height: 24),
 
-        // Actions
         Wrap(
           spacing: 12,
           runSpacing: 12,
           children: [
             OutlinedButton.icon(
               icon: const Icon(Icons.picture_as_pdf_outlined),
-              label: const Text('Export PDF'),
+              label: Text(context.l10n.exportPdf),
               onPressed: () async {
                 final doc = await InvoicePdf.build(
                   invoice: inv,
@@ -371,8 +365,8 @@ class _DetailBody extends ConsumerWidget {
                     backgroundColor: AppColors.warning),
                 icon: const Icon(Icons.assignment_return_outlined,
                     color: Colors.white),
-                label: const Text('Process Return',
-                    style: TextStyle(color: Colors.white)),
+                label: Text(context.l10n.processReturnButton,
+                    style: const TextStyle(color: Colors.white)),
                 onPressed: onProcessReturn,
               ),
             if (isAdmin && !isVoided)
@@ -380,14 +374,13 @@ class _DetailBody extends ConsumerWidget {
                 style:
                     ElevatedButton.styleFrom(backgroundColor: AppColors.error),
                 icon: const Icon(Icons.block_outlined, color: Colors.white),
-                label: const Text('Void Invoice',
-                    style: TextStyle(color: Colors.white)),
+                label: Text(context.l10n.voidInvoice,
+                    style: const TextStyle(color: Colors.white)),
                 onPressed: onVoid,
               ),
           ],
         ),
 
-        // Return history
         returnsAsync.when(
           loading: () => const SizedBox.shrink(),
           error: (_, _) => const SizedBox.shrink(),
@@ -405,12 +398,12 @@ class _DetailBody extends ConsumerWidget {
     );
   }
 
-  static String _paymentLabel(String type) => switch (type) {
-        'cash' => 'Cash',
-        'card' => 'Card',
-        'cheque' => 'Cheque',
-        'credit' => 'Credit',
-        'mixed' => 'Mixed',
+  static String _paymentLabel(BuildContext context, String type) => switch (type) {
+        'cash' => context.l10n.paymentMethodCash,
+        'card' => context.l10n.paymentMethodCard,
+        'cheque' => context.l10n.paymentMethodCheque,
+        'credit' => context.l10n.paymentMethodCredit,
+        'mixed' => context.l10n.paymentMethodMixed,
         _ => type,
       };
 
@@ -430,8 +423,6 @@ class _DetailBody extends ConsumerWidget {
         'Dec'
       ][m];
 }
-
-// ── Return History ───────────────────────────────────────────────────────────
 
 class _ReturnHistory extends StatelessWidget {
   const _ReturnHistory({required this.returns});
@@ -464,7 +455,7 @@ class _ReturnHistory extends StatelessWidget {
                     children: [
                       Text(ret.returnNo, style: AppTextStyles.labelLarge),
                       Text(
-                        _typeLabel(ret.type),
+                        _typeLabel(context, ret.type),
                         style: AppTextStyles.bodySmall
                             .copyWith(color: AppColors.textSecondary),
                       ),
@@ -497,15 +488,13 @@ class _ReturnHistory extends StatelessWidget {
     );
   }
 
-  static String _typeLabel(String type) => switch (type) {
-        'refund' => 'Refund',
-        'credit' => 'Credit Note',
-        'exchange' => 'Exchange',
+  static String _typeLabel(BuildContext context, String type) => switch (type) {
+        'refund' => context.l10n.returnTypeRefund,
+        'credit' => context.l10n.returnTypeCredit,
+        'exchange' => context.l10n.returnTypeExchange,
         _ => type,
       };
 }
-
-// ── Process Return Sheet ─────────────────────────────────────────────────────
 
 class _ProcessReturnSheet extends ConsumerStatefulWidget {
   const _ProcessReturnSheet({required this.detail});
@@ -563,7 +552,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
 
     if (returnItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a return quantity for at least one item')),
+        SnackBar(content: Text(context.l10n.returnEnterQty)),
       );
       return;
     }
@@ -662,7 +651,6 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
           key: _form,
           child: Column(
             children: [
-              // Handle
               Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 8),
                 width: 36,
@@ -673,7 +661,6 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                 ),
               ),
 
-              // Header
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -684,7 +671,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Process Return - ${widget.detail.invoice.invoiceNo}',
+                        context.l10n.processReturn(widget.detail.invoice.invoiceNo),
                         style: AppTextStyles.titleMedium,
                       ),
                     ),
@@ -703,8 +690,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                   controller: scrollCtrl,
                   padding: const EdgeInsets.all(20),
                   children: [
-                    // Items section
-                    const Text('Select Items to Return',
+                    Text(context.l10n.selectItemsToReturn,
                         style: AppTextStyles.labelLarge),
                     const SizedBox(height: 12),
 
@@ -717,8 +703,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
 
                     const SizedBox(height: 20),
 
-                    // Return type
-                    const Text('Return Type', style: AppTextStyles.labelLarge),
+                    Text(context.l10n.returnType, style: AppTextStyles.labelLarge),
                     const SizedBox(height: 8),
                     _ReturnTypeSelector(
                       value: _type,
@@ -727,8 +712,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
 
                     const SizedBox(height: 20),
 
-                    // Reason
-                    const Text('Reason', style: AppTextStyles.labelLarge),
+                    Text(context.l10n.reason, style: AppTextStyles.labelLarge),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _reasonCtrl,
@@ -741,7 +725,6 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
 
                     const SizedBox(height: 24),
 
-                    // Total
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -751,7 +734,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Return Total',
+                          Text(context.l10n.returnTotal,
                               style: AppTextStyles.titleMedium),
                           Text(
                             CurrencyUtils.format(_totalReturnAmount),
@@ -765,7 +748,6 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                 ),
               ),
 
-              // Bottom actions
               const Divider(height: 1),
               Padding(
                 padding: const EdgeInsets.all(16),
@@ -775,7 +757,7 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                       child: OutlinedButton(
                         onPressed:
                             _submitting ? null : () => Navigator.pop(context),
-                        child: const Text('Cancel'),
+                        child: Text(context.l10n.cancel),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -792,8 +774,8 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
                                     strokeWidth: 2,
                                     color: Colors.white),
                               )
-                            : const Text('Confirm Return',
-                                style: TextStyle(color: Colors.white)),
+                            : Text(context.l10n.confirmReturn,
+                                style: const TextStyle(color: Colors.white)),
                       ),
                     ),
                   ],
@@ -806,8 +788,6 @@ class _ProcessReturnSheetState extends ConsumerState<_ProcessReturnSheet> {
     );
   }
 }
-
-// ── Return Item Row ──────────────────────────────────────────────────────────
 
 class _ReturnItemRow extends StatelessWidget {
   const _ReturnItemRow({
@@ -852,8 +832,6 @@ class _ReturnItemRow extends StatelessWidget {
     );
   }
 }
-
-// ── Qty Stepper ──────────────────────────────────────────────────────────────
 
 class _QtyStepper extends StatelessWidget {
   const _QtyStepper({
@@ -944,23 +922,21 @@ class _QtyStepper extends StatelessWidget {
   }
 }
 
-// ── Return Type Selector ─────────────────────────────────────────────────────
-
 class _ReturnTypeSelector extends StatelessWidget {
   const _ReturnTypeSelector({required this.value, required this.onChanged});
   final String value;
   final ValueChanged<String> onChanged;
 
-  static const _types = [
-    ('refund', 'Refund', Icons.payments_outlined),
-    ('credit', 'Credit Note', Icons.note_outlined),
-    ('exchange', 'Exchange', Icons.swap_horiz_outlined),
+  List<(String, String, IconData)> _types(BuildContext context) => [
+    ('refund', context.l10n.returnTypeRefund, Icons.payments_outlined),
+    ('credit', context.l10n.returnTypeCredit, Icons.note_outlined),
+    ('exchange', context.l10n.returnTypeExchange, Icons.swap_horiz_outlined),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: _types.map((t) {
+      children: _types(context).map((t) {
         final selected = value == t.$1;
         return Expanded(
           child: GestureDetector(
@@ -1008,8 +984,6 @@ class _ReturnTypeSelector extends StatelessWidget {
     );
   }
 }
-
-// ── Shared UI Widgets ────────────────────────────────────────────────────────
 
 class _Card extends StatelessWidget {
   const _Card({required this.child});

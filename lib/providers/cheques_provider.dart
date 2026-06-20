@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 // Manual providers - riverpod_generator cannot serialize Drift-generated types
-// in function signatures during the build phase, so we use the manual API.
 
 final chequesMonthStreamProvider =
     StreamProvider.autoDispose.family<List<Cheque>, (int, int)>((ref, args) {
@@ -89,6 +88,58 @@ class ChequeActions {
           userName: _userName,
           oldValue: before != null ? {'status': before.status} : null,
           newValue: {'status': status},
+        );
+  }
+
+  Future<void> deposit(String id, {required DateTime depositDate}) async {
+    await _ref.read(chequesDaoProvider).deposit(id, depositDate: depositDate);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'deposited', 'depositDate': depositDate.toIso8601String()},
+        );
+  }
+
+  Future<void> bounce(String id, {required DateTime bounceDate, String? reason}) async {
+    await _ref.read(chequesDaoProvider).bounce(id, bounceDate: bounceDate, reason: reason);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'bounced', 'bounceDate': bounceDate.toIso8601String(), 'reason': reason},
+        );
+  }
+
+  Future<void> represent(String id) async {
+    await _ref.read(chequesDaoProvider).represent(id);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'pending', 'action': 're-presented'},
+        );
+  }
+
+  Future<void> clear(String id) async {
+    await _ref.read(chequesDaoProvider).clear(id);
+    await _ref.read(auditLogDaoProvider).log(
+          id: _uuid.v7(),
+          entityType: 'cheque',
+          entityId: id,
+          action: 'update',
+          userId: _userId,
+          userName: _userName,
+          newValue: {'status': 'cleared'},
         );
   }
 }

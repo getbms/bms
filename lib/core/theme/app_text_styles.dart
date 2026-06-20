@@ -2,7 +2,7 @@ import 'package:bms/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 abstract final class AppTextStyles {
-  static const String _fontFamily = 'Inter';
+  static const String _fontFamily = 'Poppins';
 
   static const TextStyle displayLarge = TextStyle(
     fontFamily: _fontFamily,

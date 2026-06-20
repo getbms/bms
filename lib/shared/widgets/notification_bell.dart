@@ -1,5 +1,6 @@
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/notifications_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +24,7 @@ class NotificationBell extends ConsumerWidget {
       children: [
         IconButton(
           icon: Icon(Icons.notifications_outlined, color: iconColor),
-          tooltip: 'Alerts',
+          tooltip: context.l10n.alertsTooltip,
           onPressed: () => _showPanel(context, ref),
         ),
         if (count > 0)
@@ -91,9 +92,10 @@ class _AlertsPanel extends ConsumerWidget {
                           const Icon(Icons.check_circle_outline,
                               size: 48, color: AppColors.success),
                           const SizedBox(height: 12),
-                          const Text('All clear', style: AppTextStyles.titleMedium),
+                          Text(context.l10n.alertsAllClear,
+                              style: AppTextStyles.titleMedium),
                           const SizedBox(height: 4),
-                          Text('No alerts right now.',
+                          Text(context.l10n.alertsNone,
                               style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.textSecondary)),
                         ],
@@ -140,13 +142,14 @@ class _PanelHandle extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Text('Alerts', style: AppTextStyles.titleLarge),
+                Text(context.l10n.alertsPanelTitle,
+                    style: AppTextStyles.titleLarge),
               ],
             ),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh',
+            tooltip: context.l10n.refresh,
             onPressed: onRefresh,
           ),
         ],

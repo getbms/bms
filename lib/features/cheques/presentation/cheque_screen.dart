@@ -3,6 +3,7 @@ import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/core/utils/currency_utils.dart';
 import 'package:bms/core/utils/date_utils.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/cheques_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,15 +52,15 @@ class _ChequeScreenState extends ConsumerState<ChequeScreen> with SingleTickerPr
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cheques'),
+        title: Text(context.l10n.chequesTitle),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
           indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'By Month'),
+          tabs: [
+            Tab(text: context.l10n.upcoming),
+            Tab(text: context.l10n.byMonth),
           ],
         ),
       ),
@@ -72,7 +73,7 @@ class _ChequeScreenState extends ConsumerState<ChequeScreen> with SingleTickerPr
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddCheque,
-        tooltip: 'Add Cheque',
+        tooltip: context.l10n.recordCheque,
         child: const Icon(Icons.add),
       ),
     );
@@ -88,7 +89,7 @@ class _UpcomingTab extends ConsumerWidget {
       error: (e, _) => Center(child: Text('Error: $e')),
       data: (cheques) {
         if (cheques.isEmpty) {
-          return const Center(child: Text('No cheques due in the next 7 days.', style: AppTextStyles.bodySmall));
+          return Center(child: Text(context.l10n.noChequesUpcoming, style: AppTextStyles.bodySmall));
         }
         return ListView.builder(
           itemCount: cheques.length,
@@ -118,7 +119,6 @@ class _ByMonthTab extends ConsumerWidget {
 
     return Column(
       children: [
-        // Month nav header
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
@@ -133,7 +133,6 @@ class _ByMonthTab extends ConsumerWidget {
             ],
           ),
         ),
-        // Weekday header row
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
@@ -149,13 +148,11 @@ class _ByMonthTab extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 4),
-        // Calendar grid
         Expanded(
           child: chequesAsync.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Text('Error: $e')),
             data: (cheques) {
-              // Group cheques by day-of-month
               final byDay = <int, List<Cheque>>{};
               for (final c in cheques) {
                 byDay.putIfAbsent(c.dueDate.day, () => []).add(c);
@@ -366,68 +363,12 @@ class _ChequeRow extends ConsumerWidget {
         _ => AppColors.warningLight,
       };
 
-  void _showStatusMenu(BuildContext context, WidgetRef ref) {
-    final actions = ref.read(chequeActionsProvider);
+  void _openDetail(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Mark as Deposited'),
-              leading: const Icon(Icons.account_balance),
-              enabled: cheque.status == 'pending',
-              onTap: () async {
-                Navigator.of(ctx).pop();
-                try {
-                  await actions.updateStatus(cheque.id, 'deposited');
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-                    );
-                  }
-                }
-              },
-            ),
-            ListTile(
-              title: const Text('Mark as Cleared'),
-              leading: const Icon(Icons.check_circle_outline),
-              enabled: cheque.status != 'cleared',
-              onTap: () async {
-                Navigator.of(ctx).pop();
-                try {
-                  await actions.updateStatus(cheque.id, 'cleared');
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-                    );
-                  }
-                }
-              },
-            ),
-            ListTile(
-              title: const Text('Mark as Bounced'),
-              leading: const Icon(Icons.cancel_outlined),
-              enabled: cheque.status != 'bounced',
-              onTap: () async {
-                Navigator.of(ctx).pop();
-                try {
-                  await actions.updateStatus(cheque.id, 'bounced');
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
-                    );
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-      ),
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (_) => _ChequeDetailSheet(cheque: cheque),
     );
   }
 
@@ -440,6 +381,7 @@ class _ChequeRow extends ConsumerWidget {
           if (cheque.chequeNo != null) '#${cheque.chequeNo}',
           if (cheque.bank != null) cheque.bank!,
           'Due: ${BmsDateUtils.formatDate(cheque.dueDate)}',
+          if (cheque.representationCount > 0) 'Re-presented ${cheque.representationCount}x',
         ].join(' · '),
         style: AppTextStyles.bodySmall,
       ),
@@ -469,10 +411,320 @@ class _ChequeRow extends ConsumerWidget {
         cheque.type == 'received' ? Icons.arrow_downward : Icons.arrow_upward,
         color: cheque.type == 'received' ? AppColors.success : AppColors.error,
       ),
-      onLongPress: () => _showStatusMenu(context, ref),
-      onTap: () => _showStatusMenu(context, ref),
+      onTap: () => _openDetail(context),
     );
   }
+}
+
+class _ChequeDetailSheet extends ConsumerWidget {
+  const _ChequeDetailSheet({required this.cheque});
+  final Cheque cheque;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final actions = ref.read(chequeActionsProvider);
+    return DraggableScrollableSheet(
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (_, controller) => ListView(
+        controller: controller,
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(cheque.partyName, style: AppTextStyles.titleLarge),
+                    Text(
+                      '${cheque.type == 'received' ? 'Received from' : 'Issued to'} · ${cheque.partyType}',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                ),
+              ),
+              Text(CurrencyUtils.format(cheque.amount),
+                  style: AppTextStyles.titleLarge.copyWith(color: AppColors.primary)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _DetailRow(label: context.l10n.chequeNo, value: cheque.chequeNo ?? '-'),
+          _DetailRow(label: context.l10n.bank, value: cheque.bank ?? '-'),
+          _DetailRow(label: context.l10n.dueDate, value: BmsDateUtils.formatDate(cheque.dueDate)),
+          if (cheque.notes != null) _DetailRow(label: context.l10n.notes, value: cheque.notes!),
+          const SizedBox(height: 20),
+          Text(context.l10n.timeline, style: AppTextStyles.labelLarge.copyWith(color: AppColors.textSecondary)),
+          const SizedBox(height: 8),
+          _TimelineItem(
+            icon: Icons.fiber_new_outlined,
+            color: AppColors.primary,
+            label: context.l10n.chequeCreated,
+            date: cheque.createdAt,
+          ),
+          if (cheque.depositDate != null)
+            _TimelineItem(
+              icon: Icons.account_balance_outlined,
+              color: AppColors.info,
+              label: context.l10n.chequeDeposited,
+              date: cheque.depositDate!,
+            ),
+          if (cheque.bounceDate != null) ...[
+            _TimelineItem(
+              icon: Icons.cancel_outlined,
+              color: AppColors.error,
+              label: 'Bounced${cheque.bounceReason != null ? ' - ${cheque.bounceReason}' : ''}',
+              date: cheque.bounceDate!,
+            ),
+            if (cheque.representationCount > 0)
+              _TimelineItem(
+                icon: Icons.refresh_outlined,
+                color: AppColors.warning,
+                label: 'Re-presented ${cheque.representationCount}x',
+                date: cheque.updatedAt,
+              ),
+          ],
+          if (cheque.status == 'cleared')
+            _TimelineItem(
+              icon: Icons.check_circle_outline,
+              color: AppColors.success,
+              label: context.l10n.chequeCleared,
+              date: cheque.updatedAt,
+            ),
+          const SizedBox(height: 24),
+          ..._buildActions(context, actions),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildActions(BuildContext context, ChequeActions actions) {
+    Future<void> run(Future<void> Function() fn) async {
+      try {
+        Navigator.of(context).pop();
+        await fn();
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+          );
+        }
+      }
+    }
+
+    if (cheque.status == 'cleared') return [];
+
+    final widgets = <Widget>[];
+
+    if (cheque.status == 'pending') {
+      widgets.add(ElevatedButton.icon(
+        icon: const Icon(Icons.account_balance_outlined),
+        label: Text(context.l10n.deposit),
+        onPressed: () => _depositFlow(context, actions),
+      ));
+      widgets.add(const SizedBox(height: 8));
+    }
+
+    if (cheque.status == 'deposited') {
+      widgets.add(ElevatedButton.icon(
+        icon: const Icon(Icons.check_circle_outline),
+        label: Text(context.l10n.markCleared),
+        style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+        onPressed: () => run(() => actions.clear(cheque.id)),
+      ));
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(OutlinedButton.icon(
+        icon: const Icon(Icons.cancel_outlined),
+        label: Text(context.l10n.markBounced),
+        style: OutlinedButton.styleFrom(foregroundColor: AppColors.error),
+        onPressed: () => _bounceFlow(context, actions),
+      ));
+    }
+
+    if (cheque.status == 'bounced') {
+      widgets.add(ElevatedButton.icon(
+        icon: const Icon(Icons.refresh_outlined),
+        label: Text(context.l10n.rePresent),
+        style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
+        onPressed: () => run(() => actions.represent(cheque.id)),
+      ));
+      widgets.add(const SizedBox(height: 8));
+      widgets.add(OutlinedButton.icon(
+        icon: const Icon(Icons.check_circle_outline),
+        label: Text(context.l10n.markCleared),
+        style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
+        onPressed: () => run(() => actions.clear(cheque.id)),
+      ));
+    }
+
+    return widgets;
+  }
+
+  void _depositFlow(BuildContext context, ChequeActions actions) {
+    DateTime depositDate = DateTime.now();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(ctx).bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(context.l10n.confirmDeposit, style: AppTextStyles.titleMedium),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: depositDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2035),
+                  );
+                  if (picked != null) setModal(() => depositDate = picked);
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(labelText: context.l10n.depositDate),
+                  child: Text(BmsDateUtils.formatDate(depositDate), style: AppTextStyles.bodyMedium),
+                ),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                  try {
+                    await actions.deposit(cheque.id, depositDate: depositDate);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+                      );
+                    }
+                  }
+                },
+                child: Text(context.l10n.confirmDeposit),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _bounceFlow(BuildContext context, ChequeActions actions) {
+    DateTime bounceDate = DateTime.now();
+    final reasonCtrl = TextEditingController();
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModal) => Padding(
+          padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.viewInsetsOf(ctx).bottom + 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(context.l10n.recordBounce, style: AppTextStyles.titleMedium),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () async {
+                  final picked = await showDatePicker(
+                    context: ctx,
+                    initialDate: bounceDate,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2035),
+                  );
+                  if (picked != null) setModal(() => bounceDate = picked);
+                },
+                child: InputDecorator(
+                  decoration: InputDecoration(labelText: context.l10n.bounceDate),
+                  child: Text(BmsDateUtils.formatDate(bounceDate), style: AppTextStyles.bodyMedium),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                decoration: InputDecoration(labelText: context.l10n.bounceReason),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+                onPressed: () async {
+                  final reason = reasonCtrl.text.trim().isEmpty ? null : reasonCtrl.text.trim();
+                  reasonCtrl.dispose();
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                  try {
+                    await actions.bounce(cheque.id, bounceDate: bounceDate, reason: reason);
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error),
+                      );
+                    }
+                  }
+                },
+                child: Text(context.l10n.confirmBounce),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 6),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(label,
+                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+            ),
+            Expanded(child: Text(value, style: AppTextStyles.bodySmall)),
+          ],
+        ),
+      );
+}
+
+class _TimelineItem extends StatelessWidget {
+  const _TimelineItem({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.date,
+  });
+  final IconData icon;
+  final Color color;
+  final String label;
+  final DateTime date;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            Icon(icon, color: color, size: 18),
+            const SizedBox(width: 10),
+            Expanded(child: Text(label, style: AppTextStyles.bodySmall)),
+            Text(BmsDateUtils.formatDate(date),
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+          ],
+        ),
+      );
 }
 
 class _AddChequeSheet extends ConsumerStatefulWidget {
@@ -540,7 +792,7 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cheque recorded.')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l10n.chequeRecorded)));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -562,17 +814,17 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Record Cheque', style: AppTextStyles.titleLarge),
+              Text(context.l10n.recordCheque, style: AppTextStyles.titleLarge),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _type,
-                      decoration: const InputDecoration(labelText: 'Type'),
-                      items: const [
-                        DropdownMenuItem(value: 'received', child: Text('Received')),
-                        DropdownMenuItem(value: 'issued', child: Text('Issued')),
+                      decoration: InputDecoration(labelText: context.l10n.chequeType),
+                      items: [
+                        DropdownMenuItem(value: 'received', child: Text(context.l10n.chequeTypeReceived)),
+                        DropdownMenuItem(value: 'issued', child: Text(context.l10n.chequeTypeIssued)),
                       ],
                       onChanged: (v) => setState(() => _type = v ?? 'received'),
                     ),
@@ -581,11 +833,11 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       initialValue: _partyType,
-                      decoration: const InputDecoration(labelText: 'Party Type'),
-                      items: const [
-                        DropdownMenuItem(value: 'customer', child: Text('Customer')),
-                        DropdownMenuItem(value: 'supplier', child: Text('Supplier')),
-                        DropdownMenuItem(value: 'other', child: Text('Other')),
+                      decoration: InputDecoration(labelText: context.l10n.partyType),
+                      items: [
+                        DropdownMenuItem(value: 'customer', child: Text(context.l10n.partyTypeCustomer)),
+                        DropdownMenuItem(value: 'supplier', child: Text(context.l10n.partyTypeSupplier)),
+                        DropdownMenuItem(value: 'other', child: Text(context.l10n.partyTypeOther)),
                       ],
                       onChanged: (v) => setState(() => _partyType = v ?? 'customer'),
                     ),
@@ -595,16 +847,16 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _partyName,
-                decoration: const InputDecoration(labelText: 'Party Name *'),
-                validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
+                decoration: InputDecoration(labelText: context.l10n.partyName),
+                validator: (v) => v == null || v.trim().isEmpty ? context.l10n.required : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _amount,
-                decoration: const InputDecoration(labelText: 'Amount *', prefixText: 'Rs. '),
+                decoration: InputDecoration(labelText: context.l10n.amount, prefixText: context.l10n.currencyPrefix),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Required';
+                  if (v == null || v.trim().isEmpty) return context.l10n.required;
                   if (double.tryParse(v) == null) return 'Invalid number';
                   return null;
                 },
@@ -613,7 +865,7 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
               GestureDetector(
                 onTap: _pickDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Due Date *'),
+                  decoration: InputDecoration(labelText: context.l10n.dueDate),
                   child: Text(
                     _dueDate != null ? BmsDateUtils.formatDate(_dueDate!) : 'Tap to select',
                     style: _dueDate != null ? AppTextStyles.bodyMedium : AppTextStyles.bodySmall,
@@ -626,14 +878,14 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
                   Expanded(
                     child: TextFormField(
                       controller: _chequeNo,
-                      decoration: const InputDecoration(labelText: 'Cheque No.'),
+                      decoration: InputDecoration(labelText: context.l10n.chequeNo),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _bank,
-                      decoration: const InputDecoration(labelText: 'Bank'),
+                      decoration: InputDecoration(labelText: context.l10n.bank),
                     ),
                   ),
                 ],
@@ -641,14 +893,14 @@ class _AddChequeSheetState extends ConsumerState<_AddChequeSheet> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _notes,
-                decoration: const InputDecoration(labelText: 'Notes'),
+                decoration: InputDecoration(labelText: context.l10n.notes),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _saving ? null : _save,
                 child: _saving
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Record Cheque'),
+                    : Text(context.l10n.recordCheque),
               ),
             ],
           ),

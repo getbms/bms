@@ -1,6 +1,7 @@
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/data/models/user_model.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
+import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:bms/shared/widgets/notification_bell.dart';
 import 'package:flutter/material.dart';
@@ -32,32 +33,32 @@ class SidebarNav extends ConsumerWidget {
   final bool collapsed;
   final VoidCallback onToggle;
 
-  static const List<_NavSection> _sections = [
-    _NavSection(label: 'Main', items: [
-      _NavItemData(label: 'Dashboard', icon: Icons.grid_view_rounded, route: AppRoutes.dashboard),
+  static List<_NavSection> _buildSections(BuildContext context) => [
+    _NavSection(label: context.l10n.navMain, items: [
+      _NavItemData(label: context.l10n.navDashboard, icon: Icons.grid_view_rounded, route: AppRoutes.dashboard),
     ]),
-    _NavSection(label: 'Sales', items: [
-      _NavItemData(label: 'POS / Sales', icon: Icons.point_of_sale_rounded, route: AppRoutes.pos),
-      _NavItemData(label: 'Quick Sales', icon: Icons.flash_on_rounded, route: AppRoutes.quickSales, minRole: _Role.admin),
-      _NavItemData(label: 'Invoices', icon: Icons.receipt_long_rounded, route: AppRoutes.invoices, minRole: _Role.admin),
+    _NavSection(label: context.l10n.navSales, items: [
+      _NavItemData(label: context.l10n.navPosSales, icon: Icons.point_of_sale_rounded, route: AppRoutes.pos),
+      _NavItemData(label: context.l10n.navQuickSales, icon: Icons.flash_on_rounded, route: AppRoutes.quickSales, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navInvoices, icon: Icons.receipt_long_rounded, route: AppRoutes.invoices, minRole: _Role.admin),
     ]),
-    _NavSection(label: 'Stock', items: [
-      _NavItemData(label: 'Inventory', icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
-      _NavItemData(label: 'GRN', icon: Icons.move_to_inbox_rounded, route: AppRoutes.grn, minRole: _Role.admin),
+    _NavSection(label: context.l10n.navStock, items: [
+      _NavItemData(label: context.l10n.navInventory, icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
+      _NavItemData(label: context.l10n.navGrn, icon: Icons.move_to_inbox_rounded, route: AppRoutes.grn, minRole: _Role.admin),
     ]),
-    _NavSection(label: 'Contacts', items: [
-      _NavItemData(label: 'Customers', icon: Icons.people_rounded, route: AppRoutes.customers),
-      _NavItemData(label: 'Debtors', icon: Icons.account_balance_wallet_outlined, route: AppRoutes.debtors, minRole: _Role.admin),
-      _NavItemData(label: 'Suppliers', icon: Icons.local_shipping_rounded, route: AppRoutes.suppliers, minRole: _Role.admin),
+    _NavSection(label: context.l10n.navContacts, items: [
+      _NavItemData(label: context.l10n.navCustomers, icon: Icons.people_rounded, route: AppRoutes.customers),
+      _NavItemData(label: context.l10n.navDebtors, icon: Icons.account_balance_wallet_outlined, route: AppRoutes.debtors, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navSuppliers, icon: Icons.local_shipping_rounded, route: AppRoutes.suppliers, minRole: _Role.admin),
     ]),
-    _NavSection(label: 'Finance', items: [
-      _NavItemData(label: 'Cheques', icon: Icons.account_balance_rounded, route: AppRoutes.cheques, minRole: _Role.admin),
-      _NavItemData(label: 'Petty Cash', icon: Icons.account_balance_wallet_rounded, route: AppRoutes.pettyCash, minRole: _Role.admin),
+    _NavSection(label: context.l10n.navFinance, items: [
+      _NavItemData(label: context.l10n.navCheques, icon: Icons.account_balance_rounded, route: AppRoutes.cheques, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navPettyCash, icon: Icons.account_balance_wallet_rounded, route: AppRoutes.pettyCash, minRole: _Role.admin),
     ]),
-    _NavSection(label: 'Admin', items: [
-      _NavItemData(label: 'Reports', icon: Icons.bar_chart_rounded, route: AppRoutes.reports, minRole: _Role.admin),
-      _NavItemData(label: 'Users', icon: Icons.manage_accounts_rounded, route: AppRoutes.users, minRole: _Role.developer),
-      _NavItemData(label: 'Settings', icon: Icons.settings_rounded, route: AppRoutes.settings, minRole: _Role.admin),
+    _NavSection(label: context.l10n.navAdmin, items: [
+      _NavItemData(label: context.l10n.navReports, icon: Icons.bar_chart_rounded, route: AppRoutes.reports, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navUsers, icon: Icons.manage_accounts_rounded, route: AppRoutes.users, minRole: _Role.developer),
+      _NavItemData(label: context.l10n.navSettings, icon: Icons.settings_rounded, route: AppRoutes.settings, minRole: _Role.admin),
     ]),
   ];
 
@@ -81,7 +82,7 @@ class SidebarNav extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 children: [
-                  for (final section in _sections) ...[
+                  for (final section in _buildSections(context)) ...[
                     // Only show section if at least one item is visible
                     if (section.items.any((i) => i.isVisibleFor(role))) ...[
                       if (!collapsed)
@@ -324,7 +325,7 @@ class _UserFooter extends StatelessWidget {
               ),
               IconButton(
                 icon: const Icon(Icons.logout_rounded, size: 16, color: _kSidebarText),
-                tooltip: 'Sign out',
+                tooltip: context.l10n.signOut,
                 onPressed: () => ref.read(authStateProvider.notifier).logout(),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 28),

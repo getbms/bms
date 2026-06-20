@@ -20,6 +20,10 @@ class Cheques extends Table {
   TextColumn get status => text().withDefault(const Constant('pending'))();
 
   TextColumn get notes => text().nullable()();
+  DateTimeColumn get depositDate => dateTime().nullable()();
+  TextColumn get bounceReason => text().nullable()();
+  DateTimeColumn get bounceDate => dateTime().nullable()();
+  IntColumn get representationCount => integer().withDefault(const Constant(0))();
   TextColumn get createdBy => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();

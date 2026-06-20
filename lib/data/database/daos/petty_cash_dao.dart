@@ -25,14 +25,17 @@ class PettyCashDao extends DatabaseAccessor<AppDatabase> with _$PettyCashDaoMixi
         PettyCashCompanion(
           status: const Value('approved'),
           approvedBy: Value(approvedBy),
+          approvedAt: Value(DateTime.now()),
           updatedAt: Value(DateTime.now()),
         ),
       );
 
-  Future<void> reject(String id) =>
+  Future<void> reject(String id, {String? notes}) =>
       (update(pettyCash)..where((p) => p.id.equals(id))).write(
         PettyCashCompanion(
           status: const Value('rejected'),
+          approvalNotes: Value(notes),
+          approvedAt: Value(DateTime.now()),
           updatedAt: Value(DateTime.now()),
         ),
       );
