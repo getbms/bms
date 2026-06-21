@@ -14,6 +14,8 @@ import 'package:bms/features/reports/presentation/reports_screen.dart';
 import 'package:bms/features/settings/presentation/settings_screen.dart';
 import 'package:bms/features/suppliers/presentation/suppliers_screen.dart';
 import 'package:bms/features/users/presentation/users_screen.dart';
+import 'package:bms/licensing/activation_screen.dart';
+import 'package:bms/licensing/license_provider.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:bms/shared/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
@@ -31,16 +33,29 @@ GoRouter appRouter(Ref ref) {
   final notifier = _RouterNotifier();
 
   ref.listen(currentAuthStateProvider, (_, _) => notifier.notify());
+  ref.listen(licenseProvider, (_, _) => notifier.notify());
   ref.onDispose(notifier.dispose);
 
   return GoRouter(
-    initialLocation: AppRoutes.login,
+    initialLocation: AppRoutes.splash,
     refreshListenable: notifier,
     redirect: (context, state) => RouteGuard.redirect(
       state: state,
       authState: ref.read(currentAuthStateProvider),
+      license: ref.read(licenseProvider),
     ),
     routes: [
+      GoRoute(
+        path: AppRoutes.splash,
+        name: 'splash',
+        pageBuilder: (context, state) => _fadePage(state, const _SplashPage()),
+      ),
+      GoRoute(
+        path: AppRoutes.activate,
+        name: 'activate',
+        pageBuilder: (context, state) =>
+            _fadePage(state, const ActivationScreen()),
+      ),
       GoRoute(
         path: AppRoutes.login,
         name: 'login',
@@ -146,7 +161,23 @@ CustomTransitionPage<void> _fadePage(GoRouterState state, Widget child) =>
       },
     );
 
+class _SplashPage extends StatelessWidget {
+  const _SplashPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFF0F172A),
+      body: Center(
+        child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+      ),
+    );
+  }
+}
+
 abstract final class AppRoutes {
+  static const String splash   = '/';
+  static const String activate = '/activate';
   static const String login = '/login';
   static const String dashboard = '/dashboard';
   static const String pos = '/pos';

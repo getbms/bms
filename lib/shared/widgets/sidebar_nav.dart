@@ -2,6 +2,7 @@ import 'package:bms/core/router/app_router.dart';
 import 'package:bms/data/models/user_model.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
 import 'package:bms/l10n/l10n.dart';
+import 'package:bms/licensing/license_provider.dart';
 import 'package:bms/providers/auth_provider.dart';
 import 'package:bms/shared/widgets/notification_bell.dart';
 import 'package:flutter/material.dart';
@@ -44,20 +45,20 @@ class SidebarNav extends ConsumerWidget {
     ]),
     _NavSection(label: context.l10n.navStock, items: [
       _NavItemData(label: context.l10n.navInventory, icon: Icons.inventory_2_rounded, route: AppRoutes.inventory),
-      _NavItemData(label: context.l10n.navGrn, icon: Icons.move_to_inbox_rounded, route: AppRoutes.grn, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navGrn, icon: Icons.move_to_inbox_rounded, route: AppRoutes.grn, minRole: _Role.admin, requiredFeature: 'grn'),
     ]),
     _NavSection(label: context.l10n.navContacts, items: [
       _NavItemData(label: context.l10n.navCustomers, icon: Icons.people_rounded, route: AppRoutes.customers),
-      _NavItemData(label: context.l10n.navDebtors, icon: Icons.account_balance_wallet_outlined, route: AppRoutes.debtors, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navDebtors, icon: Icons.account_balance_wallet_outlined, route: AppRoutes.debtors, minRole: _Role.admin, requiredFeature: 'debtors'),
       _NavItemData(label: context.l10n.navSuppliers, icon: Icons.local_shipping_rounded, route: AppRoutes.suppliers, minRole: _Role.admin),
     ]),
     _NavSection(label: context.l10n.navFinance, items: [
-      _NavItemData(label: context.l10n.navCheques, icon: Icons.account_balance_rounded, route: AppRoutes.cheques, minRole: _Role.admin),
-      _NavItemData(label: context.l10n.navPettyCash, icon: Icons.account_balance_wallet_rounded, route: AppRoutes.pettyCash, minRole: _Role.admin),
+      _NavItemData(label: context.l10n.navCheques, icon: Icons.account_balance_rounded, route: AppRoutes.cheques, minRole: _Role.admin, requiredFeature: 'cheques'),
+      _NavItemData(label: context.l10n.navPettyCash, icon: Icons.account_balance_wallet_rounded, route: AppRoutes.pettyCash, minRole: _Role.admin, requiredFeature: 'petty_cash'),
     ]),
     _NavSection(label: context.l10n.navAdmin, items: [
-      _NavItemData(label: context.l10n.navReports, icon: Icons.bar_chart_rounded, route: AppRoutes.reports, minRole: _Role.admin),
-      _NavItemData(label: context.l10n.navUsers, icon: Icons.manage_accounts_rounded, route: AppRoutes.users, minRole: _Role.developer),
+      _NavItemData(label: context.l10n.navReports, icon: Icons.bar_chart_rounded, route: AppRoutes.reports, minRole: _Role.admin, requiredFeature: 'reports'),
+      _NavItemData(label: context.l10n.navUsers, icon: Icons.manage_accounts_rounded, route: AppRoutes.users, minRole: _Role.developer, requiredFeature: 'users'),
       _NavItemData(label: context.l10n.navSettings, icon: Icons.settings_rounded, route: AppRoutes.settings, minRole: _Role.admin),
     ]),
   ];
@@ -67,6 +68,7 @@ class SidebarNav extends ConsumerWidget {
     final authState = ref.watch(currentAuthStateProvider);
     final user = authState is Authenticated ? authState.user : null;
     final role = user?.role ?? 'cashier';
+    final features = ref.watch(allowedFeaturesProvider);
 
     return AnimatedContainer(
       duration: _kAnimDuration,
@@ -84,13 +86,14 @@ class SidebarNav extends ConsumerWidget {
                 children: [
                   for (final section in _buildSections(context)) ...[
                     // Only show section if at least one item is visible
-                    if (section.items.any((i) => i.isVisibleFor(role))) ...[
+                    if (section.items.any(
+                        (i) => i.isVisibleFor(role) && i.isFeatureAllowed(features))) ...[
                       if (!collapsed)
                         _SectionLabel(label: section.label)
                       else
                         const SizedBox(height: 4),
                       for (final item in section.items)
-                        if (item.isVisibleFor(role))
+                        if (item.isVisibleFor(role) && item.isFeatureAllowed(features))
                           _NavTile(
                             item: item,
                             isActive: currentLocation.startsWith(item.route),
@@ -404,12 +407,18 @@ class _NavItemData {
     required this.icon,
     required this.route,
     this.minRole = _Role.cashier,
+    this.requiredFeature,
   });
 
   final String label;
   final IconData icon;
   final String route;
   final _Role minRole;
+  final String? requiredFeature;
 
-  bool isVisibleFor(String roleStr) => _parseRole(roleStr).index >= minRole.index;
+  bool isVisibleFor(String roleStr) =>
+      _parseRole(roleStr).index >= minRole.index;
+
+  bool isFeatureAllowed(Set<String> features) =>
+      requiredFeature == null || features.contains(requiredFeature!);
 }
