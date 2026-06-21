@@ -120,19 +120,23 @@ class LicenseService {
         )
         .timeout(const Duration(seconds: 20));
 
-    final body = jsonDecode(resp.body) as Map<String, dynamic>;
+    final decoded = resp.body.isNotEmpty ? jsonDecode(resp.body) : null;
+    final body = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
 
     if (resp.statusCode != 200 && resp.statusCode != 201) {
       final msg = (body['error'] as Map<String, dynamic>?)?['message']
               as String? ??
-          'Activation failed';
+          'Activation failed (HTTP ${resp.statusCode})';
       final code =
           (body['error'] as Map<String, dynamic>?)?['code'] as String?;
       throw LicenseException(msg, code);
     }
 
-    final data = body['data'] as Map<String, dynamic>;
-    final jwt  = data['token'] as String;
+    final data = body['data'] as Map<String, dynamic>?;
+    final jwt  = data?['token'] as String?;
+    if (data == null || jwt == null) {
+      throw const LicenseException('Invalid response from licensing server', 'INVALID_RESPONSE');
+    }
     await _persist(jwt);
 
     final tier     = _parseTier(data['tier'] as String? ?? 'free');
@@ -157,12 +161,15 @@ class LicenseService {
           )
           .timeout(const Duration(seconds: 15));
 
-      final body = jsonDecode(resp.body) as Map<String, dynamic>;
+      final decoded = resp.body.isNotEmpty ? jsonDecode(resp.body) : null;
+      final body = decoded is Map<String, dynamic> ? decoded : <String, dynamic>{};
 
       if (resp.statusCode == 200) {
-        final data   = body['data'] as Map<String, dynamic>;
-        final newJwt = data['token'] as String;
-        await _persist(newJwt);
+        final data   = body['data'] as Map<String, dynamic>?;
+        final newJwt = data?['token'] as String?;
+        if (newJwt != null) {
+          await _persist(newJwt);
+        }
         return loadCachedState();
       }
 
