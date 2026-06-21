@@ -146,16 +146,6 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        'Need a key? Contact support@getbms.app',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textDisabled,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
