@@ -12,8 +12,27 @@ permissions:
   actions: read
 
 jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - run: flutter test test/unit/ --reporter=github
+
   build-windows:
     name: Windows
+    needs: test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7.0.0
@@ -42,6 +61,7 @@ jobs:
 
   build-macos:
     name: macOS
+    needs: test
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7.0.0
