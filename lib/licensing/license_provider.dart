@@ -61,13 +61,19 @@ class LicenseNotifier extends AsyncNotifier<LicenseState> {
   }
 
   // Called from ActivationScreen after the user enters a key.
+  // Throws LicenseException (or generic Exception) on failure so the screen
+  // can display the error — does NOT store an AsyncError in state.
   Future<void> activate(String key) async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
+    try {
       final service  = ref.read(licenseServiceProvider);
       final deviceId = await ref.read(deviceIdProvider.future);
-      return service.activate(key, deviceId);
-    });
+      final result   = await service.activate(key, deviceId);
+      state = AsyncData(result);
+    } catch (e) {
+      state = const AsyncData(LicenseState.unlicensed);
+      rethrow;
+    }
   }
 
   // Called from the settings screen to release this device slot.
