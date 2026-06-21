@@ -110,10 +110,9 @@ class SyncNotifier extends Notifier<SyncState> {
           lastPulled: result.pulled,
         );
       } else {
-        state = state.copyWith(
+        state = SyncState(
           status: SyncStatus.success,
           lastSyncAt: now,
-          lastError: null,
           pendingPush: result.pushed,
           lastPulled: result.pulled,
         );

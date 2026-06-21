@@ -1,9 +1,9 @@
-/// Describes how a single SQLite table maps to MySQL for bidirectional sync.
-///
-/// Column types drive MySQL DDL generation and MySQL→SQLite value parsing.
-/// Push (SQLite→MySQL) reads raw `int`/`double`/`String` from QueryRow.data
-/// and passes them as-is. Pull (MySQL→SQLite) reads strings from the MySQL
-/// client and casts them using [SyncColumn.type].
+// Describes how a single SQLite table maps to MySQL for bidirectional sync.
+//
+// Column types drive MySQL DDL generation and MySQL→SQLite value parsing.
+// Push (SQLite→MySQL) reads raw int/double/String from QueryRow.data and
+// passes them as-is. Pull (MySQL→SQLite) reads strings from the MySQL
+// client and casts them using SyncColumn.type.
 
 enum SyncColumnType { text, integer, real }
 

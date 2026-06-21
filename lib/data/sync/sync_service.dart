@@ -79,7 +79,7 @@ class SyncService {
         password: settings.password,
         databaseName: settings.database,
       );
-      await conn.connect(timeoutMs: 10000);
+      await conn.connect();
       await _ensureSchema(conn);
 
       for (final table in kSyncTables) {
