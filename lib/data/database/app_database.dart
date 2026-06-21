@@ -65,6 +65,9 @@ part 'app_database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  // Used in tests with NativeDatabase.memory() so no disk I/O is needed.
+  AppDatabase.forTesting(QueryExecutor e) : super(e);
+
   @override
   int get schemaVersion => 8;
 
@@ -102,7 +105,6 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 7) {
             // Recreate purchases table to add FK constraint on po_id.
-            // SQLite cannot add FK via ALTER TABLE, so TableMigration is used.
             await m.alterTable(TableMigration(purchases));
           }
           if (from < 8) {
