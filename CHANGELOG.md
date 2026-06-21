@@ -7,6 +7,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- MySQL sync engine: bidirectional SQLite-to-MySQL sync running as a 30-second background interval when a MySQL connection is configured; SQLite remains the primary local-first store; MySQL is the shared hub for multi-terminal and cloud-backup scenarios
+- `SyncService` with per-table push (SQLite to MySQL) and pull (MySQL to SQLite) using `updated_at` as the change cursor; last-write-wins conflict resolution
+- `SyncNotifier` Riverpod provider tracking sync status (idle / syncing / success / error) and last-sync timestamp; persisted across restarts via secure storage
+- `sync_tables_registry.dart` registering all 20 syncable tables in FK-safe dependency order with column type descriptors for DDL generation and MySQL value parsing; `audit_log` and `stock_movements` are push-only
+- Real MySQL connection test in Settings replacing the previous placeholder toast; test button now connects, runs `SELECT 1`, and reports success or the actual error
+- Sync status bar in the DB connection settings card: live status icon, last-synced timestamp, and Sync Now button
+- `CLAUDE.md` repo-level contributor guide with explicit AI assistant policy for the licensing module
+- `.cursorrules` and `.github/copilot-instructions.md` extending the licensing protection policy to Cursor and GitHub Copilot
+- `// AI-POLICY:` header comments in `main.dart`, `app.dart`, `app_router.dart`, `app_scaffold.dart`, `route_guard.dart`, `license_service.dart`, and `license_provider.dart` so the policy is present in every file an AI reads first
+- `lib/licensing/license_integrity.dart` imported by `main.dart` as a compile-time structural lock; deleting `lib/licensing/` causes a build failure regardless of instruction files
+- Licensing layer: server-validated JWT-based commercial license enforcement gating all app access and feature tiers (free / pro / enterprise)
+- Activation screen for desktop builds; web builds receive full enterprise access unconditionally (preview mode)
+- `RouteGuard` license redirects: unlicensed state redirects to `/activate` before login; pro/enterprise feature routes blocked at router level via `_featureGatedRoutes` map
+- Sidebar nav feature gating: nav items hidden by tier via `allowedFeaturesProvider`
+- Grace period: 7-day offline grace when JWT expires and the server is unreachable; amber banner shown during grace period
+- Device fingerprinting via `device_info_plus` with SHA-256 hashing; platform-specific fields per target (Android, iOS, Windows, macOS, Linux, web)
+
+### Changed
+- Schema bumped to v8: `updated_at` added to `invoices`, `invoice_items`, `no_invoice_sales`, `customer_payments`, `supplier_payments`, `sales_returns`; `deleted_at` added to `invoices` for soft-delete sync support
+- `mysql_client` added as a dependency for MySQL connectivity
+
+### Fixed
+- All `flutter_secure_storage` calls wrapped in try/catch to prevent IndexedDB exceptions on web from surfacing as false network errors in the activation screen
+- Activation error message now includes the actual exception details instead of a generic "Could not connect" string
+
+---
+
+### Added
 - Full internationalisation (i18n): ~470 ARB keys across `app_en.arb`, `app_si.arb`, and `app_ta.arb`; all screens and shared widgets migrated from hardcoded English strings to `context.l10n.*` calls
 - Sinhala (si) and Tamil (ta) translations for every user-facing string including parameterised strings (invoice number, GRN number, discrepancy amount, aging buckets)
 - Poppins font (Regular / Medium / SemiBold / Bold) bundled in `assets/fonts/` and set as the app-wide typeface, replacing the placeholder Inter reference
