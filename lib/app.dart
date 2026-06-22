@@ -17,7 +17,7 @@ class BmsApp extends ConsumerWidget {
     final langCode = ref.watch(languageProvider);
 
     return MaterialApp.router(
-      title: 'BMS',
+      title: 'BMS - Business Management System',
       theme: AppTheme.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,

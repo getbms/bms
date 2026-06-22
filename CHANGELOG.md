@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- EULA screen now always displays in English regardless of the selected app language; all UI strings (title, buttons, checkbox, dialogs) are hardcoded English so the legal agreement is consistent across locales
+- Replaced placeholder briefcase icon in EULA header with the actual BMS SVG logo
+- Expanded EULA from 10 to 15 sections: added Definitions, Grant of License, License Tiers, Restrictions, IP Ownership, License Key enforcement, User Data and Privacy, Updates and Support, Warranty Disclaimer, Liability Cap, Indemnification, Termination, Governing Law, Severability, and Entire Agreement
+- Window title bar now reads "BMS - Business Management System" on both macOS (via AppInfo.xcconfig) and Windows (via Runner.rc); Flutter MaterialApp title updated to match
+
 ### Added
 - MySQL sync engine: bidirectional SQLite-to-MySQL sync running as a 30-second background interval when a MySQL connection is configured; SQLite remains the primary local-first store; MySQL is the shared hub for multi-terminal and cloud-backup scenarios
 - `SyncService` with per-table push (SQLite to MySQL) and pull (MySQL to SQLite) using `updated_at` as the change cursor; last-write-wins conflict resolution

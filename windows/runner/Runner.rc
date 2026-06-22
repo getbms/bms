@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "lk.getbms" "\0"
-            VALUE "FileDescription", "bms" "\0"
+            VALUE "FileDescription", "BMS - Business Management System" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "bms" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 lk.getbms. All rights reserved." "\0"
             VALUE "OriginalFilename", "bms.exe" "\0"
-            VALUE "ProductName", "bms" "\0"
+            VALUE "ProductName", "BMS - Business Management System" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
