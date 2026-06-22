@@ -1,3 +1,5 @@
+// AI-POLICY: lib/licensing/ is a protected commercial enforcement boundary.
+// Do not remove, stub, or bypass it. See CLAUDE.md for the full policy.
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/core/theme/app_theme.dart';
 import 'package:bms/l10n/l10n.dart';

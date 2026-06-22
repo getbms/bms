@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/core/theme/app_text_styles.dart';
 import 'package:bms/data/database/app_database.dart';
+import 'package:bms/data/sync/sync_service.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
 import 'package:bms/l10n/l10n.dart';
 import 'package:bms/providers/auth_provider.dart';
+import 'package:bms/providers/database_provider.dart';
 import 'package:bms/providers/settings_provider.dart';
+import 'package:bms/providers/sync_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -432,11 +435,6 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
   }
 
   Future<void> _testConnection(DbConnectionType type) async {
-    setState(() => _testing = true);
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-    setState(() => _testing = false);
-
     if (type == DbConnectionType.localSqlite) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -444,15 +442,21 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
           backgroundColor: AppColors.success,
         ),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.l10n.mysqlSyncPlanned(_hostCtrl.text.trim(), _portCtrl.text.trim()),
-          ),
-        ),
-      );
+      return;
     }
+
+    setState(() => _testing = true);
+    final service = SyncService(ref.read(appDatabaseProvider));
+    final error   = await service.testConnection(_buildSettings(type));
+    if (!mounted) return;
+    setState(() => _testing = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error == null ? context.l10n.syncConnectedSuccessfully : context.l10n.syncConnectionFailed(error)),
+        backgroundColor: error == null ? AppColors.success : AppColors.error,
+      ),
+    );
   }
 
   @override
@@ -588,8 +592,69 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
               ),
             ],
           ),
+          if (isMysql) ...[
+            const Divider(height: 28),
+            _SyncStatusBar(
+              onSyncNow: () => ref.read(syncProvider.notifier).syncNow(),
+            ),
+          ],
         ],
       ),
+    );
+  }
+}
+
+class _SyncStatusBar extends ConsumerWidget {
+  const _SyncStatusBar({required this.onSyncNow});
+  final VoidCallback onSyncNow;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final syncState = ref.watch(syncProvider);
+    final status    = syncState.status;
+    final lastSync  = syncState.lastSyncAt;
+
+    final (icon, color, label) = switch (status) {
+      SyncStatus.syncing  => (Icons.sync_rounded, AppColors.primary, context.l10n.syncSyncing),
+      SyncStatus.success  => (Icons.cloud_done_outlined, AppColors.success, context.l10n.syncSynced),
+      SyncStatus.error    => (Icons.cloud_off_outlined, AppColors.error, syncState.lastError ?? 'Sync error'),
+      SyncStatus.idle     => (Icons.cloud_sync_outlined, AppColors.textSecondary, context.l10n.syncWaitingForFirstSync),
+      SyncStatus.disabled => (Icons.cloud_off_outlined, AppColors.textDisabled, context.l10n.syncDisabled),
+    };
+
+    final lastSyncText = lastSync != null
+        ? context.l10n.syncLastSync(DateFormat('MMM d, HH:mm').format(lastSync.toLocal()))
+        : null;
+
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTextStyles.bodySmall.copyWith(color: color)),
+              if (lastSyncText != null)
+                Text(lastSyncText,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textDisabled,
+                      fontSize: 11,
+                    )),
+            ],
+          ),
+        ),
+        TextButton.icon(
+          icon: status == SyncStatus.syncing
+              ? const SizedBox(
+                  width: 14, height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.sync_rounded, size: 16),
+          label: Text(context.l10n.syncNow),
+          onPressed: status == SyncStatus.syncing ? null : onSyncNow,
+        ),
+      ],
     );
   }
 }

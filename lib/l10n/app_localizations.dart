@@ -2338,12 +2338,6 @@ abstract class AppLocalizations {
   /// **'SQLite is the active database - connection OK'**
   String get sqliteConnOk;
 
-  /// No description provided for @mysqlSyncPlanned.
-  ///
-  /// In en, this message translates to:
-  /// **'MySQL sync is planned for a future release. Settings saved for {host}:{port}.'**
-  String mysqlSyncPlanned(String host, String port);
-
   /// No description provided for @downloadNotSupportedWeb.
   ///
   /// In en, this message translates to:
@@ -2697,6 +2691,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connection settings saved'**
   String get connectionSettingsSaved;
+
+  /// No description provided for @syncConnectedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected successfully'**
+  String get syncConnectedSuccessfully;
+
+  /// No description provided for @syncConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed: {error}'**
+  String syncConnectionFailed(String error);
+
+  /// No description provided for @syncSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing...'**
+  String get syncSyncing;
+
+  /// No description provided for @syncSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Synced'**
+  String get syncSynced;
+
+  /// No description provided for @syncWaitingForFirstSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for first sync'**
+  String get syncWaitingForFirstSync;
+
+  /// No description provided for @syncDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync disabled'**
+  String get syncDisabled;
+
+  /// No description provided for @syncLastSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Last sync: {time}'**
+  String syncLastSync(String time);
+
+  /// No description provided for @syncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Now'**
+  String get syncNow;
+
+  /// No description provided for @eulaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'License & Terms of Use'**
+  String get eulaTitle;
+
+  /// No description provided for @eulaSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please read and accept the End-User License Agreement before continuing.'**
+  String get eulaSubtitle;
+
+  /// No description provided for @eulaScrollHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Scroll to the bottom to enable acceptance'**
+  String get eulaScrollHint;
+
+  /// No description provided for @eulaScrollComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'You have read the full agreement'**
+  String get eulaScrollComplete;
+
+  /// No description provided for @eulaCheckboxLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'I have read and agree to the End-User License Agreement and Terms of Use'**
+  String get eulaCheckboxLabel;
+
+  /// No description provided for @eulaAccept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept & Continue'**
+  String get eulaAccept;
+
+  /// No description provided for @eulaDecline.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get eulaDecline;
+
+  /// No description provided for @eulaDeclineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline Agreement'**
+  String get eulaDeclineTitle;
+
+  /// No description provided for @eulaDeclineMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You must accept the License Agreement to use BMS. The application will close if you decline.'**
+  String get eulaDeclineMessage;
+
+  /// No description provided for @eulaDeclineConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Close App'**
+  String get eulaDeclineConfirm;
 }
 
 class _AppLocalizationsDelegate

@@ -67,6 +67,7 @@ dependencies:
   share_plus: ^12.0.2
   image_picker: ^1.2.2
   flutter_svg: ^2.0.10+1
+  mysql_client: ^0.0.27
 
 dev_dependencies:
   flutter_test:

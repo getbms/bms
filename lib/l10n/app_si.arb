@@ -394,7 +394,6 @@
   "dbUsername": "පරිශීලක නාමය",
   "dbPassword": "මුරපදය",
   "sqliteConnOk": "SQLite ක්‍රියාත්මකයි - සම්බන්ධය හරි",
-  "mysqlSyncPlanned": "MySQL සමමුහුර්ත කිරීම ඉදිරි නිකාසයකදී. සැකසීම් {host}:{port} සඳහා සුරකිණ.",
   "downloadNotSupportedWeb": "වෙබ් පෙරදර්ශනයේ බාගත කිරීම සහාය නොකෙරේ",
   "fileSaved": "සුරකිණ: {path}",
   "exportFailed": "ගොනු කිරීම අසාර්ථකයි. නැවත උත්සාහ කරන්න.",
@@ -456,5 +455,24 @@
   "totalRevenue": "මුළු ආදායම",
 
   "invalidNumber": "වලංගු නොවන සංඛ්‍යාව",
-  "connectionSettingsSaved": "සම්බන්ධතා සැකසීම් සුරකිනා ලදී"
+  "connectionSettingsSaved": "සම්බන්ධතා සැකසීම් සුරකිනා ලදී",
+  "syncConnectedSuccessfully": "සාර්ථකව සම්බන්ධ විය",
+  "syncConnectionFailed": "සම්බන්ධතාව අසාර්ථක විය: {error}",
+  "syncSyncing": "සමමුහූර්ත කරමින්...",
+  "syncSynced": "සමමුහූර්ත කරන ලදී",
+  "syncWaitingForFirstSync": "පළමු සමමුහූර්තය සඳහා බලා සිටිමින්",
+  "syncDisabled": "සමමුහූර්තය අබල කර ඇත",
+  "syncLastSync": "අවසන් සමමුහූර්තය: {time}",
+  "syncNow": "දැන් සමමුහූර්ත කරන්න",
+
+  "eulaTitle": "බලපත්‍ර සහ භාවිත කොන්දේසි",
+  "eulaSubtitle": "දිගටම කරගෙන යාමට පෙර අවසාන-පරිශීලක බලපත්‍ර ගිවිසුම කියවා පිළිගන්න.",
+  "eulaScrollHint": "පිළිගැනීම සක්‍රිය කිරීමට පහළට අනුචලනය කරන්න",
+  "eulaScrollComplete": "ඔබ සම්පූර්ණ ගිවිසුම කියවා ඇත",
+  "eulaCheckboxLabel": "මම අවසාන-පරිශීලක බලපත්‍ර ගිවිසුම සහ භාවිත කොන්දේසි කියවා එකඟ වෙමි",
+  "eulaAccept": "පිළිගෙන දිගටම",
+  "eulaDecline": "ප්‍රතික්ෂේප කරන්න",
+  "eulaDeclineTitle": "ගිවිසුම ප්‍රතික්ෂේප කිරීම",
+  "eulaDeclineMessage": "BMS භාවිත කිරීමට ඔබ බලපත්‍ර ගිවිසුම පිළිගත යුතුය. ප්‍රතික්ෂේප කළහොත් යෙදුම වසා දමනු ලැබේ.",
+  "eulaDeclineConfirm": "යෙදුම වසන්න"
 }

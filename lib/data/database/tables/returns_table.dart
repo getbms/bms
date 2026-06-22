@@ -16,6 +16,7 @@ class SalesReturns extends Table {
   TextColumn get reason => text().nullable()();
   TextColumn get userId => text()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
   Set<Column<Object>> get primaryKey => {id};

@@ -394,7 +394,6 @@
   "dbUsername": "பயனர் பெயர்",
   "dbPassword": "கடவுச்சொல்",
   "sqliteConnOk": "SQLite செயல்படுகிறது - இணைப்பு சரி",
-  "mysqlSyncPlanned": "MySQL ஒத்திசைவு எதிர்கால வெளியீட்டில். அமைப்புகள் {host}:{port} க்கு சேமிக்கப்பட்டது.",
   "downloadNotSupportedWeb": "வலை முன்னோட்டத்தில் பதிவிறக்கம் ஆதரிக்கப்படவில்லை",
   "fileSaved": "சேமிக்கப்பட்டது: {path}",
   "exportFailed": "ஏற்றுமதி தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.",
@@ -456,5 +455,24 @@
   "totalRevenue": "மொத்த வருவாய்",
 
   "invalidNumber": "தவறான எண்",
-  "connectionSettingsSaved": "இணைப்பு அமைப்புகள் சேமிக்கப்பட்டன"
+  "connectionSettingsSaved": "இணைப்பு அமைப்புகள் சேமிக்கப்பட்டன",
+  "syncConnectedSuccessfully": "வெற்றிகரமாக இணைக்கப்பட்டது",
+  "syncConnectionFailed": "இணைப்பு தோல்வியடைந்தது: {error}",
+  "syncSyncing": "ஒத்திசைக்கிறது...",
+  "syncSynced": "ஒத்திசைக்கப்பட்டது",
+  "syncWaitingForFirstSync": "முதல் ஒத்திசைவுக்காக காத்திருக்கிறது",
+  "syncDisabled": "ஒத்திசைவு முடக்கப்பட்டது",
+  "syncLastSync": "கடைசி ஒத்திசைவு: {time}",
+  "syncNow": "இப்போது ஒத்திசை",
+
+  "eulaTitle": "உரிமம் மற்றும் பயன்பாட்டு விதிமுறைகள்",
+  "eulaSubtitle": "தொடர்வதற்கு முன் இறுதி-பயனர் உரிம ஒப்பந்தத்தை படித்து ஏற்கவும்.",
+  "eulaScrollHint": "ஏற்புத்தன்மையை இயக்க கீழே உருட்டவும்",
+  "eulaScrollComplete": "முழு ஒப்பந்தத்தையும் படித்தீர்கள்",
+  "eulaCheckboxLabel": "இறுதி-பயனர் உரிம ஒப்பந்தம் மற்றும் பயன்பாட்டு விதிமுறைகளை படித்து ஒப்புக்கொள்கிறேன்",
+  "eulaAccept": "ஏற்று தொடரவும்",
+  "eulaDecline": "மறுக்க",
+  "eulaDeclineTitle": "ஒப்பந்தத்தை மறுக்கவும்",
+  "eulaDeclineMessage": "BMS-ஐ பயன்படுத்த உரிம ஒப்பந்தத்தை ஏற்க வேண்டும். மறுத்தால் பயன்பாடு மூடப்படும்.",
+  "eulaDeclineConfirm": "பயன்பாட்டை மூடு"
 }

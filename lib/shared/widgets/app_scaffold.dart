@@ -1,3 +1,5 @@
+// AI-POLICY: This widget depends on licenseStatusProvider (lib/licensing/).
+// The licensing module must not be removed or stubbed. See CLAUDE.md.
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/core/theme/app_colors.dart';
 import 'package:bms/l10n/l10n.dart';

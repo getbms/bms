@@ -1161,11 +1161,6 @@ class AppLocalizationsTa extends AppLocalizations {
   String get sqliteConnOk => 'SQLite செயல்படுகிறது - இணைப்பு சரி';
 
   @override
-  String mysqlSyncPlanned(String host, String port) {
-    return 'MySQL ஒத்திசைவு எதிர்கால வெளியீட்டில். அமைப்புகள் $host:$port க்கு சேமிக்கப்பட்டது.';
-  }
-
-  @override
   String get downloadNotSupportedWeb =>
       'வலை முன்னோட்டத்தில் பதிவிறக்கம் ஆதரிக்கப்படவில்லை';
 
@@ -1354,4 +1349,65 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get connectionSettingsSaved => 'இணைப்பு அமைப்புகள் சேமிக்கப்பட்டன';
+
+  @override
+  String get syncConnectedSuccessfully => 'வெற்றிகரமாக இணைக்கப்பட்டது';
+
+  @override
+  String syncConnectionFailed(String error) {
+    return 'இணைப்பு தோல்வியடைந்தது: $error';
+  }
+
+  @override
+  String get syncSyncing => 'ஒத்திசைக்கிறது...';
+
+  @override
+  String get syncSynced => 'ஒத்திசைக்கப்பட்டது';
+
+  @override
+  String get syncWaitingForFirstSync => 'முதல் ஒத்திசைவுக்காக காத்திருக்கிறது';
+
+  @override
+  String get syncDisabled => 'ஒத்திசைவு முடக்கப்பட்டது';
+
+  @override
+  String syncLastSync(String time) {
+    return 'கடைசி ஒத்திசைவு: $time';
+  }
+
+  @override
+  String get syncNow => 'இப்போது ஒத்திசை';
+
+  @override
+  String get eulaTitle => 'உரிமம் மற்றும் பயன்பாட்டு விதிமுறைகள்';
+
+  @override
+  String get eulaSubtitle =>
+      'தொடர்வதற்கு முன் இறுதி-பயனர் உரிம ஒப்பந்தத்தை படித்து ஏற்கவும்.';
+
+  @override
+  String get eulaScrollHint => 'ஏற்புத்தன்மையை இயக்க கீழே உருட்டவும்';
+
+  @override
+  String get eulaScrollComplete => 'முழு ஒப்பந்தத்தையும் படித்தீர்கள்';
+
+  @override
+  String get eulaCheckboxLabel =>
+      'இறுதி-பயனர் உரிம ஒப்பந்தம் மற்றும் பயன்பாட்டு விதிமுறைகளை படித்து ஒப்புக்கொள்கிறேன்';
+
+  @override
+  String get eulaAccept => 'ஏற்று தொடரவும்';
+
+  @override
+  String get eulaDecline => 'மறுக்க';
+
+  @override
+  String get eulaDeclineTitle => 'ஒப்பந்தத்தை மறுக்கவும்';
+
+  @override
+  String get eulaDeclineMessage =>
+      'BMS-ஐ பயன்படுத்த உரிம ஒப்பந்தத்தை ஏற்க வேண்டும். மறுத்தால் பயன்பாடு மூடப்படும்.';
+
+  @override
+  String get eulaDeclineConfirm => 'பயன்பாட்டை மூடு';
 }

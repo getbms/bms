@@ -1158,11 +1158,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sqliteConnOk => 'SQLite is the active database - connection OK';
 
   @override
-  String mysqlSyncPlanned(String host, String port) {
-    return 'MySQL sync is planned for a future release. Settings saved for $host:$port.';
-  }
-
-  @override
   String get downloadNotSupportedWeb => 'Download not supported in web preview';
 
   @override
@@ -1350,4 +1345,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connectionSettingsSaved => 'Connection settings saved';
+
+  @override
+  String get syncConnectedSuccessfully => 'Connected successfully';
+
+  @override
+  String syncConnectionFailed(String error) {
+    return 'Connection failed: $error';
+  }
+
+  @override
+  String get syncSyncing => 'Syncing...';
+
+  @override
+  String get syncSynced => 'Synced';
+
+  @override
+  String get syncWaitingForFirstSync => 'Waiting for first sync';
+
+  @override
+  String get syncDisabled => 'Sync disabled';
+
+  @override
+  String syncLastSync(String time) {
+    return 'Last sync: $time';
+  }
+
+  @override
+  String get syncNow => 'Sync Now';
+
+  @override
+  String get eulaTitle => 'License & Terms of Use';
+
+  @override
+  String get eulaSubtitle =>
+      'Please read and accept the End-User License Agreement before continuing.';
+
+  @override
+  String get eulaScrollHint => 'Scroll to the bottom to enable acceptance';
+
+  @override
+  String get eulaScrollComplete => 'You have read the full agreement';
+
+  @override
+  String get eulaCheckboxLabel =>
+      'I have read and agree to the End-User License Agreement and Terms of Use';
+
+  @override
+  String get eulaAccept => 'Accept & Continue';
+
+  @override
+  String get eulaDecline => 'Decline';
+
+  @override
+  String get eulaDeclineTitle => 'Decline Agreement';
+
+  @override
+  String get eulaDeclineMessage =>
+      'You must accept the License Agreement to use BMS. The application will close if you decline.';
+
+  @override
+  String get eulaDeclineConfirm => 'Close App';
 }

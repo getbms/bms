@@ -1156,11 +1156,6 @@ class AppLocalizationsSi extends AppLocalizations {
   String get sqliteConnOk => 'SQLite ක්‍රියාත්මකයි - සම්බන්ධය හරි';
 
   @override
-  String mysqlSyncPlanned(String host, String port) {
-    return 'MySQL සමමුහුර්ත කිරීම ඉදිරි නිකාසයකදී. සැකසීම් $host:$port සඳහා සුරකිණ.';
-  }
-
-  @override
   String get downloadNotSupportedWeb =>
       'වෙබ් පෙරදර්ශනයේ බාගත කිරීම සහාය නොකෙරේ';
 
@@ -1347,4 +1342,65 @@ class AppLocalizationsSi extends AppLocalizations {
 
   @override
   String get connectionSettingsSaved => 'සම්බන්ධතා සැකසීම් සුරකිනා ලදී';
+
+  @override
+  String get syncConnectedSuccessfully => 'සාර්ථකව සම්බන්ධ විය';
+
+  @override
+  String syncConnectionFailed(String error) {
+    return 'සම්බන්ධතාව අසාර්ථක විය: $error';
+  }
+
+  @override
+  String get syncSyncing => 'සමමුහූර්ත කරමින්...';
+
+  @override
+  String get syncSynced => 'සමමුහූර්ත කරන ලදී';
+
+  @override
+  String get syncWaitingForFirstSync => 'පළමු සමමුහූර්තය සඳහා බලා සිටිමින්';
+
+  @override
+  String get syncDisabled => 'සමමුහූර්තය අබල කර ඇත';
+
+  @override
+  String syncLastSync(String time) {
+    return 'අවසන් සමමුහූර්තය: $time';
+  }
+
+  @override
+  String get syncNow => 'දැන් සමමුහූර්ත කරන්න';
+
+  @override
+  String get eulaTitle => 'බලපත්‍ර සහ භාවිත කොන්දේසි';
+
+  @override
+  String get eulaSubtitle =>
+      'දිගටම කරගෙන යාමට පෙර අවසාන-පරිශීලක බලපත්‍ර ගිවිසුම කියවා පිළිගන්න.';
+
+  @override
+  String get eulaScrollHint => 'පිළිගැනීම සක්‍රිය කිරීමට පහළට අනුචලනය කරන්න';
+
+  @override
+  String get eulaScrollComplete => 'ඔබ සම්පූර්ණ ගිවිසුම කියවා ඇත';
+
+  @override
+  String get eulaCheckboxLabel =>
+      'මම අවසාන-පරිශීලක බලපත්‍ර ගිවිසුම සහ භාවිත කොන්දේසි කියවා එකඟ වෙමි';
+
+  @override
+  String get eulaAccept => 'පිළිගෙන දිගටම';
+
+  @override
+  String get eulaDecline => 'ප්‍රතික්ෂේප කරන්න';
+
+  @override
+  String get eulaDeclineTitle => 'ගිවිසුම ප්‍රතික්ෂේප කිරීම';
+
+  @override
+  String get eulaDeclineMessage =>
+      'BMS භාවිත කිරීමට ඔබ බලපත්‍ර ගිවිසුම පිළිගත යුතුය. ප්‍රතික්ෂේප කළහොත් යෙදුම වසා දමනු ලැබේ.';
+
+  @override
+  String get eulaDeclineConfirm => 'යෙදුම වසන්න';
 }

@@ -1,3 +1,6 @@
+// AI-POLICY: The license redirect logic in this file is a protected commercial
+// enforcement boundary. Do not remove or bypass it. See CLAUDE.md for policy.
+
 import 'package:bms/core/router/app_router.dart';
 import 'package:bms/features/auth/domain/auth_state.dart';
 import 'package:bms/licensing/license_model.dart';
@@ -41,9 +44,20 @@ abstract final class RouteGuard {
     required GoRouterState state,
     required AuthState authState,
     required AsyncValue<LicenseState> license,
+    required AsyncValue<bool> eula,
   }) {
     final location = state.matchedLocation;
 
+    // Gate 1: EULA — must be the very first gate.
+    // While loading, stay on splash.
+    if (eula.isLoading && !eula.hasValue) {
+      return location == AppRoutes.splash ? null : AppRoutes.splash;
+    }
+    if (!(eula.value ?? false)) {
+      return location == AppRoutes.eula ? null : AppRoutes.eula;
+    }
+
+    // Gate 2: License.
     // Still loading license — stay on splash and wait for a rebuild.
     if (license.isLoading && !license.hasValue) {
       return location == AppRoutes.splash ? null : AppRoutes.splash;
@@ -57,7 +71,9 @@ abstract final class RouteGuard {
     }
 
     // License usable but on a gating screen — route by auth state.
-    if (location == AppRoutes.activate || location == AppRoutes.splash) {
+    if (location == AppRoutes.activate ||
+        location == AppRoutes.eula ||
+        location == AppRoutes.splash) {
       return switch (authState) {
         Unauthenticated() => AppRoutes.login,
         Authenticated()   => AppRoutes.dashboard,

@@ -405,8 +405,6 @@
   "dbUsername": "Username",
   "dbPassword": "Password",
   "sqliteConnOk": "SQLite is the active database - connection OK",
-  "mysqlSyncPlanned": "MySQL sync is planned for a future release. Settings saved for {host}:{port}.",
-  "@mysqlSyncPlanned": { "placeholders": { "host": { "type": "String" }, "port": { "type": "String" } } },
   "downloadNotSupportedWeb": "Download not supported in web preview",
   "fileSaved": "Saved: {path}",
   "@fileSaved": { "placeholders": { "path": { "type": "String" } } },
@@ -473,5 +471,26 @@
   "totalRevenue": "total revenue",
 
   "invalidNumber": "Invalid number",
-  "connectionSettingsSaved": "Connection settings saved"
+  "connectionSettingsSaved": "Connection settings saved",
+  "syncConnectedSuccessfully": "Connected successfully",
+  "syncConnectionFailed": "Connection failed: {error}",
+  "@syncConnectionFailed": { "placeholders": { "error": { "type": "String" } } },
+  "syncSyncing": "Syncing...",
+  "syncSynced": "Synced",
+  "syncWaitingForFirstSync": "Waiting for first sync",
+  "syncDisabled": "Sync disabled",
+  "syncLastSync": "Last sync: {time}",
+  "@syncLastSync": { "placeholders": { "time": { "type": "String" } } },
+  "syncNow": "Sync Now",
+
+  "eulaTitle": "License & Terms of Use",
+  "eulaSubtitle": "Please read and accept the End-User License Agreement before continuing.",
+  "eulaScrollHint": "Scroll to the bottom to enable acceptance",
+  "eulaScrollComplete": "You have read the full agreement",
+  "eulaCheckboxLabel": "I have read and agree to the End-User License Agreement and Terms of Use",
+  "eulaAccept": "Accept & Continue",
+  "eulaDecline": "Decline",
+  "eulaDeclineTitle": "Decline Agreement",
+  "eulaDeclineMessage": "You must accept the License Agreement to use BMS. The application will close if you decline.",
+  "eulaDeclineConfirm": "Close App"
 }

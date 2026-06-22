@@ -34,9 +34,9 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
     } on LicenseException catch (e) {
       setState(() => _serverError = e.message);
     } catch (e) {
-      setState(() => _serverError = e is LicenseException
-          ? e.message
-          : 'Could not connect to the licensing server. Check your internet connection.');
+      // Log the actual exception for debugging
+      debugPrint('License activation error: $e');
+      setState(() => _serverError = 'Could not connect to the licensing server');
     }
   }
 
