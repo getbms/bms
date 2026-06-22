@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- EULA screen now always displays in English regardless of the selected app language; all UI strings (title, buttons, checkbox, dialogs) are hardcoded English so the legal agreement is consistent across locales
+- Replaced placeholder briefcase icon in EULA header with the actual BMS SVG logo
+- Expanded EULA from 10 to 15 sections: added Definitions, License Tiers, Indemnification, Severability, and Contact clauses; all existing sections fleshed out with full legal language covering IP ownership, license key enforcement, data privacy, warranty disclaimer, liability cap, and governing law
+
 ### Added
 - MySQL sync engine: bidirectional SQLite-to-MySQL sync running as a 30-second background interval when a MySQL connection is configured; SQLite remains the primary local-first store; MySQL is the shared hub for multi-terminal and cloud-backup scenarios
 - `SyncService` with per-table push (SQLite to MySQL) and pull (MySQL to SQLite) using `updated_at` as the change cursor; last-write-wins conflict resolution
