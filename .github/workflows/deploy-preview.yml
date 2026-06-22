@@ -21,7 +21,7 @@ jobs:
       url: https://getbms.github.io/bms/pr-${{ github.event.number }}/
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # actions/checkout@v4.2.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # actions/checkout@v4.2.2
         with:
           persist-credentials: false
 
@@ -85,7 +85,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # actions/checkout@v4.2.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # actions/checkout@v4.2.2
         with:
           ref: gh-pages
 
