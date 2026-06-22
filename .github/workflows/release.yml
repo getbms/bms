@@ -30,7 +30,7 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath BMS-windows.zip
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # actions/upload-artifact@v7.0.1
         with:
           name: windows-build
           path: BMS-windows.zip
@@ -64,7 +64,7 @@ jobs:
           APP=$(find build/macos/Build/Products/Release -name "*.app" -maxdepth 1 | head -1)
           ditto -c -k --keepParent "$APP" BMS-macos.zip
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # actions/upload-artifact@v4
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # actions/upload-artifact@v7.0.1
         with:
           name: macos-build
           path: BMS-macos.zip
