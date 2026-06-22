@@ -10,7 +10,7 @@ void main() {
   setUp(() => db = openTestDatabase());
   tearDown(() async => db.close());
 
-  Future<void> _log({
+  Future<void> logEntry({
     String id = 'al1',
     String entityType = 'product',
     String entityId = 'p1',
@@ -32,23 +32,23 @@ void main() {
   group('AuditLogDao', () {
     group('log + getForEntity', () {
       test('entry is found by entityType and entityId', () async {
-        await _log();
+        await logEntry();
         final entries = await db.auditLogDao.getForEntity('product', 'p1');
         expect(entries.length, 1);
         expect(entries.first.action, 'create');
       });
 
       test('filters by both entityType and entityId', () async {
-        await _log(id: 'al1', entityType: 'product', entityId: 'p1');
-        await _log(id: 'al2', entityType: 'invoice', entityId: 'inv-1');
+        await logEntry();
+        await logEntry(id: 'al2', entityType: 'invoice', entityId: 'inv-1');
         final entries = await db.auditLogDao.getForEntity('product', 'p1');
         expect(entries.length, 1);
         expect(entries.first.id, 'al1');
       });
 
       test('returns entries in descending createdAt order', () async {
-        final t1 = DateTime(2024, 1, 1, 10, 0, 0);
-        final t2 = DateTime(2024, 1, 1, 11, 0, 0);
+        final t1 = DateTime(2024, 1, 1, 10);
+        final t2 = DateTime(2024, 1, 1, 11);
         await db.into(db.auditLog).insert(AuditLogCompanion(
           id: const Value('al1'),
           entityType: const Value('product'),
@@ -75,7 +75,7 @@ void main() {
     group('getAll', () {
       setUp(() async {
         for (var i = 1; i <= 5; i++) {
-          await _log(id: 'al$i', entityId: 'p$i');
+          await logEntry(id: 'al$i', entityId: 'p$i');
         }
       });
 
@@ -90,7 +90,7 @@ void main() {
       });
 
       test('filters by entityType when provided', () async {
-        await _log(id: 'inv1', entityType: 'invoice', entityId: 'inv-1');
+        await logEntry(id: 'inv1', entityType: 'invoice', entityId: 'inv-1');
         final entries = await db.auditLogDao.getAll(entityType: 'invoice');
         expect(entries.length, 1);
         expect(entries.first.entityType, 'invoice');
@@ -104,13 +104,13 @@ void main() {
 
     group('log with values', () {
       test('stores newValue as non-null when provided', () async {
-        await _log(newValue: {'name': 'Widget', 'price': 100});
+        await logEntry(newValue: {'name': 'Widget', 'price': 100});
         final entries = await db.auditLogDao.getForEntity('product', 'p1');
         expect(entries.first.newValue, isNotNull);
       });
 
       test('stores null newValue when not provided', () async {
-        await _log();
+        await logEntry();
         final entries = await db.auditLogDao.getForEntity('product', 'p1');
         expect(entries.first.newValue, isNull);
       });

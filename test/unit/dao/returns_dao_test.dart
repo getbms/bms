@@ -1,5 +1,4 @@
 import 'package:bms/data/database/app_database.dart';
-import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/test_database.dart';
@@ -10,11 +9,11 @@ void main() {
   setUp(() => db = openTestDatabase());
   tearDown(() async => db.close());
 
-  Future<Invoice> _invoice() => db.invoicesDao.insertInvoice(
+  Future<Invoice> seedInvoice() => db.invoicesDao.insertInvoice(
         InvoicesCompanion.insert(id: 'inv1', invoiceNo: 'INV-001', userId: 'u1'),
       );
 
-  Future<SalesReturn> _return(String invoiceId, {String id = 'ret1'}) =>
+  Future<SalesReturn> seedReturn(String invoiceId, {String id = 'ret1'}) =>
       db.returnsDao.insertReturnWithItems(
         SalesReturnsCompanion.insert(
           id: id,
@@ -37,7 +36,7 @@ void main() {
 
   group('ReturnsDao', () {
     setUp(() async {
-      await _invoice();
+      await seedInvoice();
       await db.inventoryDao.insertProduct(
         ProductsCompanion.insert(id: 'p1', name: 'Widget'),
       );
@@ -45,22 +44,22 @@ void main() {
 
     group('insertReturnWithItems', () {
       test('generates return number in RET-NNNNN format', () async {
-        final ret = await _return('inv1');
+        final ret = await seedReturn('inv1');
         expect(ret.returnNo, matches(RegExp(r'^RET-\d{5}$')));
       });
 
       test('first return number is RET-00001', () async {
-        final ret = await _return('inv1');
+        final ret = await seedReturn('inv1');
         expect(ret.returnNo, 'RET-00001');
       });
 
       test('second return increments to RET-00002', () async {
-        await _return('inv1', id: 'ret1');
+        await seedReturn('inv1');
 
         await db.invoicesDao.insertInvoice(InvoicesCompanion.insert(
           id: 'inv2', invoiceNo: 'INV-002', userId: 'u1',
         ));
-        final ret2 = await _return('inv2', id: 'ret2');
+        final ret2 = await seedReturn('inv2', id: 'ret2');
         expect(ret2.returnNo, 'RET-00002');
       });
 
@@ -80,11 +79,11 @@ void main() {
 
     group('getForInvoice', () {
       test('returns all returns for given invoice', () async {
-        await _return('inv1', id: 'ret1');
+        await seedReturn('inv1');
         await db.invoicesDao.insertInvoice(InvoicesCompanion.insert(
           id: 'inv2', invoiceNo: 'INV-002', userId: 'u1',
         ));
-        await _return('inv2', id: 'ret2');
+        await seedReturn('inv2', id: 'ret2');
         final list = await db.returnsDao.getForInvoice('inv1');
         expect(list.length, 1);
         expect(list.first.invoiceId, 'inv1');
@@ -98,7 +97,7 @@ void main() {
 
     group('getItemsForReturn', () {
       test('returns all items for a return', () async {
-        await _return('inv1', id: 'ret1');
+        await seedReturn('inv1');
         final items = await db.returnsDao.getItemsForReturn('ret1');
         expect(items.length, 1);
         expect(items.first.productName, 'Widget');

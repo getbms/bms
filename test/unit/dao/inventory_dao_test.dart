@@ -9,7 +9,7 @@ void main() {
     setUp(() { db = openTestDatabase(); });
     tearDown(() async { await db.close(); });
 
-    ProductsCompanion _product({
+    ProductsCompanion product({
       String id = 'p1',
       String name = 'Widget',
       String? barcode,
@@ -23,7 +23,7 @@ void main() {
         );
 
     test('insertProduct + findById: found returns product', () async {
-      await db.inventoryDao.insertProduct(_product());
+      await db.inventoryDao.insertProduct(product());
       final result = await db.inventoryDao.findById('p1');
       expect(result, isNotNull);
       expect(result?.id, 'p1');
@@ -35,7 +35,7 @@ void main() {
     });
 
     test('findByBarcode: returns correct product when barcode matches', () async {
-      await db.inventoryDao.insertProduct(_product(barcode: 'BAR123'));
+      await db.inventoryDao.insertProduct(product(barcode: 'BAR123'));
       final result = await db.inventoryDao.findByBarcode('BAR123');
       expect(result, isNotNull);
       expect(result?.barcode, 'BAR123');
@@ -51,9 +51,9 @@ void main() {
     });
 
     test('upsertStock + getStock: sets and retrieves qty', () async {
-      await db.inventoryDao.insertProduct(_product());
+      await db.inventoryDao.insertProduct(product());
       await db.inventoryDao.upsertStock(
-        StockCompanion.insert(productId: 'p1', qty: const Value(10.0)),
+        StockCompanion.insert(productId: 'p1', qty: const Value(10)),
       );
       final result = await db.inventoryDao.getStock('p1');
       expect(result, isNotNull);
@@ -61,12 +61,12 @@ void main() {
     });
 
     test('upsertStock twice updates qty', () async {
-      await db.inventoryDao.insertProduct(_product());
+      await db.inventoryDao.insertProduct(product());
       await db.inventoryDao.upsertStock(
-        StockCompanion.insert(productId: 'p1', qty: const Value(10.0)),
+        StockCompanion.insert(productId: 'p1', qty: const Value(10)),
       );
       await db.inventoryDao.upsertStock(
-        StockCompanion.insert(productId: 'p1', qty: const Value(25.0)),
+        StockCompanion.insert(productId: 'p1', qty: const Value(25)),
       );
       final result = await db.inventoryDao.getStock('p1');
       expect(result?.qty, 25.0);
@@ -77,14 +77,14 @@ void main() {
       await db.usersDao.insertUser(UsersCompanion.insert(
         id: 'u1', name: 'Test', username: 'testuser', passwordHash: 'x',
       ));
-      await db.inventoryDao.insertProduct(_product());
-      final t1 = DateTime(2024, 1, 1, 9, 0, 0);
-      final t2 = DateTime(2024, 1, 1, 10, 0, 0);
+      await db.inventoryDao.insertProduct(product());
+      final t1 = DateTime(2024, 1, 1, 9);
+      final t2 = DateTime(2024, 1, 1, 10);
       await db.into(db.stockMovements).insert(StockMovementsCompanion(
         id: const Value('m1'),
         type: const Value('in'),
         productId: const Value('p1'),
-        qty: const Value(5.0),
+        qty: const Value(5),
         userId: const Value('u1'),
         createdAt: Value(t1),
       ));
@@ -92,7 +92,7 @@ void main() {
         id: const Value('m2'),
         type: const Value('out'),
         productId: const Value('p1'),
-        qty: const Value(2.0),
+        qty: const Value(2),
         userId: const Value('u1'),
         createdAt: Value(t2),
       ));
@@ -102,16 +102,16 @@ void main() {
     });
 
     test('getLowStockProducts: returns product when qty <= reorderLevel', () async {
-      await db.inventoryDao.insertProduct(_product(id: 'p1', reorderLevel: 10));
+      await db.inventoryDao.insertProduct(product(reorderLevel: 10));
       await db.inventoryDao.upsertStock(
-        StockCompanion.insert(productId: 'p1', qty: const Value(3.0)),
+        StockCompanion.insert(productId: 'p1', qty: const Value(3)),
       );
       final result = await db.inventoryDao.getLowStockProducts();
       expect(result.any((p) => p.id == 'p1'), isTrue);
     });
 
     test('updateCostPrice: changes cost price', () async {
-      await db.inventoryDao.insertProduct(_product());
+      await db.inventoryDao.insertProduct(product());
       await db.inventoryDao.updateCostPrice('p1', 99.99);
       final result = await db.inventoryDao.findById('p1');
       expect(result?.costPrice, 99.99);

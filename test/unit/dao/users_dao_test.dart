@@ -9,7 +9,7 @@ void main() {
     setUp(() { db = openTestDatabase(); });
     tearDown(() async { await db.close(); });
 
-    UsersCompanion _user({
+    UsersCompanion seedUser({
       String id = 'u1',
       String name = 'Alice',
       String username = 'alice',
@@ -25,7 +25,7 @@ void main() {
         );
 
     test('insertUser + findByUsername: found returns user', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       final result = await db.usersDao.findByUsername('alice');
       expect(result, isNotNull);
       expect(result?.username, 'alice');
@@ -37,7 +37,7 @@ void main() {
     });
 
     test('findById: found returns user', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       final result = await db.usersDao.findById('u1');
       expect(result, isNotNull);
       expect(result?.id, 'u1');
@@ -49,9 +49,9 @@ void main() {
     });
 
     test('findAll activeOnly=true excludes inactive', () async {
-      await db.usersDao.insertUser(_user(id: 'u1', username: 'alice', isActive: true));
-      await db.usersDao.insertUser(_user(id: 'u2', username: 'bob', isActive: false));
-      final result = await db.usersDao.findAll(activeOnly: true);
+      await db.usersDao.insertUser(seedUser());
+      await db.usersDao.insertUser(seedUser(id: 'u2', username: 'bob', isActive: false));
+      final result = await db.usersDao.findAll();
       // developer seed user (active) is also present in test DB
       expect(result.any((u) => u.id == 'u1'), isTrue);
       expect(result.any((u) => u.id == 'u2'), isFalse);
@@ -59,8 +59,8 @@ void main() {
     });
 
     test('findAll activeOnly=false returns all', () async {
-      await db.usersDao.insertUser(_user(id: 'u1', username: 'alice', isActive: true));
-      await db.usersDao.insertUser(_user(id: 'u2', username: 'bob', isActive: false));
+      await db.usersDao.insertUser(seedUser());
+      await db.usersDao.insertUser(seedUser(id: 'u2', username: 'bob', isActive: false));
       final result = await db.usersDao.findAll(activeOnly: false);
       // developer seed user also present in test DB
       expect(result.any((u) => u.id == 'u1'), isTrue);
@@ -68,14 +68,14 @@ void main() {
     });
 
     test('incrementFailedAttempts increases count by 1', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       await db.usersDao.incrementFailedAttempts('u1');
       final result = await db.usersDao.findById('u1');
       expect(result?.failedAttempts, 1);
     });
 
     test('resetFailedAttempts sets count to 0', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       await db.usersDao.incrementFailedAttempts('u1');
       await db.usersDao.incrementFailedAttempts('u1');
       await db.usersDao.resetFailedAttempts('u1');
@@ -84,45 +84,45 @@ void main() {
     });
 
     test('lockAccount sets lockedUntil correctly', () async {
-      await db.usersDao.insertUser(_user());
-      final until = DateTime(2030, 1, 1);
+      await db.usersDao.insertUser(seedUser());
+      final until = DateTime(2030);
       await db.usersDao.lockAccount('u1', until);
       final result = await db.usersDao.findById('u1');
       expect(result?.lockedUntil, equals(until));
     });
 
     test('setActive(false) disables user', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       await db.usersDao.setActive('u1', active: false);
       final result = await db.usersDao.findById('u1');
       expect(result?.isActive, false);
     });
 
     test('setActive(true) re-enables user', () async {
-      await db.usersDao.insertUser(_user(isActive: false));
+      await db.usersDao.insertUser(seedUser(isActive: false));
       await db.usersDao.setActive('u1', active: true);
       final result = await db.usersDao.findById('u1');
       expect(result?.isActive, true);
     });
 
     test('recordLogin sets lastLoginAt to non-null', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       await db.usersDao.recordLogin('u1');
       final result = await db.usersDao.findById('u1');
       expect(result?.lastLoginAt, isNotNull);
     });
 
     test('recordPasswordChange sets passwordChangedAt to non-null', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       await db.usersDao.recordPasswordChange('u1');
       final result = await db.usersDao.findById('u1');
       expect(result?.passwordChangedAt, isNotNull);
     });
 
     test('updateUser changes passwordHash', () async {
-      await db.usersDao.insertUser(_user());
+      await db.usersDao.insertUser(seedUser());
       await db.usersDao.updateUser(
-        UsersCompanion(id: const Value('u1'), passwordHash: const Value('newhash')),
+        const UsersCompanion(id: Value('u1'), passwordHash: Value('newhash')),
       );
       final result = await db.usersDao.findById('u1');
       expect(result?.passwordHash, 'newhash');

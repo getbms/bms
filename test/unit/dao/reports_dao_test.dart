@@ -15,7 +15,7 @@ void main() {
   });
   tearDown(() async => db.close());
 
-  Future<void> _seedInvoice({
+  Future<void> seedInvoice({
     required String id,
     required String no,
     required double total,
@@ -32,7 +32,7 @@ void main() {
     ));
   }
 
-  Future<void> _seedProduct({
+  Future<void> seedProduct({
     String id = 'p1',
     String name = 'Widget',
     double costPrice = 50,
@@ -48,7 +48,7 @@ void main() {
 
   group('ReportsDao.getDailySales', () {
     test('returns one row per day in range even with no sales', () async {
-      final from = DateTime(2024, 6, 1);
+      final from = DateTime(2024, 6);
       final to = DateTime(2024, 6, 3);
       final rows = await reports.getDailySales(from, to);
       expect(rows.length, 3);
@@ -57,10 +57,10 @@ void main() {
 
     test('sums revenue from invoices within range', () async {
       final base = DateTime(2024, 6, 1, 12);
-      await _seedInvoice(id: 'i1', no: 'INV-001', total: 1000, date: base);
-      await _seedInvoice(id: 'i2', no: 'INV-002', total: 500, date: base);
+      await seedInvoice(id: 'i1', no: 'INV-001', total: 1000, date: base);
+      await seedInvoice(id: 'i2', no: 'INV-002', total: 500, date: base);
       final rows = await reports.getDailySales(
-        DateTime(2024, 6, 1),
+        DateTime(2024, 6),
         DateTime(2024, 6, 1, 23, 59, 59),
       );
       expect(rows.length, 1);
@@ -69,11 +69,10 @@ void main() {
 
     test('excludes voided invoices from revenue', () async {
       final base = DateTime(2024, 6, 1, 10);
-      await _seedInvoice(id: 'i1', no: 'INV-001', total: 800, date: base);
-      await _seedInvoice(
-          id: 'i2', no: 'INV-002', total: 200, date: base, status: 'void');
+      await seedInvoice(id: 'i1', no: 'INV-001', total: 800, date: base);
+      await seedInvoice(id: 'i2', no: 'INV-002', total: 200, date: base, status: 'void');
       final rows = await reports.getDailySales(
-        DateTime(2024, 6, 1),
+        DateTime(2024, 6),
         DateTime(2024, 6, 1, 23, 59, 59),
       );
       expect(rows.first.revenue, 800);
@@ -81,9 +80,9 @@ void main() {
 
     test('excludes invoices outside the date range', () async {
       final outside = DateTime(2024, 5, 31, 12);
-      await _seedInvoice(id: 'i1', no: 'INV-001', total: 999, date: outside);
+      await seedInvoice(id: 'i1', no: 'INV-001', total: 999, date: outside);
       final rows = await reports.getDailySales(
-        DateTime(2024, 6, 1),
+        DateTime(2024, 6),
         DateTime(2024, 6, 1, 23, 59, 59),
       );
       expect(rows.first.revenue, 0);
@@ -91,8 +90,8 @@ void main() {
 
     test('grossProfit equals revenue minus cogs', () async {
       final base = DateTime(2024, 6, 1, 9);
-      await _seedProduct(id: 'p1', costPrice: 30);
-      await _seedInvoice(id: 'i1', no: 'INV-001', total: 100, date: base);
+      await seedProduct(costPrice: 30);
+      await seedInvoice(id: 'i1', no: 'INV-001', total: 100, date: base);
       await db.invoicesDao.insertItems([
         InvoiceItemsCompanion.insert(
           id: 'ii1',
@@ -105,7 +104,7 @@ void main() {
         ),
       ]);
       final rows = await reports.getDailySales(
-        DateTime(2024, 6, 1),
+        DateTime(2024, 6),
         DateTime(2024, 6, 1, 23, 59, 59),
       );
       expect(rows.first.revenue, 100);
@@ -120,13 +119,13 @@ void main() {
     });
 
     test('excludes products with zero stock', () async {
-      await _seedProduct(id: 'p1', costPrice: 10);
+      await seedProduct();
       expect(await reports.getStockValuation(), isEmpty);
     });
 
     test('returns product with stock > 0 and correct value', () async {
-      await _seedProduct(id: 'p1', costPrice: 20);
-      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p1', qty: Value(5)));
+      await seedProduct(costPrice: 20);
+      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p1', qty: const Value(5)));
       final rows = await reports.getStockValuation();
       expect(rows.length, 1);
       expect(rows.first.qty, 5);
@@ -135,16 +134,16 @@ void main() {
     });
 
     test('excludes inactive products', () async {
-      await _seedProduct(id: 'p1', costPrice: 20, active: false);
-      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p1', qty: Value(5)));
+      await seedProduct(costPrice: 20, active: false);
+      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p1', qty: const Value(5)));
       expect(await reports.getStockValuation(), isEmpty);
     });
 
     test('sorts by descending value', () async {
-      await _seedProduct(id: 'p1', name: 'Cheap', costPrice: 5);
-      await _seedProduct(id: 'p2', name: 'Expensive', costPrice: 100);
-      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p1', qty: Value(10)));
-      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p2', qty: Value(3)));
+      await seedProduct(name: 'Cheap', costPrice: 5);
+      await seedProduct(id: 'p2', name: 'Expensive', costPrice: 100);
+      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p1', qty: const Value(10)));
+      await db.inventoryDao.upsertStock(StockCompanion.insert(productId: 'p2', qty: const Value(3)));
       final rows = await reports.getStockValuation();
       expect(rows.first.name, 'Expensive');
     });

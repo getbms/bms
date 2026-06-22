@@ -40,7 +40,7 @@ void main() {
     group('startOfDay', () {
       test('returns midnight of the same date', () {
         final result = BmsDateUtils.startOfDay(fixed);
-        expect(result, DateTime(2024, 3, 5, 0, 0, 0));
+        expect(result, DateTime(2024, 3, 5));
       });
     });
 
@@ -78,13 +78,13 @@ void main() {
 
     group('daysBetween', () {
       test('returns 0 for same day', () {
-        final d = DateTime(2024, 6, 1);
+        final d = DateTime(2024, 6);
         expect(BmsDateUtils.daysBetween(d, d), 0);
       });
 
       test('returns 1 for consecutive days', () {
         expect(
-          BmsDateUtils.daysBetween(DateTime(2024, 6, 1), DateTime(2024, 6, 2)),
+          BmsDateUtils.daysBetween(DateTime(2024, 6), DateTime(2024, 6, 2)),
           1,
         );
       });
@@ -97,7 +97,7 @@ void main() {
 
       test('returns negative when from is after to', () {
         expect(
-          BmsDateUtils.daysBetween(DateTime(2024, 6, 2), DateTime(2024, 6, 1)),
+          BmsDateUtils.daysBetween(DateTime(2024, 6, 2), DateTime(2024, 6)),
           -1,
         );
       });

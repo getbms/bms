@@ -10,16 +10,16 @@ void main() {
   setUp(() => db = openTestDatabase());
   tearDown(() async => db.close());
 
-  Future<String> _supplier({String id = 's1', String name = 'Acme Ltd'}) =>
+  Future<String> supplier({String id = 's1', String name = 'Acme Ltd'}) =>
       db.suppliersDao.insert(SuppliersCompanion.insert(id: id, name: name));
 
-  Future<String> _product(String id) =>
+  Future<String> product(String id) =>
       db.inventoryDao.insertProduct(ProductsCompanion.insert(id: id, name: 'Prod $id'));
 
   group('SuppliersDao', () {
     group('insert + findById', () {
       test('returns supplier when found', () async {
-        await _supplier();
+        await supplier();
         final s = await db.suppliersDao.findById('s1');
         expect(s?.name, 'Acme Ltd');
       });
@@ -31,7 +31,7 @@ void main() {
 
     group('updateBalance', () {
       test('accumulates balance correctly', () async {
-        await _supplier();
+        await supplier();
         await db.suppliersDao.updateBalance('s1', 300);
         await db.suppliersDao.updateBalance('s1', -100);
         final s = await db.suppliersDao.findById('s1');
@@ -41,8 +41,8 @@ void main() {
 
     group('insertPurchase + getPurchasesBySupplier', () {
       test('returns purchases for specific supplier', () async {
-        await _supplier(id: 's1');
-        await _supplier(id: 's2', name: 'Beta Ltd');
+        await supplier();
+        await supplier(id: 's2', name: 'Beta Ltd');
         await db.suppliersDao.insertPurchase(
           PurchasesCompanion.insert(id: 'pur1', supplierId: 's1', userId: 'u1'),
         );
@@ -57,8 +57,8 @@ void main() {
 
     group('insertPurchaseItems + getItemsForPurchase', () {
       test('returns items for purchase', () async {
-        await _supplier();
-        await _product('p1');
+        await supplier();
+        await product('p1');
         await db.suppliersDao.insertPurchase(
           PurchasesCompanion.insert(id: 'pur1', supplierId: 's1', userId: 'u1'),
         );
@@ -74,13 +74,13 @@ void main() {
 
     group('nextPoNumber', () {
       test('first PO is PO-00001', () async {
-        await _supplier();
+        await supplier();
         final num = await db.suppliersDao.nextPoNumber();
         expect(num, 'PO-00001');
       });
 
       test('increments sequentially', () async {
-        await _supplier();
+        await supplier();
         await db.suppliersDao.insertPO(PurchaseOrdersCompanion.insert(
           id: 'po1', supplierId: 's1', poNumber: 'PO-00001', createdBy: 'u1',
         ));
@@ -91,13 +91,13 @@ void main() {
 
     group('nextGrnNumber', () {
       test('first GRN is GRN-00001', () async {
-        await _supplier();
+        await supplier();
         final num = await db.suppliersDao.nextGrnNumber();
         expect(num, 'GRN-00001');
       });
 
       test('increments sequentially', () async {
-        await _supplier();
+        await supplier();
         await db.suppliersDao.insertPurchase(PurchasesCompanion.insert(
           id: 'pur1', supplierId: 's1', userId: 'u1',
           grnNumber: const Value('GRN-00001'),
@@ -109,7 +109,7 @@ void main() {
 
     group('recordPayment + getPaymentsForSupplier', () {
       test('returns payments for supplier', () async {
-        await _supplier();
+        await supplier();
         await db.suppliersDao.recordPayment(SupplierPaymentsCompanion.insert(
           id: 'sp1', supplierId: 's1', amount: 500, userId: 'u1',
         ));
@@ -121,7 +121,7 @@ void main() {
 
     group('PO operations', () {
       setUp(() async {
-        await _supplier();
+        await supplier();
         await db.suppliersDao.insertPO(PurchaseOrdersCompanion.insert(
           id: 'po1', supplierId: 's1', poNumber: 'PO-00001', createdBy: 'u1',
         ));
@@ -133,7 +133,7 @@ void main() {
       });
 
       test('getPOsBySupplier returns only that suppliers POs', () async {
-        await _supplier(id: 's2', name: 'Beta');
+        await supplier(id: 's2', name: 'Beta');
         await db.suppliersDao.insertPO(PurchaseOrdersCompanion.insert(
           id: 'po2', supplierId: 's2', poNumber: 'PO-00002', createdBy: 'u1',
         ));
@@ -149,7 +149,7 @@ void main() {
       });
 
       test('getPOItems returns items for PO', () async {
-        await _product('p1');
+        await product('p1');
         await db.suppliersDao.insertPOItems([
           PurchaseOrderItemsCompanion.insert(
             id: 'poi1', poId: 'po1', productId: 'p1', orderedQty: 5, costPrice: 100,

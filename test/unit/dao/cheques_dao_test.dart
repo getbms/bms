@@ -10,7 +10,7 @@ void main() {
   setUp(() => db = openTestDatabase());
   tearDown(() async => db.close());
 
-  Future<String> _cheque({
+  Future<String> cheque({
     String id = 'chq1',
     String status = 'pending',
     required DateTime dueDate,
@@ -30,7 +30,7 @@ void main() {
   group('ChequesDao', () {
     group('insert + findById', () {
       test('returns cheque when found', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 5)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 5)));
         final chq = await db.chequesDao.findById('chq1');
         expect(chq?.partyName, 'Alice');
       });
@@ -42,19 +42,19 @@ void main() {
 
     group('getDueWithinDays', () {
       test('returns pending cheque due within window', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 3)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 3)));
         final list = await db.chequesDao.getDueWithinDays(7);
         expect(list.length, 1);
       });
 
       test('excludes cheques due after window', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 10)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 10)));
         final list = await db.chequesDao.getDueWithinDays(7);
         expect(list, isEmpty);
       });
 
       test('excludes non-pending cheques', () async {
-        await _cheque(
+        await cheque(
           dueDate: DateTime.now().add(const Duration(days: 3)),
           status: 'cleared',
         );
@@ -65,13 +65,13 @@ void main() {
 
     group('getOverdueCheques', () {
       test('returns pending cheque past due date', () async {
-        await _cheque(dueDate: DateTime.now().subtract(const Duration(days: 2)));
+        await cheque(dueDate: DateTime.now().subtract(const Duration(days: 2)));
         final list = await db.chequesDao.getOverdueCheques();
         expect(list.length, 1);
       });
 
       test('excludes cleared cheques', () async {
-        await _cheque(
+        await cheque(
           dueDate: DateTime.now().subtract(const Duration(days: 2)),
           status: 'cleared',
         );
@@ -82,7 +82,7 @@ void main() {
 
     group('deposit', () {
       test('sets status to deposited and records depositDate', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
         final depositDate = DateTime.now();
         await db.chequesDao.deposit('chq1', depositDate: depositDate);
         final chq = await db.chequesDao.findById('chq1');
@@ -93,7 +93,7 @@ void main() {
 
     group('bounce', () {
       test('sets status to bounced with reason', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
         await db.chequesDao.bounce('chq1',
             bounceDate: DateTime.now(), reason: 'Insufficient funds');
         final chq = await db.chequesDao.findById('chq1');
@@ -104,7 +104,7 @@ void main() {
 
     group('represent', () {
       test('increments representationCount and resets to pending', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
         await db.chequesDao.bounce('chq1',
             bounceDate: DateTime.now(), reason: 'NSF');
         await db.chequesDao.represent('chq1');
@@ -117,7 +117,7 @@ void main() {
 
     group('clear', () {
       test('sets status to cleared', () async {
-        await _cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
+        await cheque(dueDate: DateTime.now().add(const Duration(days: 1)));
         await db.chequesDao.clear('chq1');
         final chq = await db.chequesDao.findById('chq1');
         expect(chq?.status, 'cleared');

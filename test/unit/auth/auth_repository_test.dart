@@ -3,17 +3,12 @@ import 'package:bms/core/constants/app_constants.dart';
 import 'package:bms/core/errors/app_exception.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/repositories/auth_repository.dart';
-import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/mocks.dart';
 
-// Pre-computed hash for 'password123' with logRounds:4 (fast for tests).
-// Regenerate with: BCrypt.hashpw('password123', BCrypt.gensalt(logRounds: 4))
-const _hash = r'$2a$04$AAAAAAAAAAAAAAAAAAAAAOBV6z4LDYLf2wOmgIfUBYGSoR1e9G1L6';
-
-User _user({
+User user({
   String id = 'user-1',
   String username = 'alice',
   bool isActive = true,
@@ -30,8 +25,6 @@ User _user({
       isActive: isActive,
       failedAttempts: failedAttempts,
       lockedUntil: lockedUntil,
-      lastLoginAt: null,
-      passwordChangedAt: null,
       createdAt: DateTime(2024),
       updatedAt: DateTime(2024),
     );
@@ -50,7 +43,6 @@ void main() {
     storage = MockSessionStorage();
     repo = AuthRepository(usersDao: dao, sessionStorage: storage);
 
-    // Default stubs - individual tests override as needed.
     when(() => dao.incrementFailedAttempts(any())).thenAnswer((_) async {});
     when(() => dao.lockAccount(any(), any())).thenAnswer((_) async {});
     when(() => dao.resetFailedAttempts(any())).thenAnswer((_) async {});
@@ -63,8 +55,8 @@ void main() {
   group('AuthRepository', () {
     group('login', () {
       test('returns UserModel and writes session on valid credentials', () async {
-        final user = _user();
-        when(() => dao.findByUsername('alice')).thenAnswer((_) async => user);
+        final u = user();
+        when(() => dao.findByUsername('alice')).thenAnswer((_) async => u);
 
         final model = await repo.login('alice', 'password123');
 
@@ -81,8 +73,8 @@ void main() {
       });
 
       test('trims and lowercases username before lookup', () async {
-        final user = _user(username: 'alice');
-        when(() => dao.findByUsername('alice')).thenAnswer((_) async => user);
+        final u = user();
+        when(() => dao.findByUsername('alice')).thenAnswer((_) async => u);
 
         await repo.login('  ALICE  ', 'password123');
 
@@ -106,7 +98,7 @@ void main() {
 
       test('throws unauthorized on inactive account without incrementing failures', () async {
         when(() => dao.findByUsername('alice'))
-            .thenAnswer((_) async => _user(isActive: false));
+            .thenAnswer((_) async => user(isActive: false));
 
         await expectLater(
           () => repo.login('alice', 'password123'),
@@ -119,7 +111,7 @@ void main() {
       });
 
       test('throws accountLocked when lockedUntil is in the future', () async {
-        final locked = _user(lockedUntil: DateTime.now().add(const Duration(hours: 1)));
+        final locked = user(lockedUntil: DateTime.now().add(const Duration(hours: 1)));
         when(() => dao.findByUsername('alice')).thenAnswer((_) async => locked);
 
         await expectLater(
@@ -131,7 +123,7 @@ void main() {
       });
 
       test('allows login when lockedUntil is in the past', () async {
-        final expired = _user(lockedUntil: DateTime.now().subtract(const Duration(minutes: 1)));
+        final expired = user(lockedUntil: DateTime.now().subtract(const Duration(minutes: 1)));
         when(() => dao.findByUsername('alice')).thenAnswer((_) async => expired);
 
         final model = await repo.login('alice', 'password123');
@@ -139,7 +131,7 @@ void main() {
       });
 
       test('increments failed attempts and throws invalidCredentials on wrong password', () async {
-        when(() => dao.findByUsername('alice')).thenAnswer((_) async => _user(failedAttempts: 0));
+        when(() => dao.findByUsername('alice')).thenAnswer((_) async => user());
 
         await expectLater(
           () => repo.login('alice', 'wrong'),
@@ -153,7 +145,7 @@ void main() {
       });
 
       test('locks account when failed attempts reach the threshold', () async {
-        final almostLocked = _user(failedAttempts: AppConstants.maxLoginAttempts - 1);
+        final almostLocked = user(failedAttempts: AppConstants.maxLoginAttempts - 1);
         when(() => dao.findByUsername('alice')).thenAnswer((_) async => almostLocked);
 
         await expectLater(
@@ -180,7 +172,7 @@ void main() {
       test('returns UserModel when session and user are valid', () async {
         when(() => storage.read(key: AppConstants.sessionKey))
             .thenAnswer((_) async => 'user-1');
-        when(() => dao.findById('user-1')).thenAnswer((_) async => _user());
+        when(() => dao.findById('user-1')).thenAnswer((_) async => user());
 
         final model = await repo.restoreSession();
 
@@ -191,7 +183,7 @@ void main() {
         when(() => storage.read(key: AppConstants.sessionKey))
             .thenAnswer((_) async => 'user-1');
         when(() => dao.findById('user-1'))
-            .thenAnswer((_) async => _user(isActive: false));
+            .thenAnswer((_) async => user(isActive: false));
 
         final result = await repo.restoreSession();
 
@@ -226,7 +218,7 @@ void main() {
       });
 
       test('throws invalidCredentials when current password is wrong', () async {
-        when(() => dao.findById('user-1')).thenAnswer((_) async => _user());
+        when(() => dao.findById('user-1')).thenAnswer((_) async => user());
 
         await expectLater(
           () => repo.changePassword(
@@ -241,7 +233,7 @@ void main() {
       });
 
       test('updates hash and records change on valid current password', () async {
-        when(() => dao.findById('user-1')).thenAnswer((_) async => _user());
+        when(() => dao.findById('user-1')).thenAnswer((_) async => user());
         when(() => dao.updateUser(any())).thenAnswer((_) async => true);
         when(() => dao.recordPasswordChange(any())).thenAnswer((_) async {});
 

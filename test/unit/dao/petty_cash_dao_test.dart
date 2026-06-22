@@ -10,7 +10,7 @@ void main() {
   setUp(() => db = openTestDatabase());
   tearDown(() async => db.close());
 
-  Future<String> _entry({
+  Future<String> entry({
     String id = 'pc1',
     String type = 'expense',
     String status = 'pending',
@@ -68,23 +68,23 @@ void main() {
 
     group('getPendingApprovals', () {
       test('returns only pending entries', () async {
-        await _entry(id: 'pc1', status: 'pending');
-        await _entry(id: 'pc2', status: 'approved');
-        await _entry(id: 'pc3', status: 'rejected');
+        await entry();
+        await entry(id: 'pc2', status: 'approved');
+        await entry(id: 'pc3', status: 'rejected');
         final list = await db.pettyCashDao.getPendingApprovals();
         expect(list.length, 1);
         expect(list.first.id, 'pc1');
       });
 
       test('returns empty when no pending entries', () async {
-        await _entry(id: 'pc1', status: 'approved');
+        await entry(status: 'approved');
         expect(await db.pettyCashDao.getPendingApprovals(), isEmpty);
       });
     });
 
     group('approve', () {
       test('changes status to approved and records approvedBy', () async {
-        await _entry();
+        await entry();
         await db.pettyCashDao.approve('pc1', 'manager');
         final pending = await db.pettyCashDao.getPendingApprovals();
         expect(pending, isEmpty);
@@ -99,7 +99,7 @@ void main() {
 
     group('reject', () {
       test('changes status to rejected', () async {
-        await _entry();
+        await entry();
         await db.pettyCashDao.reject('pc1', notes: 'Duplicate');
         final all = await db.pettyCashDao
             .getByDateRange(DateTime(2000), DateTime(2100));
@@ -108,7 +108,7 @@ void main() {
       });
 
       test('reject without notes sets null approvalNotes', () async {
-        await _entry();
+        await entry();
         await db.pettyCashDao.reject('pc1');
         final all = await db.pettyCashDao
             .getByDateRange(DateTime(2000), DateTime(2100));

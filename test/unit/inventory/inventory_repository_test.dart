@@ -1,13 +1,12 @@
 import 'package:bms/core/errors/app_exception.dart';
 import 'package:bms/data/database/app_database.dart';
 import 'package:bms/data/repositories/inventory_repository.dart';
-import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/mocks.dart';
 
-StockLevel _stock({double qty = 50}) => StockLevel(
+StockLevel stock({double qty = 50}) => StockLevel(
       productId: 'prod-1',
       qty: qty,
       updatedAt: DateTime(2024),
@@ -21,8 +20,6 @@ void main() {
   setUpAll(() {
     registerFallbackValue(const StockCompanion());
     registerFallbackValue(const ProductsCompanion());
-    // StockMovementsCompanion.insert requires all non-default columns.
-    // Using the default companion (all absent) as fallback is enough for any().
     registerFallbackValue(const StockMovementsCompanion());
   });
 
@@ -32,8 +29,7 @@ void main() {
     repo = InventoryRepository(inventoryDao: inventoryDao, auditLogDao: auditLogDao);
   });
 
-  // Helper to stub auditLogDao.log with newValue matcher.
-  void _stubAuditLog() {
+  void stubAuditLog() {
     when(() => auditLogDao.log(
           id: any(named: 'id'),
           entityType: any(named: 'entityType'),
@@ -48,7 +44,7 @@ void main() {
   group('InventoryRepository', () {
     group('adjustStock', () {
       test('throws BusinessRuleException when resulting qty would go negative', () async {
-        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => _stock(qty: 10));
+        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => stock(qty: 10));
 
         await expectLater(
           () => repo.adjustStock(
@@ -66,7 +62,7 @@ void main() {
       });
 
       test('records an "out" movement for negative delta', () async {
-        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => _stock(qty: 50));
+        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => stock());
         when(() => inventoryDao.upsertStock(any())).thenAnswer((_) async {});
         when(() => inventoryDao.recordMovement(any())).thenAnswer((_) async {});
 
@@ -85,7 +81,7 @@ void main() {
       });
 
       test('records an "in" movement for positive delta', () async {
-        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => _stock(qty: 50));
+        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => stock());
         when(() => inventoryDao.upsertStock(any())).thenAnswer((_) async {});
         when(() => inventoryDao.recordMovement(any())).thenAnswer((_) async {});
 
@@ -122,7 +118,7 @@ void main() {
       });
 
       test('respects custom movementType when provided', () async {
-        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => _stock());
+        when(() => inventoryDao.getStock('prod-1')).thenAnswer((_) async => stock());
         when(() => inventoryDao.upsertStock(any())).thenAnswer((_) async {});
         when(() => inventoryDao.recordMovement(any())).thenAnswer((_) async {});
 
@@ -145,13 +141,13 @@ void main() {
       test('writes audit log with entityType "product" and action "create"', () async {
         when(() => inventoryDao.insertProduct(any())).thenAnswer((_) async => 'prod-new');
         when(() => inventoryDao.upsertStock(any())).thenAnswer((_) async {});
-        _stubAuditLog();
+        stubAuditLog();
 
         await repo.createProduct(
           name: 'Widget',
           unitType: 'pcs',
-          costPrice: 50.0,
-          sellPrice: 80.0,
+          costPrice: 50,
+          sellPrice: 80,
           userId: 'u1',
           userName: 'Admin',
         );
@@ -173,13 +169,13 @@ void main() {
       test('returns a non-empty product id', () async {
         when(() => inventoryDao.insertProduct(any())).thenAnswer((_) async => 'prod-new');
         when(() => inventoryDao.upsertStock(any())).thenAnswer((_) async {});
-        _stubAuditLog();
+        stubAuditLog();
 
         final id = await repo.createProduct(
           name: 'Widget',
           unitType: 'pcs',
-          costPrice: 50.0,
-          sellPrice: 80.0,
+          costPrice: 50,
+          sellPrice: 80,
           userId: 'u1',
           userName: 'Admin',
         );

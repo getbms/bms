@@ -23,48 +23,48 @@ void main() {
 
     group('isUsable', () {
       test('true when status is active', () {
-        final state = LicenseState(
+        const state = LicenseState(
           status: LicenseStatus.active,
           tier: LicenseTier.pro,
-          features: const {'invoices'},
+          features: {'invoices'},
         );
         expect(state.isUsable, isTrue);
       });
 
       test('true when status is grace', () {
-        final state = LicenseState(
+        const state = LicenseState(
           status: LicenseStatus.grace,
           tier: LicenseTier.pro,
-          features: const {},
-          gracePeriodRemaining: const Duration(days: 3),
+          features: {},
+          gracePeriodRemaining: Duration(days: 3),
         );
         expect(state.isUsable, isTrue);
       });
 
       test('false when status is expired', () {
-        final state = LicenseState(
+        const state = LicenseState(
           status: LicenseStatus.expired,
           tier: LicenseTier.pro,
-          features: const {},
+          features: {},
         );
         expect(state.isUsable, isFalse);
       });
 
       test('false when status is checking', () {
-        final state = LicenseState(
+        const state = LicenseState(
           status: LicenseStatus.checking,
           tier: LicenseTier.free,
-          features: const {},
+          features: {},
         );
         expect(state.isUsable, isFalse);
       });
     });
 
     group('hasFeature', () {
-      final state = LicenseState(
+      const state = LicenseState(
         status: LicenseStatus.active,
         tier: LicenseTier.enterprise,
-        features: const {'invoices', 'reports', 'sync'},
+        features: {'invoices', 'reports', 'sync'},
       );
 
       test('returns true when feature is present', () {
@@ -80,10 +80,10 @@ void main() {
 
     group('expiresAt and gracePeriodRemaining', () {
       test('are null by default', () {
-        final state = LicenseState(
+        const state = LicenseState(
           status: LicenseStatus.active,
           tier: LicenseTier.pro,
-          features: const {},
+          features: {},
         );
         expect(state.expiresAt, isNull);
         expect(state.gracePeriodRemaining, isNull);
