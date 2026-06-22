@@ -182,34 +182,21 @@ class _SplashScreenState extends State<SplashScreen>
 class _LogoBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 110,
-      height: 110,
+    return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF2B6FD4), Color(0xFF1A47A0)],
-        ),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2B6FD4).withAlpha(100),
-            blurRadius: 40,
-            spreadRadius: 8,
+            color: const Color(0xFF1565C0).withAlpha(130),
+            blurRadius: 48,
+            spreadRadius: 10,
           ),
         ],
-        border: Border.all(
-          color: const Color(0xFF4A9EFF).withAlpha(60),
-          width: 1.5,
-        ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: SvgPicture.asset(
-          'assets/images/bms_logo.svg',
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-        ),
+      child: SvgPicture.asset(
+        'assets/images/bms_logo.svg',
+        width: 110,
+        height: 110,
       ),
     );
   }
