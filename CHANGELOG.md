@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - EULA screen now always displays in English regardless of the selected app language; all UI strings (title, buttons, checkbox, dialogs) are hardcoded English so the legal agreement is consistent across locales
 - Replaced placeholder briefcase icon in EULA header with the actual BMS SVG logo
-- Expanded EULA from 10 to 15 sections: added Definitions, License Tiers, Indemnification, Severability, and Contact clauses; all existing sections fleshed out with full legal language covering IP ownership, license key enforcement, data privacy, warranty disclaimer, liability cap, and governing law
+- Expanded EULA from 10 to 15 sections: added Definitions, Grant of License, License Tiers, Restrictions, IP Ownership, License Key enforcement, User Data and Privacy, Updates and Support, Warranty Disclaimer, Liability Cap, Indemnification, Termination, Governing Law, Severability, and Entire Agreement
 - Window title bar now reads "BMS - Business Management System" on both macOS (via AppInfo.xcconfig) and Windows (via Runner.rc); Flutter MaterialApp title updated to match
 
 ### Added
