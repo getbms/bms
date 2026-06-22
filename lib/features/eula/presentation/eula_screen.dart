@@ -93,7 +93,7 @@ All trademarks, service marks, trade names, and logos associated with BMS are th
 
 7.1 You retain full ownership of all User Data. Licensor makes no claim to your business data.
 
-7.2 The Software stores User Data locally on your device using an encrypted SQLite database. Optional MySQL sync is available for multi-device deployments and operates entirely within your own infrastructure.
+7.2 The Software stores User Data locally on your device using a SQLite database. Data is stored unencrypted at the database level. Optional MySQL sync is available for multi-device deployments and operates entirely within your own infrastructure.
 
 7.3 The Software communicates with Licensor's servers solely for the purpose of license key activation and validation. No User Data, business records, customer information, or personally identifiable information is transmitted to Licensor.
 
@@ -379,12 +379,14 @@ class _ScrollHint extends StatelessWidget {
         children: [
           Icon(Icons.check_circle, color: AppColors.success, size: 16),
           SizedBox(width: 6),
-          Text(
-            'You have read the full agreement',
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              fontSize: 12,
-              color: AppColors.success,
+          Flexible(
+            child: Text(
+              'You have read the full agreement',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 12,
+                color: AppColors.success,
+              ),
             ),
           ),
         ],
@@ -394,12 +396,14 @@ class _ScrollHint extends StatelessWidget {
       children: [
         Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary, size: 16),
         SizedBox(width: 6),
-        Text(
-          'Scroll to the bottom to enable acceptance',
-          style: TextStyle(
-            fontFamily: 'Poppins',
-            fontSize: 12,
-            color: AppColors.textSecondary,
+        Flexible(
+          child: Text(
+            'Scroll to the bottom to enable acceptance',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 12,
+              color: AppColors.textSecondary,
+            ),
           ),
         ),
       ],
