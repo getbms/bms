@@ -40,8 +40,8 @@ dependencies:
   mobile_scanner: ^7.2.0
 
   # PDF generation and printing
-  pdf: ^3.11.0
-  printing: ^5.13.1
+  pdf: ^3.13.0
+  printing: ^5.15.0
 
   # Local notifications (cheque reminders, debtor follow-ups)
   flutter_local_notifications: ^22.0.1
