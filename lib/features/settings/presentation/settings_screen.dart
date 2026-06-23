@@ -183,7 +183,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _importDb(BuildContext context, WidgetRef ref) async {
-    // Open file picker first — avoids the dialog→NSOpenPanel transition
+    // Open file picker first - avoids the dialog->NSOpenPanel transition
     // that causes the macOS window to go black and become unresponsive.
     final picked = await ref.read(settingsActionsProvider).pickDatabaseJsonFile();
     if (picked == null || !context.mounted) return;
@@ -192,7 +192,7 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(context.l10n.importDatabase),
-        content: Text('${context.l10n.importDatabaseMessage}\n\nFile: ${picked.name}'),
+        content: Text('${context.l10n.importDatabaseMessage}\n\n${context.l10n.fileLabel}: ${picked.name}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
           ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.importDatabaseConfirm)),

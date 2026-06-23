@@ -1116,6 +1116,9 @@ class AppLocalizationsSi extends AppLocalizations {
   String get importDatabaseConfirm => 'ආයාත කරන්න';
 
   @override
+  String get fileLabel => 'ගොනුව';
+
+  @override
   String get importDatabaseMessage =>
       'සටහන් ගොනුවෙන් ඇතුළු කෙරේ. පවතින සටහන් නොවෙනස්. ඉදිරියට යන්නද?';
 

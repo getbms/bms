@@ -392,6 +392,7 @@
   "skipped": "Skipped:",
   "errors": "Errors:",
   "importDatabaseConfirm": "Import",
+  "fileLabel": "File",
   "importDatabaseMessage": "This will add records from the backup file. Existing records will not be overwritten. Continue?",
   "dbBackend": "Backend",
   "dbSqliteLocal": "SQLite (local)",

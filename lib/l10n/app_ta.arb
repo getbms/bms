@@ -381,6 +381,7 @@
   "skipped": "தவிர்க்கப்பட்டது:",
   "errors": "பிழைகள்:",
   "importDatabaseConfirm": "இறக்குமதி",
+  "fileLabel": "கோப்பு",
   "importDatabaseMessage": "காப்பு கோப்பில் இருந்து பதிவுகள் சேர்க்கப்படும். தற்போதைய பதிவுகள் மாற்றப்படாது. தொடரவா?",
   "dbBackend": "நுட்பம்",
   "dbSqliteLocal": "SQLite (உள்ளூர்)",

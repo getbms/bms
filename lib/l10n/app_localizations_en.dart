@@ -1118,6 +1118,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importDatabaseConfirm => 'Import';
 
   @override
+  String get fileLabel => 'File';
+
+  @override
   String get importDatabaseMessage =>
       'This will add records from the backup file. Existing records will not be overwritten. Continue?';
 
