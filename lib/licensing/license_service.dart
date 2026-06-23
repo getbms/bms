@@ -141,19 +141,14 @@ class LicenseService {
       throw LicenseException(msg, code);
     }
 
-    final dataObj = body['data'];
-    if (dataObj is! Map<String, dynamic>) {
-      throw const LicenseException('Invalid response from licensing server', 'INVALID_RESPONSE');
-    }
-    final data = dataObj;
-    final jwt  = data['token'] as String?;
+    final jwt = body['token'] as String?;
     if (jwt == null) {
       throw const LicenseException('Invalid response from licensing server', 'INVALID_RESPONSE');
     }
     await _persist(jwt);
 
-    final tier     = _parseTier(data['tier'] as String? ?? 'free');
-    final features = _parseFeatures(data['features']);
+    final tier     = _parseTier(body['tier'] as String? ?? 'free');
+    final features = _parseFeatures(body['features']);
     return LicenseState(
       status: LicenseStatus.active,
       tier: tier,
@@ -190,13 +185,9 @@ class LicenseService {
       if (resp.statusCode == 200) {
         if (decoded is Map<String, dynamic>) {
           final body = decoded;
-          final dataObj = body['data'];
-          if (dataObj is Map<String, dynamic>) {
-            final data = dataObj;
-            final newJwt = data['token'] as String?;
-            if (newJwt != null) {
-              await _persist(newJwt);
-            }
+          final newJwt = body['token'] as String?;
+          if (newJwt != null) {
+            await _persist(newJwt);
           }
         }
         return loadCachedState();
