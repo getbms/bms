@@ -183,11 +183,16 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _importDb(BuildContext context, WidgetRef ref) async {
+    // Open file picker first — avoids the dialog→NSOpenPanel transition
+    // that causes the macOS window to go black and become unresponsive.
+    final picked = await ref.read(settingsActionsProvider).pickDatabaseJsonFile();
+    if (picked == null || !context.mounted) return;
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         title: Text(context.l10n.importDatabase),
-        content: Text(context.l10n.importDatabaseMessage),
+        content: Text('${context.l10n.importDatabaseMessage}\n\nFile: ${picked.name}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
           ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.importDatabaseConfirm)),
@@ -195,11 +200,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (confirmed != true || !context.mounted) return;
-    // Give Flutter one frame to repaint before NSOpenPanel captures focus,
-    // otherwise the macOS window goes black.
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (!context.mounted) return;
-    final msg = await ref.read(settingsActionsProvider).importDatabaseFromJson();
+    final msg = await ref.read(settingsActionsProvider).importDatabaseFromJson(picked);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }

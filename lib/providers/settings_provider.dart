@@ -337,15 +337,18 @@ class SettingsActions {
     return Uint8List.fromList(utf8.encode(const JsonEncoder.withIndent('  ').convert(payload)));
   }
 
-  Future<String> importDatabaseFromJson() async {
+  Future<PlatformFile?> pickDatabaseJsonFile() async {
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['json'],
       withData: true,
     );
-    if (result == null || result.files.isEmpty) return 'Cancelled';
+    if (result == null || result.files.isEmpty) return null;
+    return result.files.first;
+  }
 
-    final bytes = await _readPickedFile(result.files.first);
+  Future<String> importDatabaseFromJson(PlatformFile picked) async {
+    final bytes = await _readPickedFile(picked);
     if (bytes == null) return 'Could not read file';
 
     try {
@@ -397,7 +400,7 @@ class SettingsActions {
         action: 'create',
         userId: _actorId,
         userName: _actorName,
-        newValue: {'format': 'json', 'source': result.files.first.name},
+        newValue: {'format': 'json', 'source': picked.name},
       );
 
       return 'Import complete';

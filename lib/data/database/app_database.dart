@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bcrypt/bcrypt.dart';
 import 'package:bms/data/database/daos/audit_log_dao.dart';
 import 'package:bms/data/database/daos/cheques_dao.dart';
@@ -19,8 +21,11 @@ import 'package:bms/data/database/tables/returns_table.dart';
 import 'package:bms/data/database/tables/suppliers_table.dart';
 import 'package:bms/data/database/tables/users_table.dart';
 import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 part 'app_database.g.dart';
@@ -164,13 +169,18 @@ class AppDatabase extends _$AppDatabase {
 }
 
 QueryExecutor _openConnection() {
-  return driftDatabase(
-    name: 'bms_local',
-    web: kIsWeb
-        ? DriftWebOptions(
-            sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-            driftWorker: Uri.parse('drift_worker.js'),
-          )
-        : null,
-  );
+  if (kIsWeb) {
+    return driftDatabase(
+      name: 'bms_local',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+      ),
+    );
+  }
+  return LazyDatabase(() async {
+    final dir = await getApplicationSupportDirectory();
+    final file = File(p.join(dir.path, 'bms_local.sqlite'));
+    return NativeDatabase.createInBackground(file);
+  });
 }
