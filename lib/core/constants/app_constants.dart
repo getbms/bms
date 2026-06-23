@@ -14,9 +14,6 @@ abstract final class AppConstants {
   // Low stock fallback threshold (products carry their own reorder_level)
   static const int defaultReorderLevel = 10;
 
-  // EULA acceptance (stored as ISO-8601 acceptance date)
-  static const String eulaStorageKey = 'bms.eula.accepted';
-
   // Cheque reminder schedule (days before due date)
   static const List<int> chequeReminderDaysBefore = [1, 3, 7];
 

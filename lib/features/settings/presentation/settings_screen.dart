@@ -195,6 +195,10 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (confirmed != true || !context.mounted) return;
+    // Give Flutter one frame to repaint before NSOpenPanel captures focus,
+    // otherwise the macOS window goes black.
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!context.mounted) return;
     final msg = await ref.read(settingsActionsProvider).importDatabaseFromJson();
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -468,8 +472,9 @@ class _DbConnectionTileState extends ConsumerState<_DbConnectionTile> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

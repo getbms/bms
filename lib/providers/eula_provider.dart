@@ -1,19 +1,17 @@
-import 'package:bms/core/constants/app_constants.dart';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:path_provider/path_provider.dart';
 
+// EULA acceptance is not sensitive data - store as a plain marker file rather
+// than in the Keychain to avoid macOS password prompts on every launch.
 class EulaNotifier extends AsyncNotifier<bool> {
-  static const _storage = FlutterSecureStorage();
-
   @override
   Future<bool> build() async {
-    // On web we skip the EULA gate (demo/preview builds).
     if (kIsWeb) return true;
-
     try {
-      final value = await _storage.read(key: AppConstants.eulaStorageKey);
-      return value != null;
+      return (await _markerFile()).existsSync();
     } catch (_) {
       return false;
     }
@@ -21,12 +19,17 @@ class EulaNotifier extends AsyncNotifier<bool> {
 
   Future<void> accept() async {
     try {
-      await _storage.write(
-        key: AppConstants.eulaStorageKey,
-        value: DateTime.now().toUtc().toIso8601String(),
-      );
-    } catch (_) {}
+      final file = await _markerFile();
+      await file.writeAsString(DateTime.now().toUtc().toIso8601String());
+    } catch (_) {
+      return;
+    }
     state = const AsyncData(true);
+  }
+
+  static Future<File> _markerFile() async {
+    final dir = await getApplicationSupportDirectory();
+    return File('${dir.path}/.eula_accepted');
   }
 }
 
