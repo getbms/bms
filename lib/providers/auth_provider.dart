@@ -11,7 +11,7 @@ part 'auth_provider.g.dart';
 FlutterSecureStorage secureStorage(Ref ref) => const FlutterSecureStorage(
       aOptions: AndroidOptions(encryptedSharedPreferences: true),
       iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
-      mOptions: MacOsOptions(useDataProtectionKeyChain: false),
+      mOptions: MacOsOptions(useDataProtectionKeyChain: false, groupId: 'lk.getbms.bms'),
     );
 
 @Riverpod(keepAlive: true)

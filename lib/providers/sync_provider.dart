@@ -57,7 +57,9 @@ class SyncState {
 
 class SyncNotifier extends Notifier<SyncState> {
   Timer? _timer;
-  static const _storage = FlutterSecureStorage();
+  static const _storage = FlutterSecureStorage(
+    mOptions: MacOsOptions(groupId: 'lk.getbms.bms'),
+  );
 
   @override
   SyncState build() {
