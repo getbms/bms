@@ -5,7 +5,7 @@
 // passes them as-is. Pull (MySQL→SQLite) reads strings from the MySQL
 // client and casts them using SyncColumn.type.
 
-enum SyncColumnType { text, integer, real }
+enum SyncColumnType { uuid, text, integer, real }
 
 class SyncColumn {
   const SyncColumn(this.name, this.type, {this.nullable = false, this.primaryKey = false});
@@ -15,6 +15,7 @@ class SyncColumn {
   final bool primaryKey;
 
   String get mysqlType => switch (type) {
+        SyncColumnType.uuid    => 'VARCHAR(36)',
         SyncColumnType.text    => 'LONGTEXT',
         SyncColumnType.integer => 'BIGINT',
         SyncColumnType.real    => 'DOUBLE',
@@ -23,6 +24,7 @@ class SyncColumn {
   dynamic parseFromMysql(String? raw) {
     if (raw == null) return null;
     return switch (type) {
+      SyncColumnType.uuid    => raw,
       SyncColumnType.text    => raw,
       SyncColumnType.integer => int.tryParse(raw),
       SyncColumnType.real    => double.tryParse(raw),
