@@ -2260,6 +2260,12 @@ abstract class AppLocalizations {
   /// **'Import'**
   String get importDatabaseConfirm;
 
+  /// No description provided for @fileLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'File'**
+  String get fileLabel;
+
   /// No description provided for @importDatabaseMessage.
   ///
   /// In en, this message translates to:

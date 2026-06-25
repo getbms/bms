@@ -1121,6 +1121,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get importDatabaseConfirm => 'இறக்குமதி';
 
   @override
+  String get fileLabel => 'கோப்பு';
+
+  @override
   String get importDatabaseMessage =>
       'காப்பு கோப்பில் இருந்து பதிவுகள் சேர்க்கப்படும். தற்போதைய பதிவுகள் மாற்றப்படாது. தொடரவா?';
 

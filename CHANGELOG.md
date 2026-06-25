@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Fixed
+- Database now stored in `Application Support` directory instead of `Documents`; `drift_flutter` defaulted to `getApplicationDocumentsDirectory()` on desktop, placing `bms_local.sqlite` in `~/Documents/` which is inappropriate for app data; switched to `LazyDatabase` + `NativeDatabase` with `getApplicationSupportDirectory()` (macOS: `~/Library/Application Support/lk.getbms.bms/bms_local.sqlite`)
+- Import Database file picker no longer causes macOS window to go black and become unresponsive; inverted flow so `NSOpenPanel` opens first, then a confirmation dialog shows the selected filename - avoids the dialog-to-native-panel transition that caused the Metal renderer to lose focus
+- MySQL sync `suppliers` table: removed incorrect `credit_limit` column (belongs to customers, not suppliers), added `payment_terms` and `is_active` to match the Drift schema
+- MySQL sync `customers` table: added missing `is_active` column to match the Drift schema
 - EULA screen now always displays in English regardless of the selected app language; all UI strings (title, buttons, checkbox, dialogs) are hardcoded English so the legal agreement is consistent across locales
 - Replaced placeholder briefcase icon in EULA header with the actual BMS SVG logo
 - Expanded EULA from 10 to 15 sections: added Definitions, Grant of License, License Tiers, Restrictions, IP Ownership, License Key enforcement, User Data and Privacy, Updates and Support, Warranty Disclaimer, Liability Cap, Indemnification, Termination, Governing Law, Severability, and Entire Agreement

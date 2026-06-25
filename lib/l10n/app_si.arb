@@ -381,6 +381,7 @@
   "skipped": "මඟ හැරියේ:",
   "errors": "දෝෂ:",
   "importDatabaseConfirm": "ආයාත කරන්න",
+  "fileLabel": "ගොනුව",
   "importDatabaseMessage": "සටහන් ගොනුවෙන් ඇතුළු කෙරේ. පවතින සටහන් නොවෙනස්. ඉදිරියට යන්නද?",
   "dbBackend": "ද්විතියික",
   "dbSqliteLocal": "SQLite (දේශීය)",
