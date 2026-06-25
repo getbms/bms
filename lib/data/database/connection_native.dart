@@ -16,6 +16,14 @@ QueryExecutor openAppDatabaseConnection() {
       final legacy = File(p.join(docsDir.path, 'bms_local.sqlite'));
       if (legacy.existsSync()) {
         await legacy.copy(file.path);
+        // Copy WAL sidecars so committed-but-uncheckpointed data is not lost.
+        // SQLite replays and checkpoints the WAL automatically on next open.
+        for (final suffix in ['-wal', '-shm']) {
+          final sidecar = File('${legacy.path}$suffix');
+          if (sidecar.existsSync()) {
+            await sidecar.copy('${file.path}$suffix');
+          }
+        }
       }
     }
     return NativeDatabase.createInBackground(file);
