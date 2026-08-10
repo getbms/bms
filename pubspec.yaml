@@ -18,7 +18,7 @@ dependencies:
   riverpod_annotation: ^4.0.3
 
   # Navigation
-  go_router: ^17.3.0
+  go_router: ^17.4.0
 
   # Local database
   drift: ^2.34.3
@@ -63,7 +63,7 @@ dependencies:
 
   # Logging
   logger: ^2.4.0
-  file_picker: ^11.0.2
+  file_picker: ^11.0.3
   share_plus: ^12.0.2
   image_picker: ^1.2.3
   flutter_svg: ^2.0.10+1
