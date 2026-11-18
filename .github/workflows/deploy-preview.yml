@@ -77,12 +77,11 @@ jobs:
               });
             }
 
-  cleanup:
+  deactivate:
     if: github.event.action == 'closed'
-    name: Remove preview
+    name: Deactivate deployments
     runs-on: ubuntu-latest
     permissions:
-      contents: write
       deployments: write
 
     steps:
@@ -109,6 +108,14 @@ jobs:
             }
             core.info(`Deactivated ${deployments.length} deployment(s) for ${environment}`);
 
+  cleanup:
+    if: github.event.action == 'closed'
+    name: Remove preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # actions/checkout@v4.2.2
         with:
           ref: gh-pages
