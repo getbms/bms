@@ -67,3 +67,5 @@ updates:
       # fl_chart 1.x has breaking API changes — review manually
       - dependency-name: "fl_chart"
         update-types: ["version-update:semver-major"]
+      # intl is pinned by flutter_localizations in the Flutter SDK - bump with the SDK only
+      - dependency-name: "intl"
