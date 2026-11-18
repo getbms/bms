@@ -77,6 +77,37 @@ jobs:
               });
             }
 
+  deactivate:
+    if: github.event.action == 'closed'
+    name: Deactivate deployments
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+
+    steps:
+      # Deleting the environment itself needs repo admin, which GITHUB_TOKEN never has.
+      # Marking its deployments inactive removes the preview from the active deployments list.
+      - name: Deactivate preview deployments
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # actions/github-script@v9.0.0
+        with:
+          script: |
+            const environment = `pr-preview-${context.payload.pull_request.number}`;
+            const deployments = await github.paginate(github.rest.repos.listDeployments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              environment,
+              per_page: 100,
+            });
+            for (const deployment of deployments) {
+              await github.rest.repos.createDeploymentStatus({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                deployment_id: deployment.id,
+                state: 'inactive',
+              });
+            }
+            core.info(`Deactivated ${deployments.length} deployment(s) for ${environment}`);
+
   cleanup:
     if: github.event.action == 'closed'
     name: Remove preview
