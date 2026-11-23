@@ -14,14 +14,14 @@ dependencies:
     sdk: flutter
 
   # State management
-  flutter_riverpod: ^3.3.2
-  riverpod_annotation: ^4.0.3
+  flutter_riverpod: ^3.5.0
+  riverpod_annotation: ^4.0.8
 
   # Navigation
   go_router: ^18.1.4
 
   # Local database
-  drift: ^2.34.3
+  drift: ^2.35.4
   drift_flutter: ^0.3.1
   sqlite3_flutter_libs: ^0.6.0+eol
   path_provider: ^2.1.6
@@ -50,7 +50,7 @@ dependencies:
   fl_chart: ^0.68.0
 
   # Internationalisation and formatting
-  intl: ^0.20.2
+  intl: ^0.20.3
 
   # Immutable value objects
   freezed_annotation: ^3.1.0
@@ -66,7 +66,7 @@ dependencies:
   file_picker: ^11.0.2
   share_plus: ^12.0.2
   image_picker: ^1.2.4
-  flutter_svg: ^2.4.0
+  flutter_svg: ^2.5.0
   mysql_client: ^0.0.27
 
 dev_dependencies:
@@ -74,11 +74,11 @@ dev_dependencies:
     sdk: flutter
 
   # Code generation
-  build_runner: ^2.15.1
-  drift_dev: ^2.34.0
-  riverpod_generator: ^4.0.4
-  freezed: ^3.2.5
-  json_serializable: ^6.14.1
+  build_runner: ^2.17.1
+  drift_dev: ^2.35.3
+  riverpod_generator: ^4.0.10
+  freezed: ^4.0.3
+  json_serializable: ^6.15.2
 
   # Linting
   flutter_lints: ^6.0.0
